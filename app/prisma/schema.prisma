@@ -10,21 +10,100 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  USER
+  ADMIN
+  MODERATOR
+}
+
+enum AuthProvider {
+  EMAIL
+  GOOGLE
+  GITHUB
+}
+
 model User {
-  id        String     @id @default(cuid())
-  email     String     @unique
-  name      String?
-  solutions Solution[]
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  id            String       @id @default(cuid())
+  email         String       @unique
+  name          String?
+  password      String?      // Hashed password for email auth
+  role          UserRole    @default(USER)
+  authProvider  AuthProvider @default(EMAIL)
+  authProviderId String?     // External provider ID
+  emailVerified DateTime?
+  image         String?      // Profile image URL
+  solutions     Solution[]
+  reviews       Review[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  lastLogin     DateTime?
+  isActive      Boolean     @default(true)
+  metadata      Json?       // Additional user metadata
+  
+  @@index([email])
+  @@index([role])
 }
 
 model Solution {
-  id          String   @id @default(cuid())
-  title       String
-  description String
-  author      User     @relation(fields: [authorId], references: [id])
+  id            String     @id @default(cuid())
+  title         String
+  description   String
+  version       String     @default("1.0.0")
+  isPublished   Boolean    @default(false)
+  author        User       @relation(fields: [authorId], references: [id])
+  authorId      String
+  tags          String[]
+  resources     Resource[]
+  reviews       Review[]
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  publishedAt   DateTime?
+  metadata      Json?      // Additional solution metadata
+  
+  @@index([authorId])
+  @@index([isPublished])
+}
+
+model Resource {
+  id          String    @id @default(cuid())
+  name        String
+  type        String    // File type or resource category
+  url         String    // Storage URL or reference
+  solution    Solution  @relation(fields: [solutionId], references: [id])
+  solutionId  String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  @@index([solutionId])
+}
+
+model Review {
+  id          String    @id @default(cuid())
+  rating      Int       @default(0)
+  comment     String
+  solution    Solution  @relation(fields: [solutionId], references: [id])
+  solutionId  String
+  author      User      @relation(fields: [authorId], references: [id])
   authorId    String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  isVerified  Boolean   @default(false)
+  
+  @@index([solutionId])
+  @@index([authorId])
+}
+
+// Audit logging for compliance monitoring
+model AuditLog {
+  id          String    @id @default(cuid())
+  action      String    // Type of action performed
+  entityType  String    // Type of entity affected (User, Solution, etc.)
+  entityId    String    // ID of the affected entity
+  userId      String    // User who performed the action
+  metadata    Json?     // Additional audit information
+  createdAt   DateTime  @default(now())
+  
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([createdAt])
 }
