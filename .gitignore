@@ -1,0 +1,75 @@
+# Development Process
+development-process/
+development-process-temp/
+.cursorrules
+
+# Dependencies
+node_modules/
+.pnp/
+.pnp.js
+
+# Testing
+coverage/
+.nyc_output/
+
+# Production
+build/
+dist/
+.next/
+out/
+
+# Environment Variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Cache
+.cache/
+.eslintcache
+.npm
+*.tsbuildinfo
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+*.pem
+
+# Debug
+.debug/
+*.debug
+
+# Temporary files
+*.tmp
+*.temp
+.temp/
+tmp/
+
+# Database
+*.sqlite
+*.db
+
+# Misc
+.DS_Store
+Thumbs.db
+.vercel
+.turbo
+
+# Docker
+.docker/
+docker-compose.override.yml
+
+# Generated documentation
+docs/tracking/sessions/*
+!docs/tracking/sessions/.gitkeep
