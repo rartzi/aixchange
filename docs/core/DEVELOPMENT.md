@@ -58,6 +58,7 @@ aixchange/
 │   └── layout.tsx         # Root layout
 ├── components/            # React components
 │   ├── ui/               # ShadcN UI components
+│   ├── features/         # Feature-specific components
 │   └── shared/           # Shared components
 ├── lib/                   # Utility functions
 │   ├── utils/            # Helper functions
@@ -111,6 +112,40 @@ pnpm test:e2e
 
 # Run specific test file
 pnpm test -- path/to/test
+```
+
+## Solution Management
+
+### Creating Solutions
+- Solutions can be created through the web interface
+- Required fields: title, description
+- Optional: tags for categorization
+- Version control is automatically managed
+- Resources can be attached to solutions
+
+### Solution Features
+- Version tracking (1.0.0 format)
+- Resource management
+- Review system
+- Audit logging
+- Tag-based categorization
+
+### API Endpoints
+```bash
+# Create solution
+POST /api/solutions
+
+# Get solutions
+GET /api/solutions
+GET /api/solutions?published=true
+GET /api/solutions?author={authorId}
+GET /api/solutions?tag={tagName}
+
+# Update solution
+PUT /api/solutions/{id}
+
+# Delete solution
+DELETE /api/solutions/{id}
 ```
 
 ## Docker Development
