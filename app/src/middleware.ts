@@ -6,16 +6,6 @@ export default withAuth(
   function middleware(req) {
     const token = req.nextauth.token
     const isAuth = !!token
-    const isAuthPage = req.nextUrl.pathname.startsWith('/login') ||
-                      req.nextUrl.pathname.startsWith('/register')
-
-    // Redirect authenticated users away from auth pages
-    if (isAuthPage) {
-      if (isAuth) {
-        return NextResponse.redirect(new URL('/dashboard', req.url))
-      }
-      return null
-    }
 
     // Check for protected admin routes
     if (req.nextUrl.pathname.startsWith('/admin')) {
@@ -46,8 +36,6 @@ export const config = {
     '/dashboard/:path*',
     '/admin/:path*',
     '/moderator/:path*',
-    '/profile/:path*',
-    '/login',
-    '/register'
+    '/profile/:path*'
   ]
 }

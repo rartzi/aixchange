@@ -2,6 +2,7 @@
 development-process/
 development-process-temp/
 .cursorrules
+.pgdata/
 
 # Dependencies
 node_modules/
@@ -72,4 +73,4 @@ docker-compose.override.yml
 
 # Generated documentation
 docs/tracking/sessions/*
-!docs/tracking/sessions/.gitkeep
+!docs/tracking/sessions/.gitkeep.pgdata

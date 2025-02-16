@@ -1,28 +1,40 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
-
-## [0.1.0-initialsetup] - 2025-02-16
-
+## [0.2.0] - 2024-02-16
 ### Added
-- Set up Next.js 14 project with TypeScript and Tailwind CSS
-- Implemented simplified component structure
-  - Created ui/ and features/ directories
-  - Added basic Button component with variants
-  - Added Card component with subcomponents (Header, Title, Description, Content, Footer)
-- Set up database layer
-  - Configured Prisma with PostgreSQL
-  - Created User and Solution models
-  - Set up Prisma client for database access
-- Added utility functions for class name management
+- Authentication system with NextAuth.js
+  - User registration with email/password
+  - Secure password hashing with bcrypt
+  - JWT-based session management
+  - Role-based access control
+- Protected dashboard
+  - User-specific welcome page
+  - Basic dashboard layout
+  - Auth-aware routing
+- Database integration
+  - PostgreSQL setup with custom port
+  - Prisma ORM configuration
+  - User model with role support
 
 ### Changed
-- Flattened routing structure according to rearchitecture plan
-- Simplified project organization following component-first approach
+- Updated project structure for auth routes
+- Enhanced middleware for protected routes
+- Improved error handling in API routes
 
-### Technical
-- Using Next.js 14 with App Router
-- TypeScript for type safety
-- Tailwind CSS for styling
-- Prisma for database management
-- Component-based architecture
+### Security
+- Implemented password hashing
+- Added input validation with Zod
+- Set up proper database permissions
+- Protected routes with session checks
+
+## [0.1.0] - 2024-02-16
+### Added
+- Initial project setup
+  - Next.js 14 with App Router
+  - Tailwind CSS integration
+  - Basic UI components
+  - Project structure
+- Development infrastructure
+  - Jest testing setup
+  - Component documentation
+  - Basic project structure
