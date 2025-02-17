@@ -17,6 +17,12 @@ export default async function ImportSolutionsPage() {
           <p className="text-gray-600 mt-2">
             Upload a JSON file containing solution data for bulk import.
           </p>
+          <a
+            href="/admin/solutions/test-import"
+            className="inline-block mt-2 text-blue-600 hover:text-blue-800 underline"
+          >
+            Go to Test Import Page →
+          </a>
         </div>
 
         <SolutionImport />
@@ -33,13 +39,18 @@ export default async function ImportSolutionsPage() {
       "title": "Solution Title",
       "description": "Solution Description",
       "version": "1.0.0",
-      "isPublished": false,
-      "tags": ["tag1", "tag2"],
+      "category": "Natural Language Processing",
+      "provider": "AI Company",
+      "launchUrl": "https://api.example.com/solution",
+      "sourceCodeUrl": "https://github.com/org/repo",
+      "tokenCost": 10,
+      "isPublished": true,
+      "tags": ["ai", "nlp", "api"],
       "resources": [
         {
-          "name": "Resource Name",
+          "name": "API Documentation",
           "type": "document",
-          "url": "https://example.com/resource"
+          "url": "https://example.com/docs"
         }
       ]
     }

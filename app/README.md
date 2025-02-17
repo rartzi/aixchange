@@ -37,26 +37,39 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 ## Changelog
 
-### 2025-02-17 - UI Improvements and Feature Updates
+### 2025-02-17 - Solution Schema and Import Process Updates
+
+#### Schema Changes
+- Removed resource configuration fields (CPU, Memory, GPU, Storage) from solution schema
+- Added optional GitHub source code URL field with database index
+- Migration: `20250217165526_add_source_code_url`
+
+#### Import Process Improvements
+- Updated solution import schema to match new database structure
+- Removed resource configuration requirement from import validation
+- Added sourceCodeUrl support in bulk imports
+- Updated sample import JSON format
+- Improved error handling and validation messages
 
 #### UI/UX Improvements
 - Enhanced dark mode styling with gradient purple backgrounds for cards
 - Improved text contrast in dark mode for better readability
-- Updated input field styling for better visibility in dark mode
-- Consistent color scheme across all interactive elements
+- Added GitHub repository link button with icon
+- Updated form fields for better visibility
 
-#### Schema Changes
-- Removed resource configuration fields (CPU, Memory, GPU, Storage) from solution schema
-- Added optional GitHub source code URL field
-- Migration: `20250217131321_remove_resource_config_add_source_code`
+#### Authentication Updates
+- Temporarily disabled auth checks for development
+- Direct access to bulk import functionality
+- Simplified testing process
 
-#### New Features
-- Added GitHub repository link support for solutions
-- Enhanced category management with support for custom classifications
-- Improved solution card layout with better responsive design
+#### Documentation
+- Updated schema documentation
+- Added example JSON format for imports
+- Documented authentication bypass for development
+- Added technical implementation details
 
 #### Technical Details
-- Updated Prisma schema and generated new client
-- Modified solution form components to reflect schema changes
-- Enhanced dark mode theming with Tailwind CSS classes
-- Added proper TypeScript types for new fields
+- Reset and migrated database to ensure clean state
+- Updated all related components and APIs
+- Added TypeScript types for new fields
+- Improved error handling across the application

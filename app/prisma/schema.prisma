@@ -72,6 +72,8 @@ model Solution {
   // Add metadata as optional first
   metadata      Json?
   imageUrl      String?    // Solution image URL
+
+  @@index([sourceCodeUrl])
   
   @@index([authorId])
   @@index([isPublished])

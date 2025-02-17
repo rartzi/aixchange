@@ -9,12 +9,7 @@
       "provider": "AI Vision Labs",
       "launchUrl": "https://api.example.com/vision",
       "tokenCost": 10,
-      "resourceConfig": {
-        "cpu": "2 cores",
-        "memory": "4GB",
-        "storage": "10GB",
-        "gpu": "NVIDIA T4"
-      },
+      "sourceCodeUrl": "https://github.com/ai-vision-labs/image-recognition",
       "tags": ["computer-vision", "deep-learning", "image-processing"],
       "imageUrl": "https://example.com/images/vision-ai.jpg",
       "resources": [
@@ -34,11 +29,7 @@
       "provider": "NLP Tech",
       "launchUrl": "https://api.example.com/nlp",
       "tokenCost": 5,
-      "resourceConfig": {
-        "cpu": "4 cores",
-        "memory": "8GB",
-        "storage": "20GB"
-      },
+      "sourceCodeUrl": "https://github.com/nlp-tech/language-processor",
       "tags": ["nlp", "machine-learning", "text-analysis"],
       "imageUrl": "https://example.com/images/nlp.jpg",
       "resources": [
