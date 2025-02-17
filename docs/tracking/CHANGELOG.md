@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.4.0] - 2024-02-16
+### Changed
+- Temporarily disabled authentication for development
+  - Bypassed auth checks in middleware
+  - Simulated admin role for testing
+  - Maintained role-based routing structure
+- Updated architecture documentation
+  - Added development phase notes
+  - Documented authentication bypass
+  - Added restoration plan
+
+### Development
+- Accelerated UI/UX development workflow
+- Simplified testing procedures
+- Added development phase documentation
+
+### Security
+- **TEMPORARY**: Disabled authentication for development phase
+- Added clear documentation about security restoration
+- Maintained role-based routing logic for UI consistency
+
 ## [0.3.0] - 2024-02-16
 ### Added
 - Solution Management System

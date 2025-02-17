@@ -28,6 +28,10 @@ This document outlines the technical architecture and implementation plan for Ai
   - OAuth providers
   - JWT tokens
   - RBAC implementation
+  - **TEMPORARY**: Authentication bypassed for development phase
+    - All routes accessible without auth
+    - Role simulation for UI testing
+    - Will be re-enabled before production
 
 ### 1.2 Microservices Architecture
 - **Solution Management Service**
@@ -75,6 +79,10 @@ This document outlines the technical architecture and implementation plan for Ai
   - Role-based access control
   - API authentication
   - Session management
+  - **Development Note**: Authentication temporarily disabled
+    - Development-only configuration
+    - Not for production use
+    - Re-enable security before deployment
 
 - **Data Security**
   - Encryption at rest
@@ -213,10 +221,11 @@ JWT_SECRET=your-secret-key
 ## Technical Decisions Log
 
 ### Authentication
-- **Decision**: Use NextAuth.js with JWT
+- **Decision**: Use NextAuth.js with JWT (Currently Bypassed for Development)
 - **Rationale**: Provides flexible auth options and good security
-- **Alternatives Considered**: Custom auth, Auth0
-- **Impact**: Simplified auth implementation, good OAuth support
+- **Current Status**: Temporarily disabled for development speed
+- **Restoration Plan**: Re-enable before production with full security measures
+- **Impact**: Accelerated UI/UX development and testing
 
 ### Database
 - **Decision**: PostgreSQL + Redis
