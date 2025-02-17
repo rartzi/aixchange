@@ -58,7 +58,19 @@ model Solution {
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
   publishedAt   DateTime?
-  metadata      Json?      // Additional solution metadata
+  
+  // Keep existing fields as optional
+  category      String?
+  provider      String?
+  launchUrl     String?
+  tokenCost     Int?
+  rating        Float?
+  status        String?
+  resourceConfig Json?
+  
+  // Add metadata as optional first
+  metadata      Json?
+  imageUrl      String?    // Solution image URL
   
   @@index([authorId])
   @@index([isPublished])
