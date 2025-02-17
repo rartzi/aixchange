@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Solutions marketplace search and filter functionality
+  - Full-text search across titles, descriptions, and tags
+  - Category-based filtering (ML, NLP, CV)
+  - Sorting options (recent, rating, popular)
+  - Loading states and error handling
+  - Empty state feedback
 - Solution import functionality for admin users
   - Import API endpoint with validation
   - Admin UI for solution imports
@@ -29,6 +35,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cross-page theme consistency
 
 ### Changed
+- Enhanced solution filtering with metadata support
+- Improved search performance with debouncing
+- Updated solution cards with metadata display
 - Updated color system to use RGB values
 - Improved button hover states
 - Enhanced text contrast in both themes
