@@ -64,14 +64,16 @@ model Solution {
   category      String?
   provider      String?
   launchUrl     String?
+  sourceCodeUrl String?    // GitHub repository URL
   tokenCost     Int?
   rating        Float?
   status        String?
-  resourceConfig Json?
   
   // Add metadata as optional first
   metadata      Json?
   imageUrl      String?    // Solution image URL
+
+  @@index([sourceCodeUrl])
   
   @@index([authorId])
   @@index([isPublished])

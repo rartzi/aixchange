@@ -21,12 +21,7 @@ interface SolutionCardProps {
   launchUrl: string;
   tokenCost: number;
   imageUrl?: string;
-  resourceConfig: {
-    cpu: string;
-    memory: string;
-    storage: string;
-    gpu?: string;
-  };
+  sourceCodeUrl?: string;
 }
 
 export function SolutionCard({
@@ -42,10 +37,10 @@ export function SolutionCard({
   launchUrl,
   tokenCost,
   imageUrl,
-  resourceConfig,
+  sourceCodeUrl,
 }: SolutionCardProps) {
   return (
-    <Card className="bg-card border-border hover:border-primary/40 transition-colors">
+    <Card className="dark:bg-gradient-to-br dark:from-purple-900/50 dark:to-purple-800/30 border-border hover:border-primary/40 transition-colors">
       <CardHeader>
         <div className="flex justify-between items-start gap-4">
           {imageUrl && (
@@ -86,8 +81,8 @@ export function SolutionCard({
                 </div>
               )}
             </div>
-            <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
-              <span className="bg-primary/10 text-primary px-2 py-0.5 rounded">
+            <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground dark:text-muted-foreground/90">
+              <span className="bg-primary/10 text-primary dark:text-white/90 px-2 py-0.5 rounded">
                 {category}
               </span>
               <span>•</span>
@@ -99,49 +94,41 @@ export function SolutionCard({
         </div>
       </CardHeader>
       <CardContent>
-        <p className="text-card-foreground/80 line-clamp-2 mb-4">{description}</p>
+        <p className="text-card-foreground/90 dark:text-white/90 line-clamp-2 mb-4">{description}</p>
         
-        {/* Resource Requirements */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4 text-sm">
-          <div className="bg-muted p-2 rounded">
-            <span className="text-muted-foreground">CPU:</span>{" "}
-            <span className="font-medium">{resourceConfig.cpu}</span>
-          </div>
-          <div className="bg-muted p-2 rounded">
-            <span className="text-muted-foreground">Memory:</span>{" "}
-            <span className="font-medium">{resourceConfig.memory}</span>
-          </div>
-          <div className="bg-muted p-2 rounded">
-            <span className="text-muted-foreground">Storage:</span>{" "}
-            <span className="font-medium">{resourceConfig.storage}</span>
-          </div>
-          {resourceConfig.gpu && (
-            <div className="bg-muted p-2 rounded">
-              <span className="text-muted-foreground">GPU:</span>{" "}
-              <span className="font-medium">{resourceConfig.gpu}</span>
-            </div>
-          )}
-        </div>
-
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 mb-4">
           {tags.map((tag) => (
             <span
               key={tag}
-              className="px-2 py-1 rounded-full bg-primary/10 text-primary text-sm"
+              className="px-2 py-1 rounded-full bg-primary/10 text-primary dark:text-white/90 text-sm"
             >
               {tag}
             </span>
           ))}
         </div>
       </CardContent>
-      <CardFooter className="flex justify-between items-center">
-        <span className="text-sm text-muted-foreground">
+      <CardFooter className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <span className="text-sm text-muted-foreground dark:text-muted-foreground/90">
           {new Date(createdAt).toLocaleDateString()}
         </span>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          {sourceCodeUrl && (
+            <Button
+              variant="outline"
+              className="text-primary hover:text-primary/80 hover:bg-primary/10 dark:text-white/90"
+              asChild
+            >
+              <a href={sourceCodeUrl} target="_blank" rel="noopener noreferrer">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4 mr-1">
+                  <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                </svg>
+                Source Code
+              </a>
+            </Button>
+          )}
           <Button
             variant="ghost"
-            className="text-primary hover:text-primary/80 hover:bg-primary/10"
+            className="text-primary hover:text-primary/80 hover:bg-primary/10 dark:text-white/90"
             asChild
           >
             <Link href={`/solutions/${id}`}>View Details</Link>

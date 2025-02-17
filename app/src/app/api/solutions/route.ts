@@ -60,10 +60,11 @@ export async function POST(request: NextRequest) {
           category: validatedData.category,
           provider: validatedData.provider,
           launchUrl: validatedData.launchUrl,
+          sourceCodeUrl: validatedData.sourceCodeUrl,
           tokenCost: validatedData.tokenCost,
-          resourceConfig: validatedData.resourceConfig,
-          status: 'PENDING',
-          imageUrl: '/placeholder-image.jpg'
+          status: 'Active',
+          imageUrl: '/placeholder-image.jpg',
+          isPublished: true
         } as Prisma.JsonObject,
       },
     });

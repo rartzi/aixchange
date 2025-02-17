@@ -37,9 +37,11 @@ export async function POST(req: NextRequest) {
             category: solution.category,
             provider: solution.provider,
             launchUrl: solution.launchUrl,
+            sourceCodeUrl: solution.sourceCodeUrl,
             tokenCost: solution.tokenCost,
-            resourceConfig: solution.resourceConfig,
             imageUrl: solution.imageUrl,
+            status: 'Active',
+            isPublished: true,
             ...(solution.metadata || {}), // Include any additional metadata
           };
 
