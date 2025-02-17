@@ -53,8 +53,8 @@ export const solutionSchema = z.object({
   tags: z.array(z.string())
     .min(1, 'Add at least one tag')
     .max(5, 'Maximum 5 tags allowed'),
-  image: z.instanceof(File, { message: 'Please upload an image' })
-    .optional(),
+  // Handle image as an optional string for the URL
+  imageUrl: z.string().optional(),
 });
 
 export type SolutionFormData = z.infer<typeof solutionSchema>;
