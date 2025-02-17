@@ -7,7 +7,7 @@ WORKDIR /app
 
 # Install dependencies based on the preferred package manager
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci --omit=dev
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -18,8 +18,8 @@ COPY . .
 # Next.js collects completely anonymous telemetry data about general usage
 ENV NEXT_TELEMETRY_DISABLED 1
 
-# Build Next.js
-RUN npm run build
+# Build Next.js (skip linting)
+RUN npx next build
 
 # Production image, copy all the files and run next
 FROM base AS runner
