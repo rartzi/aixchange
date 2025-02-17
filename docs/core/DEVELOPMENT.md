@@ -11,6 +11,38 @@
 
 ### Local Setup
 
+There are two ways to set up the development environment: with Docker (recommended for production-like environment) or without Docker (faster for local development).
+
+#### Option 1: Docker Setup (Full Environment)
+
+1. **Clone the Repository**
+   ```bash
+   git clone [repository-url]
+   cd aixchange
+   ```
+
+2. **Environment Configuration**
+   ```bash
+   # Copy example environment file
+   cp .env.example .env
+   
+   # Configure environment variables for Docker setup
+   # Required variables:
+   # - POSTGRES_USER
+   # - POSTGRES_PASSWORD
+   # - POSTGRES_DB
+   # - DATABASE_URL (postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB})
+   # - NEXTAUTH_SECRET
+   # - NEXTAUTH_URL
+   ```
+
+3. **Start Docker Environment**
+   ```bash
+   docker-compose up
+   ```
+
+#### Option 2: Local Setup (Without Docker)
+
 1. **Clone the Repository**
    ```bash
    git clone [repository-url]
@@ -31,20 +63,28 @@
    # Copy example environment file
    cp .env.example .env.local
    
-   # Required variables:
-   # - DATABASE_URL
-   # - NEXTAUTH_SECRET
-   # - NEXTAUTH_URL
-   # - API_KEY (if needed)
+   # For local development without PostgreSQL, you can use SQLite
+   # Set these variables in .env.local:
+   # DATABASE_URL="file:./dev.db"
+   # NEXTAUTH_SECRET="your-secret-key"
+   # NEXTAUTH_URL="http://localhost:3000"
    ```
 
-4. **Development Server**
+4. **Database Setup**
    ```bash
-   # Start the development server
-   pnpm dev
+   # Generate Prisma Client
+   pnpm prisma generate
 
-   # Or with Docker
-   docker-compose up
+   # Create SQLite database and run migrations
+   pnpm prisma migrate dev
+
+   # Seed the database (optional)
+   pnpm prisma db seed
+   ```
+
+5. **Start Development Server**
+   ```bash
+   pnpm dev
    ```
 
 ## Project Structure
@@ -206,20 +246,62 @@ pnpm format
 
 ## Database Management
 
-### Prisma Commands
-```bash
-# Generate Prisma client
-pnpm prisma generate
+### Database Options
 
-# Create migration
+#### PostgreSQL (Docker Setup)
+- Used in production and Docker development environment
+- Provides full feature set and production-like environment
+- Requires Docker and container setup
+- Connection via DATABASE_URL="postgresql://user:pass@db:5432/dbname"
+
+#### SQLite (Local Development)
+- Lightweight, file-based database
+- Perfect for local development without Docker
+- No additional setup required
+- Connection via DATABASE_URL="file:./dev.db"
+- Some PostgreSQL-specific features may not be available
+
+### Prisma Commands
+
+For both setups:
+```bash
+# Generate Prisma client (required for both setups)
+pnpm prisma generate
+```
+
+For PostgreSQL (Docker):
+```bash
+# Apply migrations in Docker
+pnpm prisma migrate deploy
+
+# Push schema changes
+pnpm prisma db push
+
+# Open Prisma Studio (requires port forwarding)
+pnpm prisma studio
+```
+
+For SQLite (Local):
+```bash
+# Create and apply migrations
 pnpm prisma migrate dev
 
-# Apply migrations
-pnpm prisma migrate deploy
+# Seed the database
+pnpm prisma db seed
 
 # Reset database
 pnpm prisma reset
+
+# Open Prisma Studio (works directly)
+pnpm prisma studio
 ```
+
+### Switching Between Databases
+To switch between PostgreSQL and SQLite:
+1. Update DATABASE_URL in your .env file
+2. Run `pnpm prisma generate` to update the client
+3. Run appropriate migration command for your setup
+4. (Optional) Seed the database if needed
 
 ## Monitoring & Debugging
 
