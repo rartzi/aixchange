@@ -2,20 +2,125 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: 246 247 251;
+    --foreground: 15 23 42;
+    
+    --card: 255 255 255;
+    --card-foreground: 15 23 42;
+    
+    --primary: 79 70 229;
+    --primary-foreground: 255 255 255;
+    
+    --secondary: 99 102 241;
+    --secondary-foreground: 255 255 255;
+    
+    --accent: 147 51 234;
+    --accent-foreground: 255 255 255;
+    
+    --muted: 241 245 249;
+    --muted-foreground: 100 116 139;
+    
+    --border: 226 232 240;
+  }
+
+  .dark {
+    --background: 15 23 42;
+    --foreground: 255 255 255;
+    
+    --card: 30 41 59;
+    --card-foreground: 255 255 255;
+    
+    --primary: 79 70 229;
+    --primary-foreground: 255 255 255;
+    
+    --secondary: 99 102 241;
+    --secondary-foreground: 255 255 255;
+    
+    --accent: 147 51 234;
+    --accent-foreground: 255 255 255;
+    
+    --muted: 51 65 85;
+    --muted-foreground: 148 163 184;
+    
+    --border: 51 65 85;
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  color: rgb(var(--primary-foreground));
+  background-color: rgb(var(--primary));
+  border-radius: 0.5rem;
+  transition-property: color, background-color, border-color;
+  transition-duration: 200ms;
+}
+
+.btn-primary:hover {
+  background-color: rgb(var(--primary) / 0.9);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  color: rgb(var(--secondary-foreground));
+  background-color: rgb(var(--secondary));
+  border-radius: 0.5rem;
+  transition-property: color, background-color, border-color;
+  transition-duration: 200ms;
+}
+
+.btn-secondary:hover {
+  background-color: rgb(var(--secondary) / 0.9);
+}
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  color: rgb(var(--foreground));
+  border: 1px solid rgb(var(--border));
+  border-radius: 0.5rem;
+  transition-property: color, background-color, border-color;
+  transition-duration: 200ms;
+}
+
+.btn-outline:hover {
+  background-color: rgb(var(--muted));
+}
+
+.card-hover {
+  transition-property: all;
+  transition-duration: 200ms;
+}
+
+.card-hover:hover {
+  border-color: rgb(var(--primary) / 0.4);
+  box-shadow: 0 10px 15px -3px rgb(var(--primary) / 0.1),
+              0 4px 6px -4px rgb(var(--primary) / 0.1);
+}
+
+.bg-gradient-primary {
+  background: linear-gradient(to right, rgb(var(--primary)), rgb(var(--secondary)));
+}
+
+.text-gradient-primary {
+  background: linear-gradient(to right, rgb(var(--primary)), rgb(var(--secondary)));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  display: inline-block;
 }

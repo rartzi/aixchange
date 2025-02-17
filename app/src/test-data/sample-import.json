@@ -1,0 +1,33 @@
+{
+  "solutions": [
+    {
+      "title": "AI Image Recognition",
+      "description": "A powerful solution for recognizing objects and patterns in images using state-of-the-art deep learning models.",
+      "version": "1.0.0",
+      "isPublished": true,
+      "tags": ["computer-vision", "deep-learning", "image-processing"],
+      "resources": [
+        {
+          "name": "API Documentation",
+          "type": "document",
+          "url": "https://example.com/docs/image-recognition"
+        }
+      ]
+    },
+    {
+      "title": "Natural Language Processor",
+      "description": "Advanced NLP solution for text analysis, sentiment detection, and language understanding.",
+      "version": "1.0.0",
+      "isPublished": true,
+      "tags": ["nlp", "machine-learning", "text-analysis"],
+      "resources": [
+        {
+          "name": "Usage Guide",
+          "type": "document",
+          "url": "https://example.com/docs/nlp-guide"
+        }
+      ]
+    }
+  ],
+  "defaultAuthorId": "cm78bpzgf0006kvslf1sxgnsd"
+}

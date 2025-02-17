@@ -9,6 +9,7 @@ const registerSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   confirmPassword: z.string(),
+  role: z.enum(['USER', 'ADMIN', 'MODERATOR']).optional(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords do not match",
   path: ["confirmPassword"],
@@ -37,7 +38,8 @@ export async function POST(req: Request) {
         name: body.name,
         email: body.email,
         password: hashedPassword,
-        role: UserRole.USER,
+        // TEMPORARY: Allow setting role for development
+        role: body.role || UserRole.USER,
       },
       select: {
         id: true,

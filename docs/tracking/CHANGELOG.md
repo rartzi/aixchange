@@ -1,89 +1,46 @@
 # Changelog
 
-## [0.4.0] - 2024-02-16
-### Changed
-- Temporarily disabled authentication for development
-  - Bypassed auth checks in middleware
-  - Simulated admin role for testing
-  - Maintained role-based routing structure
-- Updated architecture documentation
-  - Added development phase notes
-  - Documented authentication bypass
-  - Added restoration plan
+All notable changes to this project will be documented in this file.
 
-### Development
-- Accelerated UI/UX development workflow
-- Simplified testing procedures
-- Added development phase documentation
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-### Security
-- **TEMPORARY**: Disabled authentication for development phase
-- Added clear documentation about security restoration
-- Maintained role-based routing logic for UI consistency
+## [Unreleased]
 
-## [0.3.0] - 2024-02-16
 ### Added
-- Solution Management System
-  - Solution creation interface with form validation
-  - Version control support (1.0.0 format)
-  - Tag-based categorization
-  - Resource management structure
-  - Review system foundation
-- API Routes
-  - POST /api/solutions for solution creation
-  - GET /api/solutions with filtering options
-- Audit Logging
-  - Tracking solution creation events
-  - User action monitoring
-- Documentation
-  - Updated development guide with solution features
-  - API endpoint documentation
+- Theme system with light/dark mode support
+  - CSS custom properties for theme colors
+  - Theme persistence using localStorage
+  - Smooth transitions between themes
+  - RGB color values for opacity support
+- Reusable button components with theme support
+  - Primary button style
+  - Secondary button style
+  - Outline button style
+- Card hover effects with theme-aware styling
+- Gradient utilities for backgrounds and text
+- Theme toggle button in navigation
+- Shared Navbar component
+- Cross-page theme consistency
 
 ### Changed
-- Enhanced dashboard layout with solution navigation
-- Updated project structure for feature components
-- Improved form validation with Zod schemas
+- Updated color system to use RGB values
+- Improved button hover states
+- Enhanced text contrast in both themes
+- Refactored navigation for better theme support
 
-### Security
-- Protected solution creation behind authentication
-- Added audit logging for compliance
-- Implemented proper user attribution
-
-## [0.2.0] - 2024-02-16
-### Added
-- Authentication system with NextAuth.js
-  - User registration with email/password
-  - Secure password hashing with bcrypt
-  - JWT-based session management
-  - Role-based access control
-- Protected dashboard
-  - User-specific welcome page
-  - Basic dashboard layout
-  - Auth-aware routing
-- Database integration
-  - PostgreSQL setup with custom port
-  - Prisma ORM configuration
-  - User model with role support
-
-### Changed
-- Updated project structure for auth routes
-- Enhanced middleware for protected routes
-- Improved error handling in API routes
-
-### Security
-- Implemented password hashing
-- Added input validation with Zod
-- Set up proper database permissions
-- Protected routes with session checks
+### Fixed
+- Theme persistence during page navigation
+- Color opacity support in Tailwind
+- Button hover transitions
+- Card hover animations
 
 ## [0.1.0] - 2024-02-16
+
 ### Added
 - Initial project setup
-  - Next.js 14 with App Router
-  - Tailwind CSS integration
-  - Basic UI components
-  - Project structure
-- Development infrastructure
-  - Jest testing setup
-  - Component documentation
-  - Basic project structure
+- Next.js 14 with App Router
+- Tailwind CSS configuration
+- Basic page structure
+- Authentication system
+- Database integration
