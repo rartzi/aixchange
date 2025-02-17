@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Solution import functionality for admin users
+  - Import API endpoint with validation
+  - Admin UI for solution imports
+  - Solution schema updates
+  - Database migrations for solution metadata
 - Theme system with light/dark mode support
   - CSS custom properties for theme colors
   - Theme persistence using localStorage
@@ -28,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved button hover states
 - Enhanced text contrast in both themes
 - Refactored navigation for better theme support
+- Enhanced solution schema with additional metadata fields
 
 ### Fixed
 - Theme persistence during page navigation
