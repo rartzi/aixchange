@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { prisma } from '@/lib/db/prisma';
 import { solutionImportSchema } from '@/lib/schemas/solutionImport';
-import { PrismaClient, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 
 // TODO: Implement proper role-based access control
 // Currently disabled for testing purposes
@@ -34,11 +34,27 @@ export async function POST(req: NextRequest) {
       // Process each solution
       for (const solution of validatedData.solutions) {
         try {
+          // Prepare metadata
+          const metadata: Prisma.JsonObject = {
+            category: solution.category,
+            provider: solution.provider,
+            launchUrl: solution.launchUrl,
+            tokenCost: solution.tokenCost,
+            resourceConfig: solution.resourceConfig,
+            imageUrl: solution.imageUrl,
+            ...(solution.metadata || {}), // Include any additional metadata
+          };
+
           // Create the solution
           const createdSolution = await prisma.solution.create({
             data: {
-              ...solution,
+              title: solution.title,
+              description: solution.description,
+              version: solution.version,
+              isPublished: solution.isPublished,
+              tags: solution.tags,
               authorId: validatedData.defaultAuthorId,
+              metadata,
               resources: {
                 create: solution.resources || []
               }
@@ -54,8 +70,10 @@ export async function POST(req: NextRequest) {
               userId: validatedData.defaultAuthorId,
               metadata: {
                 importBatch: true,
-                solutionTitle: solution.title
-              }
+                solutionTitle: solution.title,
+                category: solution.category,
+                provider: solution.provider,
+              } as Prisma.JsonObject
             }
           });
 

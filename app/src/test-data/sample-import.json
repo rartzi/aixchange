@@ -5,7 +5,18 @@
       "description": "A powerful solution for recognizing objects and patterns in images using state-of-the-art deep learning models.",
       "version": "1.0.0",
       "isPublished": true,
+      "category": "Computer Vision",
+      "provider": "AI Vision Labs",
+      "launchUrl": "https://api.example.com/vision",
+      "tokenCost": 10,
+      "resourceConfig": {
+        "cpu": "2 cores",
+        "memory": "4GB",
+        "storage": "10GB",
+        "gpu": "NVIDIA T4"
+      },
       "tags": ["computer-vision", "deep-learning", "image-processing"],
+      "imageUrl": "https://example.com/images/vision-ai.jpg",
       "resources": [
         {
           "name": "API Documentation",
@@ -19,7 +30,17 @@
       "description": "Advanced NLP solution for text analysis, sentiment detection, and language understanding.",
       "version": "1.0.0",
       "isPublished": true,
+      "category": "Natural Language Processing",
+      "provider": "NLP Tech",
+      "launchUrl": "https://api.example.com/nlp",
+      "tokenCost": 5,
+      "resourceConfig": {
+        "cpu": "4 cores",
+        "memory": "8GB",
+        "storage": "20GB"
+      },
       "tags": ["nlp", "machine-learning", "text-analysis"],
+      "imageUrl": "https://example.com/images/nlp.jpg",
       "resources": [
         {
           "name": "Usage Guide",
@@ -29,5 +50,5 @@
       ]
     }
   ],
-  "defaultAuthorId": "cm78bpzgf0006kvslf1sxgnsd"
+  "defaultAuthorId": "anonymous-user"
 }
