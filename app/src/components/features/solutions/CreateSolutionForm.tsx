@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { solutionSchema, predefinedCategories, statusOptions, type SolutionFormData } from '@/lib/schemas/solution';
+import { solutionSchema, predefinedCategories, type SolutionFormData } from '@/lib/schemas/solution';
 import Image from 'next/image';
 import { ZodError } from 'zod';
 

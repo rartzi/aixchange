@@ -1,31 +1,34 @@
 import { NextAuthOptions } from "next-auth"
 import NextAuth from "next-auth/next"
 import CredentialsProvider from "next-auth/providers/credentials"
-import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/db/prisma"
-import { z } from "zod"
 import { Adapter } from "next-auth/adapters"
+import { User, Prisma } from "@prisma/client"
 
-const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-})
-
-// Custom adapter functions
+// Custom adapter functions with proper Prisma input types
 const customAdapter = {
-  async createUser(user: any) {
-    return prisma.user.create({ data: user })
+  async createUser(userData: Omit<Prisma.UserCreateInput, "id">): Promise<User> {
+    return prisma.user.create({ 
+      data: {
+        ...userData,
+        // Set default values for required fields
+        email: userData.email ?? '',
+        role: userData.role ?? 'USER',
+        authProvider: userData.authProvider ?? 'EMAIL'
+      } 
+    })
   },
-  async getUser(id: string) {
+  async getUser(id: string): Promise<User | null> {
     return prisma.user.findUnique({ where: { id } })
   },
-  async getUserByEmail(email: string) {
+  async getUserByEmail(email: string): Promise<User | null> {
     return prisma.user.findUnique({ where: { email } })
   },
-  async updateUser(user: any) {
+  async updateUser(userData: Prisma.UserUpdateInput & { id: string }): Promise<User> {
+    const { id, ...data } = userData
     return prisma.user.update({
-      where: { id: user.id },
-      data: user,
+      where: { id },
+      data
     })
   },
 } as Adapter
@@ -40,7 +43,7 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" }
       },
       // TEMPORARY: Bypass authentication for development
-      async authorize(credentials) {
+      async authorize() {
         return {
           id: 'temp-admin-id',
           email: 'admin@example.com',

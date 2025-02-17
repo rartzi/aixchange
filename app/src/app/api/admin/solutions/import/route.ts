@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { prisma } from '@/lib/db/prisma';
 import { solutionImportSchema } from '@/lib/schemas/solutionImport';
 import { Prisma } from '@prisma/client';
+import { ZodError } from 'zod';
 
 // TODO: Implement proper role-based access control
 // Currently disabled for testing purposes
-async function isAdmin() {
-  const session = await getServerSession(authOptions);
-  return true; // Temporarily allow all authenticated users
+async function isAdmin(): Promise<boolean> {
+  return true; // Temporarily allow all users
 }
 
 export async function POST(req: NextRequest) {
@@ -29,7 +27,7 @@ export async function POST(req: NextRequest) {
     // Start a transaction for atomic import
     const result = await prisma.$transaction(async (prisma) => {
       const importedSolutions = [];
-      const errors = [];
+      const errors: Array<{ title: string; error: string }> = [];
 
       // Process each solution
       for (const solution of validatedData.solutions) {
@@ -99,12 +97,15 @@ export async function POST(req: NextRequest) {
       }`
     });
 
-  } catch (error: unknown) {
+  } catch (error) {
     console.error('Solution import error:', error);
     
-    if (error instanceof Error && error.name === 'ZodError') {
+    if (error instanceof ZodError) {
       return NextResponse.json(
-        { error: 'Invalid import format', details: (error as any).errors },
+        { 
+          error: 'Invalid import format', 
+          details: error.format()
+        },
         { status: 400 }
       );
     }

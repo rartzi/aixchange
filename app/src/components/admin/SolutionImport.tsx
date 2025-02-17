@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import type { SolutionImport } from '@/lib/schemas/solutionImport';
-import { useSession } from 'next-auth/react';
 
 type ImportStatus = {
   success: boolean;

@@ -1,9 +1,7 @@
-import { NextResponse } from "next/server"
-import { UserRole } from "@prisma/client"
 import { NextRequest } from "next/server"
 
 // TEMPORARY: Disable all auth checks for development
-export function middleware(req: NextRequest) {
+export function middleware(_req: NextRequest) {
   return null
 }
 

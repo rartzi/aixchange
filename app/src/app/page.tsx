@@ -2,13 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useTheme } from "@/components/theme/ThemeProvider";
 
 export default function Home() {
-  const { theme, toggleTheme } = useTheme();
   return (
     <div>
-
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-20 flex items-center justify-between">
         <div className="max-w-xl">
