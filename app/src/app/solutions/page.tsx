@@ -1,69 +1,11 @@
 import Link from "next/link";
-import { prisma } from "@/lib/db/prisma";
 import { SolutionsGrid } from "@/components/features/solutions/SolutionsGrid";
-import { Prisma } from "@prisma/client";
 
-interface SolutionMetadata {
-  category: string;
-  provider: string;
-  launchUrl: string;
-  tokenCost: number;
-  imageUrl: string;
-  resourceConfig: {
-    cpu: string;
-    memory: string;
-    storage: string;
-    gpu: string;
-  };
-  status: string;
-}
+// Add dynamic flag to prevent static page generation
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default async function SolutionsPage() {
-  const solutions = await prisma.solution.findMany({
-    where: {
-      isPublished: true,
-    },
-    include: {
-      author: {
-        select: {
-          name: true,
-          image: true,
-        },
-      },
-      reviews: {
-        select: {
-          rating: true,
-        },
-      },
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
-
-  // Transform solutions to include metadata fields
-  const transformedSolutions = solutions.map((solution) => {
-    const metadata = (solution.metadata as Prisma.JsonObject || {}) as Partial<SolutionMetadata>;
-    return {
-      ...solution,
-      createdAt: solution.createdAt.toISOString(), // Convert Date to string
-      category: metadata.category || 'Other',
-      provider: metadata.provider || 'Unknown',
-      launchUrl: metadata.launchUrl || '#',
-      tokenCost: metadata.tokenCost || 0,
-      imageUrl: metadata.imageUrl || '/placeholder-image.jpg',
-      resourceConfig: metadata.resourceConfig || {
-        cpu: '1 core',
-        memory: '1GB',
-        storage: '1GB',
-        gpu: '',
-      },
-      rating: solution.reviews.length > 0
-        ? solution.reviews.reduce((acc, review) => acc + review.rating, 0) / solution.reviews.length
-        : undefined
-    };
-  });
-
   return (
     <div>
       {/* Header */}
@@ -95,7 +37,7 @@ export default async function SolutionsPage() {
       </section>
 
       {/* Solutions Grid with Search and Filters */}
-      <SolutionsGrid initialSolutions={transformedSolutions} />
+      <SolutionsGrid initialSolutions={[]} />
     </div>
   );
 }
