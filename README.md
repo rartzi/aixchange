@@ -19,6 +19,7 @@ AIXchange is a modern platform for discovering, sharing, and implementing AI sol
 - **Database**: Prisma with PostgreSQL
 - **State Management**: React Context
 - **Testing**: Jest and React Testing Library
+- **Deployment**: Docker and Docker Compose
 
 ## Getting Started
 
@@ -28,7 +29,39 @@ AIXchange is a modern platform for discovering, sharing, and implementing AI sol
 - PostgreSQL
 - npm or yarn
 
-### Installation
+### Docker Deployment (Recommended)
+
+1. Prerequisites:
+   - Docker Engine 24.0+
+   - Docker Compose V2
+   - Git
+
+2. Clone the repository:
+```bash
+git clone https://github.com/yourusername/aixchange.git
+cd aixchange
+```
+
+3. Set up environment variables:
+```bash
+cd app
+cp .env.example .env
+```
+Edit `.env` with your configuration.
+
+4. Build and start the containers:
+```bash
+docker compose up -d
+```
+
+5. Run database migrations:
+```bash
+docker compose exec app npx prisma migrate deploy
+```
+
+The application will be available at `http://localhost:3000`.
+
+### Manual Installation
 
 1. Clone the repository:
 ```bash
@@ -136,6 +169,7 @@ Additional documentation can be found in the `docs` directory:
 - [Architecture Decision Records](docs/core/architecture/)
 - [Development Guide](docs/core/DEVELOPMENT.md)
 - [Style Guide](docs/core/STYLE_GUIDE.md)
+- [Deployment Guide](docs/core/DEPLOYMENT.md)
 
 ## License
 
