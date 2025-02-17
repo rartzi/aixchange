@@ -12,14 +12,6 @@ export const predefinedCategories = [
   'Other',
 ] as const;
 
-// Resource configuration schema
-export const resourceConfigSchema = z.object({
-  cpu: z.string().min(1, 'CPU configuration is required'),
-  memory: z.string().min(1, 'Memory configuration is required'),
-  gpu: z.string().optional(),
-  storage: z.string().min(1, 'Storage configuration is required'),
-});
-
 // Solution status options
 export const statusOptions = ['Active', 'Pending', 'Inactive'] as const;
 
@@ -40,6 +32,9 @@ export const solutionSchema = z.object({
   launchUrl: z.string()
     .url('Please enter a valid URL')
     .min(1, 'Launch URL is required'),
+  sourceCodeUrl: z.string()
+    .url('Please enter a valid GitHub URL')
+    .optional(),
   tokenCost: z.number()
     .min(0, 'Token cost must be 0 or greater')
     .default(0),
@@ -49,7 +44,6 @@ export const solutionSchema = z.object({
     .default(0),
   status: z.enum(statusOptions)
     .default('Pending'),
-  resourceConfig: resourceConfigSchema,
   tags: z.array(z.string())
     .min(1, 'Add at least one tag')
     .max(5, 'Maximum 5 tags allowed'),

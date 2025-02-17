@@ -7,31 +7,17 @@ import { solutionSchema, predefinedCategories, type SolutionFormData } from '@/l
 import Image from 'next/image';
 import { ZodError } from 'zod';
 
-type ResourceConfig = {
-  cpu: string;
-  memory: string;
-  storage: string;
-  gpu: string;
-};
-
-const initialResourceConfig: ResourceConfig = {
-  cpu: '',
-  memory: '',
-  storage: '',
-  gpu: '',
-};
-
 export function CreateSolutionForm() {
-  const [formData, setFormData] = useState<Partial<Omit<SolutionFormData, 'resourceConfig'>> & { resourceConfig: ResourceConfig }>({
+  const [formData, setFormData] = useState<Partial<SolutionFormData>>({
     title: '',
     description: '',
     category: '',
     provider: '',
     launchUrl: '',
+    sourceCodeUrl: '',
     tokenCost: 0,
     rating: 0,
     status: 'Pending',
-    resourceConfig: initialResourceConfig,
     tags: [],
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -138,23 +124,13 @@ export function CreateSolutionForm() {
     }));
   };
 
-  const updateResourceConfig = (field: keyof ResourceConfig, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      resourceConfig: {
-        ...prev.resourceConfig,
-        [field]: value,
-      },
-    }));
-  };
-
   return (
-    <Card className="p-6 max-w-2xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6">Add Solution</h2>
+    <Card className="p-6 max-w-2xl mx-auto bg-card">
+      <h2 className="text-2xl font-bold mb-6 text-card-foreground">Add Solution</h2>
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Title */}
         <div>
-          <label htmlFor="title" className="block text-sm font-medium mb-1">
+          <label htmlFor="title" className="block text-sm font-medium mb-1 text-card-foreground">
             Name
           </label>
           <input
@@ -162,7 +138,7 @@ export function CreateSolutionForm() {
             type="text"
             value={formData.title}
             onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-            className={`w-full p-2 border rounded-md ${errors.title ? 'border-red-500' : ''}`}
+            className={`w-full p-2 border rounded-md bg-background text-foreground ${errors.title ? 'border-red-500' : 'border-border'}`}
           />
           {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
         </div>
@@ -271,72 +247,20 @@ export function CreateSolutionForm() {
           {errors.tokenCost && <p className="text-red-500 text-sm mt-1">{errors.tokenCost}</p>}
         </div>
 
-        {/* Resource Configuration */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="cpu" className="block text-sm font-medium mb-1">
-              CPU Requirements
-            </label>
-            <input
-              id="cpu"
-              type="text"
-              value={formData.resourceConfig.cpu}
-              onChange={(e) => updateResourceConfig('cpu', e.target.value)}
-              className={`w-full p-2 border rounded-md ${errors['resourceConfig.cpu'] ? 'border-red-500' : ''}`}
-              placeholder="e.g., 2 cores"
-            />
-            {errors['resourceConfig.cpu'] && (
-              <p className="text-red-500 text-sm mt-1">{errors['resourceConfig.cpu']}</p>
-            )}
-          </div>
-
-          <div>
-            <label htmlFor="memory" className="block text-sm font-medium mb-1">
-              Memory Requirements
-            </label>
-            <input
-              id="memory"
-              type="text"
-              value={formData.resourceConfig.memory}
-              onChange={(e) => updateResourceConfig('memory', e.target.value)}
-              className={`w-full p-2 border rounded-md ${errors['resourceConfig.memory'] ? 'border-red-500' : ''}`}
-              placeholder="e.g., 8GB"
-            />
-            {errors['resourceConfig.memory'] && (
-              <p className="text-red-500 text-sm mt-1">{errors['resourceConfig.memory']}</p>
-            )}
-          </div>
-
-          <div>
-            <label htmlFor="gpu" className="block text-sm font-medium mb-1">
-              GPU Requirements (optional)
-            </label>
-            <input
-              id="gpu"
-              type="text"
-              value={formData.resourceConfig.gpu}
-              onChange={(e) => updateResourceConfig('gpu', e.target.value)}
-              className="w-full p-2 border rounded-md"
-              placeholder="e.g., NVIDIA T4"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="storage" className="block text-sm font-medium mb-1">
-              Storage Requirements
-            </label>
-            <input
-              id="storage"
-              type="text"
-              value={formData.resourceConfig.storage}
-              onChange={(e) => updateResourceConfig('storage', e.target.value)}
-              className={`w-full p-2 border rounded-md ${errors['resourceConfig.storage'] ? 'border-red-500' : ''}`}
-              placeholder="e.g., 50GB"
-            />
-            {errors['resourceConfig.storage'] && (
-              <p className="text-red-500 text-sm mt-1">{errors['resourceConfig.storage']}</p>
-            )}
-          </div>
+        {/* Source Code URL */}
+        <div>
+          <label htmlFor="sourceCodeUrl" className="block text-sm font-medium mb-1">
+            GitHub Repository URL (optional)
+          </label>
+          <input
+            id="sourceCodeUrl"
+            type="url"
+            value={formData.sourceCodeUrl || ''}
+            onChange={(e) => setFormData(prev => ({ ...prev, sourceCodeUrl: e.target.value }))}
+            className="w-full p-2 border rounded-md bg-background text-foreground"
+            placeholder="https://github.com/username/repo"
+          />
+          {errors.sourceCodeUrl && <p className="text-red-500 text-sm mt-1">{errors.sourceCodeUrl}</p>}
         </div>
 
         {/* Tags */}
