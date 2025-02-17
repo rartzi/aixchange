@@ -39,18 +39,18 @@ AIXchange is a modern platform for discovering, sharing, and implementing AI sol
 2. Clone the repository:
 ```bash
 git clone https://github.com/yourusername/aixchange.git
-cd aixchange
+cd aixchange/app
 ```
 
 3. Set up environment variables:
 ```bash
-cd app
 cp .env.example .env
 ```
 Edit `.env` with your configuration.
 
 4. Build and start the containers:
 ```bash
+# Make sure you're in the app directory
 docker compose up -d
 ```
 
@@ -66,7 +66,7 @@ The application will be available at `http://localhost:3000`.
 1. Clone the repository:
 ```bash
 git clone https://github.com/yourusername/aixchange.git
-cd aixchange
+cd aixchange/app
 ```
 
 2. Install dependencies:
@@ -107,7 +107,9 @@ app/
 │   ├── lib/                # Utility functions and configurations
 │   └── types/              # TypeScript type definitions
 ├── prisma/                 # Database schema and migrations
-└── public/                 # Static assets
+├── docker-compose.yml      # Docker Compose configuration
+├── Dockerfile             # Docker container definition
+└── public/                # Static assets
 ```
 
 ## Theme System
