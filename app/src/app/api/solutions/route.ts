@@ -37,17 +37,12 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
     const data: Record<string, any> = {};
-    let imageUrl = '/placeholder-image.jpg';
     
     for (const [key, value] of formData.entries()) {
-      if (key === 'image') {
-        imageUrl = '/placeholder-image.jpg';
-      } else {
-        try {
-          data[key] = JSON.parse(value as string);
-        } catch {
-          data[key] = value;
-        }
+      try {
+        data[key] = JSON.parse(value as string);
+      } catch {
+        data[key] = value;
       }
     }
 
@@ -68,7 +63,7 @@ export async function POST(request: NextRequest) {
           tokenCost: validatedData.tokenCost,
           resourceConfig: validatedData.resourceConfig,
           status: 'PENDING',
-          imageUrl: imageUrl
+          imageUrl: '/placeholder-image.jpg'
         } as Prisma.JsonObject,
       },
     });
