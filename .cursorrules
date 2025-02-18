@@ -1,0 +1,194 @@
+# Cursor Rules Configuration
+# This file enforces documentation and agile development standards
+
+# Documentation Paths
+docs_paths:
+  core:
+    - docs/core/README.md
+    - docs/core/DEVELOPMENT.md
+    - docs/core/PRODUCT.md
+    - docs/core/ARCHITECTURE.md
+    - docs/core/GOVERNANCE.md
+    - docs/core/VISION.md
+    - docs/core/TECHNICAL_BUILD.md
+    - docs/core/OPERATIONS.md
+    - docs/core/DEPLOYMENT.md
+    - docs/core/STYLE_GUIDE.md
+  tracking:
+    - docs/tracking/CHANGELOG.md
+    - docs/tracking/ROADMAP.md
+    - docs/tracking/sessions/*.md
+
+# File Templates
+templates:
+  - development-process-temp/templates/*
+
+# Pre-commit Hooks
+hooks:
+  pre_commit:
+    - check_documentation_updates
+    - validate_commit_message
+    - update_changelog
+    - verify_docker_docs
+    - check_security_docs
+
+# Documentation Rules
+rules:
+  # Enforce documentation updates with code changes
+  - name: "documentation_update"
+    pattern: "^(feat|fix|refactor)\\(.+\\): .+"
+    required_files:
+      - "docs/tracking/sessions/*.md"
+      - "docs/tracking/CHANGELOG.md"
+
+  # Enforce commit message format
+  - name: "commit_format"
+    pattern: "^(feat|fix|docs|style|refactor|test|chore)\\(.+\\): .+"
+    message: "Commit message must follow format: type(scope): message"
+
+  # Require session logs for significant changes
+  - name: "session_log"
+    triggers:
+      - "feat(*)"
+      - "refactor(*)"
+    required_files:
+      - "docs/tracking/sessions/*.md"
+
+  # Enforce architecture documentation for structural changes
+  - name: "architecture_update"
+    pattern: "^(feat|refactor)\\(arch\\): .+"
+    required_files:
+      - "docs/core/ARCHITECTURE.md"
+      - "docs/core/TECHNICAL_BUILD.md"
+
+  # Enforce product documentation for feature changes
+  - name: "product_update"
+    pattern: "^feat\\(.+\\): .+"
+    required_files:
+      - "docs/core/PRODUCT.md"
+      - "docs/core/STYLE_GUIDE.md"
+
+  # Enforce deployment documentation
+  - name: "deployment_update"
+    pattern: "^(feat|refactor)\\(deploy\\): .+"
+    required_files:
+      - "docs/core/DEPLOYMENT.md"
+      - "docs/core/OPERATIONS.md"
+
+  # Enforce security documentation
+  - name: "security_update"
+    pattern: "^(feat|fix)\\(security\\): .+"
+    required_files:
+      - "docs/core/GOVERNANCE.md"
+
+# File Watchers
+watchers:
+  # Update CHANGELOG.md on commits
+  - trigger: "commit"
+    action: "update_changelog"
+    template: "development-process-temp/templates/changelog.md"
+
+  # Create session log for new features
+  - trigger: "feat(*)"
+    action: "create_session_log"
+    template: "development-process-temp/templates/session.md"
+
+  # Update architecture docs for structural changes
+  - trigger: "refactor(arch)"
+    action: "prompt_architecture_update"
+    files:
+      - "docs/core/ARCHITECTURE.md"
+      - "docs/core/TECHNICAL_BUILD.md"
+
+  # Update deployment docs
+  - trigger: "refactor(deploy)"
+    action: "prompt_deployment_update"
+    files:
+      - "docs/core/DEPLOYMENT.md"
+      - "docs/core/OPERATIONS.md"
+
+# Validation Rules
+validation:
+  # Ensure core documentation is up to date
+  core_docs:
+    frequency: "monthly"
+    files:
+      - "docs/core/*.md"
+
+  # Validate commit messages
+  commit_message:
+    pattern: "^(feat|fix|docs|style|refactor|test|chore)\\(.+\\): .+"
+    scopes:
+      - auth
+      - ui
+      - api
+      - docs
+      - arch
+      - test
+      - deps
+      - deploy
+      - security
+
+  # Ensure session logs exist for sprints
+  session_logs:
+    pattern: "docs/tracking/sessions/\\d{4}-\\d{2}-\\d{2}-\\d{4}\\.md"
+    required: true
+
+  # Ensure Docker documentation is complete
+  docker_docs:
+    required_sections:
+      - "Deployment Options"
+      - "Environment Variables"
+      - "Container Configuration"
+      - "Security Considerations"
+
+# IDE Settings
+settings:
+  # Documentation snippets
+  snippets:
+    - prefix: "!session"
+      template: "development-process-temp/templates/session.md"
+    - prefix: "!feat"
+      template: "development-process-temp/templates/feature.md"
+    - prefix: "!arch"
+      template: "development-process-temp/templates/architecture.md"
+    - prefix: "!deploy"
+      template: "development-process-temp/templates/deployment.md"
+    - prefix: "!security"
+      template: "development-process-temp/templates/security.md"
+
+  # Documentation-related keyboard shortcuts
+  keybindings:
+    - key: "cmd+shift+d"
+      command: "create_session_log"
+    - key: "cmd+shift+c"
+      command: "update_changelog"
+    - key: "cmd+shift+t"
+      command: "create_technical_doc"
+
+# Notifications
+notifications:
+  # Remind about documentation updates
+  - trigger: "feat(*)"
+    message: "Don't forget to update related documentation!"
+    files:
+      - "docs/core/PRODUCT.md"
+      - "docs/tracking/sessions/*.md"
+
+  # Remind about session logs
+  - trigger: "sprint_end"
+    message: "Please create a sprint review session log"
+    action: "create_session_log"
+
+  # Remind about deployment documentation
+  - trigger: "deploy(*)"
+    message: "Update deployment and operations documentation"
+    files:
+      - "docs/core/DEPLOYMENT.md"
+      - "docs/core/OPERATIONS.md"
+
+  # Remind about security documentation
+  - trigger: "security(*)"
+    message: "Update security and governance documentation"
+    files:
+      - "docs/core/GOVERNANCE.md" 
