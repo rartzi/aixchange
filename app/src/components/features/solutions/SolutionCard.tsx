@@ -45,33 +45,37 @@ export function SolutionCard({
     <Card className="bg-white dark:bg-gradient-to-br dark:from-purple-900/50 dark:to-purple-800/30 border-border hover:border-primary/40 transition-colors min-h-[500px] flex flex-col shadow-sm">
       <CardHeader className="pb-4">
         <div className="flex flex-col gap-6">
-          <div className="relative w-full h-48 -mt-6 -mx-6 bg-gray-100 dark:bg-gray-800">
+          <div className="relative w-full h-[200px] -mt-6 -mx-6 bg-gray-100 dark:bg-gray-800 overflow-hidden">
             {/* Loading skeleton */}
-            <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800" />
-            
-            <Image
-              src={imageUrl || '/placeholder-image.jpg'}
-              alt={title}
-              fill
-              sizes="(max-width: 768px) 100%, 600px"
-              className="object-cover border-b border-border transition-opacity duration-300"
-              priority
-              onError={(e) => {
-                // Fallback to placeholder if image fails to load
-                const target = e.target as HTMLImageElement;
-                target.src = '/placeholder-image.jpg';
-              }}
-              onLoad={(e) => {
-                // Remove loading skeleton when image loads
-                const target = e.target as HTMLImageElement;
-                target.classList.remove('opacity-0');
-                const skeleton = target.previousElementSibling;
-                if (skeleton) {
-                  skeleton.classList.add('opacity-0');
-                }
-              }}
-              style={{ opacity: 0 }} // Start hidden
+            <div 
+              className="absolute inset-0 animate-pulse bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 transition-opacity duration-300"
+              aria-hidden="true"
             />
+            
+            <div className="relative w-full h-[200px]">
+              <Image
+                src={imageUrl || '/placeholder-image.jpg'}
+                alt={title}
+                fill
+                sizes="600px"
+                className="object-cover object-center border-b border-border transition-opacity duration-300"
+                style={{ opacity: 0 }}
+                priority
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = '/placeholder-image.jpg';
+                  target.style.opacity = '1';
+                }}
+                onLoad={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.opacity = '1';
+                  const skeleton = target.parentElement?.previousElementSibling;
+                  if (skeleton) {
+                    skeleton.classList.add('opacity-0');
+                  }
+                }}
+              />
+            </div>
           </div>
           
           <div className="flex justify-between items-start">
@@ -106,35 +110,6 @@ export function SolutionCard({
                 <span className="font-medium">{rating.toFixed(1)}</span>
               </div>
             )}
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <div className="flex flex-col gap-1">
-            <div className="text-sm text-muted-foreground dark:text-muted-foreground/90">
-              <span className="font-medium">Status:</span>{' '}
-              <span className={`px-2 py-0.5 rounded ${
-                status === 'Active' ? 'bg-green-100 text-green-700' :
-                status === 'Pending' ? 'bg-yellow-100 text-yellow-700' :
-                'bg-red-100 text-red-700'
-              }`}>
-                {status}
-              </span>
-            </div>
-            <div className="text-sm text-muted-foreground dark:text-muted-foreground/90">
-              <span className="font-medium">Category:</span>{' '}
-              <span className="bg-primary/10 text-primary dark:text-white/90 px-2 py-0.5 rounded">
-                {category}
-              </span>
-            </div>
-            <div className="text-sm text-muted-foreground dark:text-muted-foreground/90">
-              <span className="font-medium">Provider:</span>{' '}
-              <span>{provider}</span>
-            </div>
-            <div className="text-sm text-muted-foreground dark:text-muted-foreground/90">
-              <span className="font-medium">Cost:</span>{' '}
-              <span>{tokenCost} tokens</span>
-            </div>
           </div>
         </div>
       </CardHeader>
