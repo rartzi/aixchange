@@ -35,6 +35,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cross-page theme consistency
 
 ### Changed
+- Updated terminology for consistency
+  - Changed "Create Solution" to "Submit Solution"
+  - Changed "Bulk Import" to "Bulk Submission"
+  - Updated related UI elements and documentation
+  - Renamed components to match new terminology
+  - Updated all button text and messages
+- Enhanced solution status display
+  - Added status indicator with color coding
+  - Prepared for future lifecycle management
+  - Improved visibility of solution state
+- Improved Docker configuration
+  - Added proper volume for uploads
+  - Fixed permissions for node user
+  - Added Next.js cache volume
+  - Prepared for cloud storage migration
 - Enhanced solution filtering with metadata support
 - Improved search performance with debouncing
 - Updated solution cards with metadata display
@@ -49,6 +64,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Color opacity support in Tailwind
 - Button hover transitions
 - Card hover animations
+- Solution submission workflow
+  - Fixed file upload handling in API route
+  - Improved type safety and error handling
+  - Enhanced form validation and feedback
+  - Added proper metadata handling
+  - Fixed audit logging
+  - Organized file uploads by year/month
+  - Added proper file permissions (755 for dirs, 644 for files)
+  - Added configurable upload storage with Docker user
+- Solution card display
+  - Standardized image sizing (128x128)
+  - Added proper border and styling
+  - Improved image loading optimization
+  - Implemented vertical metadata layout with labels
+  - Added consistent min-heights for all sections
+  - Made description and tags sections uniform
+  - Fixed spacing and alignment throughout
+- Form improvements
+  - Updated submit button text for clarity
+  - Enhanced loading state feedback
+
+### Added
+- Persistent storage for solution uploads
+  - Docker volume for image storage
+  - Year/month based organization
+  - Configurable upload directory
 
 ## [0.1.0] - 2024-02-16
 

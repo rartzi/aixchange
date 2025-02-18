@@ -1,6 +1,6 @@
 import { BulkSolutionSubmission } from '@/components/admin/BulkSolutionSubmission';
 
-export default async function ImportSolutionsPage() {
+export default async function BulkSolutionSubmissionPage() {
   // TODO: Re-enable authentication checks
   const _session = {
     user: {
@@ -18,7 +18,7 @@ export default async function ImportSolutionsPage() {
             Upload a JSON file containing solution data for bulk submission.
           </p>
           <a
-            href="/admin/solutions/test-import"
+            href="/admin/solutions/test-submission"
             className="inline-block mt-2 text-blue-600 hover:text-blue-800 underline"
           >
             Go to Test Submission Page →
@@ -28,7 +28,7 @@ export default async function ImportSolutionsPage() {
         <BulkSolutionSubmission />
 
         <div className="mt-8 bg-blue-50 p-4 rounded-md">
-          <h3 className="font-semibold text-blue-800 mb-2">Import Format</h3>
+          <h3 className="font-semibold text-blue-800 mb-2">Submission Format</h3>
           <p className="text-sm text-blue-700 mb-4">
             The JSON file should follow this structure:
           </p>

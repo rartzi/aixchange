@@ -23,13 +23,13 @@ export default async function SolutionsPage() {
                 href="/solutions/create"
                 className="px-6 py-3 rounded-lg bg-white text-primary hover:bg-white/90 transition-colors font-medium"
               >
-                Create Solution
+                Submit Solution
               </Link>
               <Link
-                href="/admin/solutions/import"
+                href="/admin/solutions/bulk-submission"
                 className="px-6 py-3 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors"
               >
-                Bulk Import
+                Bulk Submission
               </Link>
             </div>
           </div>

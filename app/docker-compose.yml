@@ -13,6 +13,12 @@ services:
       - NODE_ENV=production
       - NEXTAUTH_URL=${NEXTAUTH_URL}
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - UPLOAD_DIR=/app/uploads
+      - NEXT_TELEMETRY_DISABLED=1
+    volumes:
+      - solution_uploads:/app/uploads
+      - next_cache:/app/.next/cache
+    user: "node"
     depends_on:
       db:
         condition: service_healthy
@@ -64,4 +70,8 @@ networks:
 
 volumes:
   postgres_data:
+    driver: local
+  solution_uploads:
+    driver: local
+  next_cache:
     driver: local
