@@ -123,11 +123,11 @@ export function SolutionsGrid({ initialSolutions }: SolutionsGridProps) {
       <section className="py-12">
         <div className="container mx-auto px-4">
           {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 max-w-[1600px] mx-auto px-4">
               {[...Array(6)].map((_, i) => (
                 <div
                   key={i}
-                  className="h-[400px] rounded-lg bg-card/50 animate-pulse"
+                  className="h-[500px] rounded-lg bg-card/50 animate-pulse"
                 />
               ))}
             </div>
@@ -141,7 +141,7 @@ export function SolutionsGrid({ initialSolutions }: SolutionsGridProps) {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 max-w-[1600px] mx-auto px-4">
               {solutions.map((solution) => (
                 <SolutionCard
                   key={solution.id}
