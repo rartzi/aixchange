@@ -45,18 +45,34 @@ export function SolutionCard({
     <Card className="bg-white dark:bg-gradient-to-br dark:from-purple-900/50 dark:to-purple-800/30 border-border hover:border-primary/40 transition-colors min-h-[500px] flex flex-col shadow-sm">
       <CardHeader className="pb-4">
         <div className="flex flex-col gap-6">
-          {imageUrl && (
-            <div className="relative w-full h-48 -mt-6 -mx-6">
-              <Image
-                src={imageUrl}
-                alt={title}
-                fill
-                sizes="(max-width: 768px) 100%, 600px"
-                className="object-cover border-b border-border"
-                priority
-              />
-            </div>
-          )}
+          <div className="relative w-full h-48 -mt-6 -mx-6 bg-gray-100 dark:bg-gray-800">
+            {/* Loading skeleton */}
+            <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800" />
+            
+            <Image
+              src={imageUrl || '/placeholder-image.jpg'}
+              alt={title}
+              fill
+              sizes="(max-width: 768px) 100%, 600px"
+              className="object-cover border-b border-border transition-opacity duration-300"
+              priority
+              onError={(e) => {
+                // Fallback to placeholder if image fails to load
+                const target = e.target as HTMLImageElement;
+                target.src = '/placeholder-image.jpg';
+              }}
+              onLoad={(e) => {
+                // Remove loading skeleton when image loads
+                const target = e.target as HTMLImageElement;
+                target.classList.remove('opacity-0');
+                const skeleton = target.previousElementSibling;
+                if (skeleton) {
+                  skeleton.classList.add('opacity-0');
+                }
+              }}
+              style={{ opacity: 0 }} // Start hidden
+            />
+          </div>
           
           <div className="flex justify-between items-start">
             <div>
