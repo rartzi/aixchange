@@ -23,60 +23,76 @@ enum AuthProvider {
   GITHUB
 }
 
+enum SolutionStatus {
+  ACTIVE
+  PENDING
+  INACTIVE
+}
+
 model User {
   id            String       @id @default(cuid())
   email         String       @unique
   name          String?
   password      String?      // Hashed password for email auth
-  role          UserRole    @default(USER)
+  role          UserRole     @default(USER)
   authProvider  AuthProvider @default(EMAIL)
   authProviderId String?     // External provider ID
   emailVerified DateTime?
   image         String?      // Profile image URL
   solutions     Solution[]
   reviews       Review[]
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
   lastLogin     DateTime?
-  isActive      Boolean     @default(true)
-  metadata      Json?       // Additional user metadata
+  isActive      Boolean      @default(true)
+  metadata      Json?        // Additional user metadata
   
   @@index([email])
   @@index([role])
 }
 
 model Solution {
-  id            String     @id @default(cuid())
+  id            String         @id @default(cuid())
   title         String
   description   String
-  version       String     @default("1.0.0")
-  isPublished   Boolean    @default(false)
-  author        User       @relation(fields: [authorId], references: [id])
+  version       String         @default("1.0.0")
+  isPublished   Boolean        @default(false)
+  author        User           @relation(fields: [authorId], references: [id])
   authorId      String
   tags          String[]
   resources     Resource[]
   reviews       Review[]
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
   publishedAt   DateTime?
   
-  // Keep existing fields as optional
-  category      String?
-  provider      String?
-  launchUrl     String?
-  sourceCodeUrl String?    // GitHub repository URL
-  tokenCost     Int?
-  rating        Float?
-  status        String?
+  // Move commonly queried fields out of metadata
+  category      String         // No longer optional
+  provider      String         // No longer optional
+  launchUrl     String         // No longer optional
+  sourceCodeUrl String?        // GitHub repository URL (optional)
+  tokenCost     Int           @default(0)
+  rating        Float         @default(0)
+  status        SolutionStatus @default(PENDING)
+  imageUrl      String        @default("/placeholder-image.jpg")
   
-  // Add metadata as optional first
-  metadata      Json?
-  imageUrl      String?    // Solution image URL
+  // Structured metadata for additional fields
+  metadata      Json?         // Type-safe via Zod schema
 
-  @@index([sourceCodeUrl])
-  
+  // Improve indexing for common queries
+  @@index([category])
+  @@index([provider])
+  @@index([status])
+  @@index([tokenCost])
+  @@index([rating])
   @@index([authorId])
   @@index([isPublished])
+  @@index([createdAt])
+  
+  // Compound indexes for common query patterns
+  @@index([isPublished, category])
+  @@index([isPublished, provider])
+  @@index([isPublished, status])
 }
 
 model Resource {
@@ -88,8 +104,10 @@ model Resource {
   solutionId  String
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  metadata    Json?     // Additional resource metadata
   
   @@index([solutionId])
+  @@index([type])
 }
 
 model Review {
@@ -103,9 +121,12 @@ model Review {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   isVerified  Boolean   @default(false)
+  metadata    Json?     // Additional review metadata
   
   @@index([solutionId])
   @@index([authorId])
+  @@index([rating])
+  @@index([createdAt])
 }
 
 // Audit logging for compliance monitoring

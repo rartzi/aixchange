@@ -15,6 +15,26 @@ export const predefinedCategories = [
 // Solution status options
 export const statusOptions = ['Active', 'Pending', 'Inactive'] as const;
 
+// Metadata schema for additional flexible fields
+export const metadataSchema = z.object({
+  resourceConfig: z.object({
+    cpu: z.string().optional(),
+    memory: z.string().optional(),
+    gpu: z.string().optional(),
+    storage: z.string().optional(),
+  }).optional(),
+  apiEndpoints: z.array(z.object({
+    path: z.string(),
+    method: z.string(),
+    description: z.string().optional(),
+  })).optional(),
+  documentation: z.object({
+    format: z.string().optional(),
+    url: z.string().url().optional(),
+  }).optional(),
+  customFields: z.record(z.string(), z.unknown()).optional(),
+}).strict();
+
 // Main solution schema
 export const solutionSchema = z.object({
   title: z.string()
@@ -23,9 +43,7 @@ export const solutionSchema = z.object({
   description: z.string()
     .min(10, 'Description must be at least 10 characters')
     .max(1000, 'Description must be less than 1000 characters'),
-  category: z.string()
-    .min(2, 'Category must be at least 2 characters')
-    .max(50, 'Category must be less than 50 characters'),
+  category: z.enum(predefinedCategories),
   provider: z.string()
     .min(2, 'Provider name is required')
     .max(100, 'Provider name must be less than 100 characters'),
@@ -47,8 +65,9 @@ export const solutionSchema = z.object({
   tags: z.array(z.string())
     .min(1, 'Add at least one tag')
     .max(5, 'Maximum 5 tags allowed'),
-  // Handle image as an optional string for the URL
   imageUrl: z.string().optional(),
+  metadata: metadataSchema.optional(),
 });
 
+export type SolutionMetadata = z.infer<typeof metadataSchema>;
 export type SolutionFormData = z.infer<typeof solutionSchema>;

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { solutionSchema } from '@/lib/schemas/solution';
+import { solutionSchema, type SolutionMetadata } from '@/lib/schemas/solution';
 import { prisma } from '@/lib/db/prisma';
 import { ZodError } from 'zod';
-import { Prisma, Solution, Review } from '@prisma/client';
+import { Prisma, Solution, Review, SolutionStatus } from '@prisma/client';
 
 const ANONYMOUS_USER_ID = 'anonymous-user';
 
@@ -52,20 +52,21 @@ export async function POST(request: NextRequest) {
       data: {
         title: validatedData.title,
         description: validatedData.description,
+        category: validatedData.category,
+        provider: validatedData.provider,
+        launchUrl: validatedData.launchUrl,
+        sourceCodeUrl: validatedData.sourceCodeUrl,
+        tokenCost: validatedData.tokenCost,
+        status: validatedData.status === 'Active' ? SolutionStatus.ACTIVE 
+               : validatedData.status === 'Pending' ? SolutionStatus.PENDING 
+               : SolutionStatus.INACTIVE,
+        imageUrl: validatedData.imageUrl || '/placeholder-image.jpg',
         author: {
           connect: { id: ANONYMOUS_USER_ID }
         },
         tags: validatedData.tags,
-        metadata: {
-          category: validatedData.category,
-          provider: validatedData.provider,
-          launchUrl: validatedData.launchUrl,
-          sourceCodeUrl: validatedData.sourceCodeUrl,
-          tokenCost: validatedData.tokenCost,
-          status: 'Active',
-          imageUrl: '/placeholder-image.jpg',
-          isPublished: true
-        } as Prisma.JsonObject,
+        isPublished: true,
+        metadata: validatedData.metadata as Prisma.JsonObject,
       },
     });
 
@@ -77,8 +78,8 @@ export async function POST(request: NextRequest) {
         userId: ANONYMOUS_USER_ID,
         metadata: {
           title: solution.title,
-          category: (solution.metadata as any).category,
-          provider: (solution.metadata as any).provider,
+          category: solution.category,
+          provider: solution.provider,
         } as Prisma.JsonObject,
       },
     });
@@ -108,12 +109,13 @@ export async function GET(request: NextRequest) {
     const provider = searchParams.get('provider');
     const search = searchParams.get('search');
     const sort = searchParams.get('sort') || 'recent';
+    const status = searchParams.get('status');
 
     const where: Prisma.SolutionWhereInput = {
       isPublished: true,
     };
 
-    // Text search
+    // Text search across multiple fields
     if (search) {
       where.OR = [
         { title: { contains: search, mode: 'insensitive' } },
@@ -122,23 +124,20 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    // Category filter
+    // Direct field filters (no longer in metadata)
     if (category) {
-      where.metadata = {
-        path: ['category'],
-        equals: category,
-      };
+      where.category = category;
     }
 
-    // Provider filter
     if (provider) {
-      where.metadata = {
-        path: ['provider'],
-        equals: provider,
-      };
+      where.provider = provider;
     }
 
-    // Get solutions with reviews for sorting
+    if (status) {
+      where.status = status as SolutionStatus;
+    }
+
+    // Get solutions with related data
     const solutions = await prisma.solution.findMany({
       where,
       include: {
@@ -154,42 +153,25 @@ export async function GET(request: NextRequest) {
           },
         },
       },
-      orderBy: {
-        createdAt: 'desc', // Default sort
-      },
+      orderBy: sort === 'rating' 
+        ? { rating: 'desc' }
+        : sort === 'popular' 
+        ? { reviews: { _count: 'desc' } }
+        : { createdAt: 'desc' },
     });
 
-    // Transform and sort solutions
+    // Transform solutions for response
     const transformedSolutions = solutions.map((solution: SolutionWithAuthorAndReviews) => {
-      const metadata = solution.metadata as Record<string, any>;
-      const averageRating = solution.reviews.length > 0
-        ? solution.reviews.reduce((acc: number, review: Pick<Review, 'rating'>) => acc + review.rating, 0) / solution.reviews.length
-        : 0;
-
+      const metadata = solution.metadata as SolutionMetadata;
+      
       return {
         ...solution,
-        category: metadata.category || 'Other',
-        provider: metadata.provider || 'Unknown',
-        launchUrl: metadata.launchUrl || '',
-        tokenCost: metadata.tokenCost || 0,
-        resourceConfig: metadata.resourceConfig || {},
-        status: metadata.status || 'PENDING',
-        imageUrl: metadata.imageUrl || '/placeholder-image.jpg',
-        rating: averageRating,
         reviewCount: solution.reviews.length,
+        resourceConfig: metadata?.resourceConfig || {},
+        apiEndpoints: metadata?.apiEndpoints || [],
+        documentation: metadata?.documentation || {},
       };
     });
-
-    // Apply sorting
-    switch (sort) {
-      case 'rating':
-        transformedSolutions.sort((a, b) => b.rating - a.rating);
-        break;
-      case 'popular':
-        transformedSolutions.sort((a, b) => b.reviewCount - a.reviewCount);
-        break;
-      // 'recent' is already handled by the database query
-    }
 
     return NextResponse.json(transformedSolutions);
   } catch (error) {
