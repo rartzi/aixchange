@@ -188,6 +188,110 @@ PUT /api/solutions/{id}
 DELETE /api/solutions/{id}
 ```
 
+## Working with Metadata Fields
+
+### Understanding the Dual Field Pattern
+- **Core Fields**: Direct database columns (id, title, etc.)
+- **Metadata Fields**: Flexible JSON data for extended properties
+- Benefits: Schema flexibility without migrations
+- Trade-offs: Additional complexity in data access
+
+### Best Practices for Field Access
+
+#### Reading Metadata Fields
+```typescript
+// Type-safe metadata access
+const metadata = solution.metadata as Record<string, any>;
+const category = metadata.category || 'Other';
+const provider = metadata.provider || 'Unknown';
+
+// Using with destructuring
+const {
+  category = 'Other',
+  provider = 'Unknown',
+  tokenCost = 0
+} = solution.metadata as Record<string, any>;
+```
+
+#### Writing Metadata Fields
+```typescript
+// Creating/updating metadata
+await prisma.solution.create({
+  data: {
+    title: "Solution Title",
+    description: "Description",
+    metadata: {
+      category: "AI",
+      provider: "OpenAI",
+      tokenCost: 100
+    } as Prisma.JsonObject
+  }
+});
+```
+
+#### Querying Metadata Fields
+```typescript
+// Filter by metadata field
+const solutions = await prisma.solution.findMany({
+  where: {
+    metadata: {
+      path: ['category'],
+      equals: 'AI'
+    }
+  }
+});
+```
+
+### Migration Path for New Features
+
+1. **Adding New Fields**
+   - Start by adding to metadata JSON
+   - Monitor field usage and stability
+   - Consider migration to direct column if:
+     - Field becomes core functionality
+     - Frequent querying is needed
+     - Type safety is critical
+
+2. **Field Migration Process**
+   ```typescript
+   // 1. Add new direct column
+   // In schema.prisma:
+   model Solution {
+     newField String?
+     metadata Json?
+   }
+
+   // 2. Migration script
+   const solutions = await prisma.solution.findMany();
+   for (const solution of solutions) {
+     const metadata = solution.metadata as Record<string, any>;
+     await prisma.solution.update({
+       where: { id: solution.id },
+       data: {
+         newField: metadata.fieldToMigrate,
+         metadata: {
+           ...metadata,
+           fieldToMigrate: undefined
+         }
+       }
+     });
+   }
+   ```
+
+### Type Safety with Metadata
+```typescript
+// Define metadata interface
+interface SolutionMetadata {
+  category?: string;
+  provider?: string;
+  tokenCost?: number;
+}
+
+// Type-safe metadata access
+const metadata = solution.metadata as SolutionMetadata;
+const category = metadata.category;  // TypeScript knows this is string | undefined
+```
+
 ## Docker Development
 
 ### Services Configuration

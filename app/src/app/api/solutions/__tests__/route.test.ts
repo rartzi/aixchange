@@ -1,26 +1,132 @@
 import { describe, expect, test, beforeEach, jest } from '@jest/globals';
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { POST, GET } from '../route';
-import { prisma } from '@/lib/db/prisma';
+import { SolutionStatus, type Solution, type User, type Prisma } from '@prisma/client';
+import type { SolutionMetadata } from '@/lib/schemas/solution';
+
+// Mock data types
+const mockUser = {
+  id: 'anonymous-user',
+  email: 'test@example.com',
+  role: 'USER' as const,
+  authProvider: 'EMAIL' as const,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  isActive: true,
+  name: null,
+  emailVerified: null,
+  image: null,
+  authProviderId: null,
+  metadata: null,
+  password: null,
+  lastLogin: null,
+} satisfies User;
+
+const mockSolution = {
+  id: 'test-solution',
+  title: 'Test Solution',
+  description: 'Test Description',
+  version: '1.0.0',
+  isPublished: true,
+  authorId: 'anonymous-user',
+  category: 'Natural Language Processing',
+  provider: 'OpenAI',
+  launchUrl: 'https://example.com',
+  status: SolutionStatus.ACTIVE,
+  tokenCost: 100,
+  rating: 0,
+  tags: ['test', 'ai'],
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  publishedAt: null,
+  imageUrl: '/placeholder-image.jpg',
+  metadata: {
+    resourceConfig: {
+      cpu: '2 cores',
+      memory: '4GB',
+    },
+    apiEndpoints: [{
+      path: '/api/test',
+      method: 'POST',
+    }],
+  },
+  sourceCodeUrl: null,
+} satisfies Solution & { metadata: SolutionMetadata };
 
 // Mock Prisma client
 const mockPrisma = {
   user: {
-    findUnique: jest.fn() as any,
-    create: jest.fn() as any,
+    findUnique: jest.fn().mockResolvedValue(mockUser),
+    create: jest.fn().mockResolvedValue(mockUser),
   },
   solution: {
-    create: jest.fn() as any,
-    findMany: jest.fn() as any,
+    create: jest.fn().mockResolvedValue(mockSolution),
+    findMany: jest.fn().mockResolvedValue([mockSolution]),
+    count: jest.fn().mockResolvedValue(1),
   },
   auditLog: {
-    create: jest.fn() as any,
+    create: jest.fn().mockResolvedValue({ id: 'test-audit' }),
   },
 };
 
+// Mock modules
 jest.mock('@/lib/db/prisma', () => ({
   prisma: mockPrisma,
 }));
+
+// Mock NextResponse
+jest.mock('next/server', () => {
+  const originalModule = jest.requireActual('next/server');
+  return {
+    ...originalModule,
+    NextResponse: {
+      json: (data: unknown, init?: { status?: number }) => {
+        const response = new Response(JSON.stringify(data), init);
+        Object.defineProperty(response, 'json', {
+          value: async () => data,
+        });
+        return response;
+      },
+    },
+  };
+});
+
+interface MockRequestInit extends RequestInit {
+  body?: FormData;
+}
+
+// Helper to create mock request
+function createMockRequest(url: string, init?: MockRequestInit): NextRequest {
+  const formData = init?.body as FormData || new FormData();
+  
+  // Create a base request object
+  const baseRequest = new Request(url, {
+    method: init?.method || 'GET',
+    body: formData,
+  });
+
+  // Create the NextRequest mock
+  const mockRequest = Object.create(baseRequest, {
+    nextUrl: {
+      value: new URL(url),
+      enumerable: true,
+    },
+    cookies: {
+      value: new Map(),
+      enumerable: true,
+    },
+    formData: {
+      value: () => Promise.resolve(formData),
+      enumerable: true,
+    },
+    url: {
+      value: url,
+      enumerable: true,
+    },
+  });
+
+  return mockRequest as unknown as NextRequest;
+}
 
 describe('Solutions API', () => {
   beforeEach(() => {
@@ -29,39 +135,6 @@ describe('Solutions API', () => {
 
   describe('POST /api/solutions', () => {
     test('creates a solution with valid metadata', async () => {
-      // Mock user exists
-      mockPrisma.user.findUnique.mockResolvedValueOnce({
-        id: 'anonymous-user',
-        email: 'test@example.com',
-        role: 'USER',
-        authProvider: 'EMAIL',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        isActive: true,
-      });
-
-      // Mock solution creation
-      mockPrisma.solution.create.mockResolvedValueOnce({
-        id: 'test-solution',
-        title: 'Test Solution',
-        description: 'Test Description',
-        version: '1.0.0',
-        isPublished: true,
-        authorId: 'anonymous-user',
-        category: 'Natural Language Processing',
-        provider: 'OpenAI',
-        launchUrl: 'https://example.com',
-        status: 'ACTIVE',
-        tokenCost: 100,
-        rating: 0,
-        tags: ['test', 'ai'],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        publishedAt: null,
-        imageUrl: '/placeholder-image.jpg',
-        metadata: null,
-      });
-
       const formData = new FormData();
       formData.append('title', 'Test Solution');
       formData.append('description', 'Test Description');
@@ -69,7 +142,7 @@ describe('Solutions API', () => {
       formData.append('provider', 'OpenAI');
       formData.append('launchUrl', 'https://example.com');
       formData.append('tokenCost', '100');
-      formData.append('status', 'ACTIVE');
+      formData.append('status', 'Active');
       formData.append('tags', JSON.stringify(['test', 'ai']));
       formData.append('metadata', JSON.stringify({
         resourceConfig: {
@@ -82,7 +155,7 @@ describe('Solutions API', () => {
         }],
       }));
 
-      const request = new NextRequest('http://localhost/api/solutions', {
+      const request = createMockRequest('http://localhost/api/solutions', {
         method: 'POST',
         body: formData,
       });
@@ -91,7 +164,7 @@ describe('Solutions API', () => {
       const data = await response.json();
 
       expect(response.status).toBe(201);
-      expect(data).toHaveProperty('id', 'test-solution');
+      expect(data.data).toHaveProperty('id', 'test-solution');
       expect(mockPrisma.solution.create).toHaveBeenCalledTimes(1);
       expect(mockPrisma.auditLog.create).toHaveBeenCalledTimes(1);
     });
@@ -101,7 +174,7 @@ describe('Solutions API', () => {
       // Missing required fields
       formData.append('title', 'Test');
 
-      const request = new NextRequest('http://localhost/api/solutions', {
+      const request = createMockRequest('http://localhost/api/solutions', {
         method: 'POST',
         body: formData,
       });
@@ -116,37 +189,7 @@ describe('Solutions API', () => {
 
   describe('GET /api/solutions', () => {
     test('retrieves solutions with filters', async () => {
-      mockPrisma.solution.findMany.mockResolvedValueOnce([{
-        id: 'test-1',
-        title: 'Test Solution 1',
-        description: 'Test Description',
-        version: '1.0.0',
-        isPublished: true,
-        authorId: 'anonymous-user',
-        category: 'Natural Language Processing',
-        provider: 'OpenAI',
-        launchUrl: 'https://example.com',
-        status: 'ACTIVE',
-        tokenCost: 100,
-        rating: 0,
-        tags: ['test'],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        publishedAt: null,
-        imageUrl: '/placeholder-image.jpg',
-        metadata: {
-          resourceConfig: {
-            cpu: '2 cores',
-          },
-        },
-        reviews: [],
-        author: {
-          name: 'Test User',
-          image: null,
-        },
-      }]);
-
-      const request = new NextRequest(
+      const request = createMockRequest(
         'http://localhost/api/solutions?category=Natural Language Processing&provider=OpenAI'
       );
 
@@ -154,8 +197,8 @@ describe('Solutions API', () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data).toHaveLength(1);
-      expect(data[0]).toHaveProperty('category', 'Natural Language Processing');
+      expect(data.data).toHaveLength(1);
+      expect(data.data[0]).toHaveProperty('category', 'Natural Language Processing');
       expect(mockPrisma.solution.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
@@ -167,7 +210,7 @@ describe('Solutions API', () => {
     });
 
     test('handles search parameter', async () => {
-      const request = new NextRequest(
+      const request = createMockRequest(
         'http://localhost/api/solutions?search=test'
       );
 

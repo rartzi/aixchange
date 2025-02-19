@@ -218,6 +218,69 @@ JWT_SECRET=your-secret-key
 - Data replication
 - Service redundancy
 
+## 8. Schema Design Patterns
+
+### 8.1 Dual Field Approach
+- **Direct Fields + Metadata Pattern**
+  - Core fields directly on models (id, created/updated timestamps)
+  - Extended fields in metadata JSON column
+  - Enables schema flexibility while maintaining type safety
+  - Example from Solution model:
+    ```prisma
+    model Solution {
+      id          String    @id
+      title       String
+      description String
+      // Core fields as direct columns
+      createdAt   DateTime  @default(now())
+      updatedAt   DateTime  @updatedAt
+      // Extended fields in metadata
+      metadata    Json?
+    }
+    ```
+
+### 8.2 API Layer Transformation
+- **Request Processing**
+  - Incoming data validated against Zod schemas
+  - Core fields mapped directly
+  - Extended fields consolidated into metadata
+  
+- **Response Processing**
+  - Metadata fields extracted and flattened
+  - Transformed into consistent API response shape
+  - Example transformation:
+    ```typescript
+    // Internal DB structure
+    {
+      id: "123",
+      title: "Solution",
+      metadata: {
+        category: "AI",
+        provider: "OpenAI"
+      }
+    }
+    // API response
+    {
+      id: "123",
+      title: "Solution",
+      category: "AI",
+      provider: "OpenAI"
+    }
+    ```
+
+### 8.3 Benefits and Trade-offs
+- **Benefits**
+  - Schema flexibility without migrations
+  - Type safety for core fields
+  - Easy addition of new fields
+  - Efficient querying of core fields
+  
+- **Trade-offs**
+  - Complexity in API layer
+  - Potential performance impact on metadata queries
+  - Need for careful metadata field documentation
+  - Additional validation complexity
+
 ## Technical Decisions Log
 
 ### Authentication

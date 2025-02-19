@@ -1,7 +1,7 @@
 # Development Process
-development-process/
-development-process-temp/
-.cursorrules
+!development-process/
+!development-process-temp/
+!.cursorrules
 .pgdata/
 
 # Dependencies

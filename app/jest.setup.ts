@@ -1,75 +1,69 @@
-import '@testing-library/jest-dom'
-import React from 'react'
+import '@testing-library/jest-dom';
 
-// Extend expect matchers
-expect.extend({
-  // Add custom matchers here if needed
-})
+// Mock FormData since it's not available in jsdom
+global.FormData = class FormData {
+  private data: Record<string, any> = {};
+
+  append(key: string, value: any) {
+    this.data[key] = value;
+  }
+
+  get(key: string) {
+    return this.data[key];
+  }
+
+  entries() {
+    return Object.entries(this.data);
+  }
+} as any;
+
+// Mock Next.js Request and Response
+const originalURL = global.URL;
+global.Request = class MockRequest extends originalURL {
+  constructor(input: string | URL, init?: RequestInit) {
+    super(typeof input === 'string' ? input : input.toString());
+    Object.assign(this, init);
+  }
+} as any;
+
+global.Response = class MockResponse {
+  constructor(public body?: any, public init?: ResponseInit) {}
+  json() {
+    return Promise.resolve(this.body);
+  }
+  status: number = 200;
+  ok: boolean = true;
+  headers = new Headers();
+} as any;
 
 // Mock Next.js router
-jest.mock('next/router', () => ({
+jest.mock('next/navigation', () => ({
   useRouter() {
     return {
-      route: '/',
-      pathname: '',
-      query: {},
-      asPath: '',
       push: jest.fn(),
       replace: jest.fn(),
-      reload: jest.fn(),
-      back: jest.fn(),
       prefetch: jest.fn(),
-      beforePopState: jest.fn(),
-      events: {
-        on: jest.fn(),
-        off: jest.fn(),
-        emit: jest.fn(),
-      },
-    }
+      back: jest.fn(),
+    };
   },
-}))
-
-// Mock next/image
-jest.mock('next/image', () => ({
-  __esModule: true,
-  default: (props: React.ImgHTMLAttributes<HTMLImageElement>) => {
-    // eslint-disable-next-line @next/next/no-img-element
-    return React.createElement('img', { ...props })
+  useSearchParams() {
+    return new URLSearchParams();
   },
-}))
+  usePathname() {
+    return '';
+  },
+}));
 
-// Setup environment variables for tests
-process.env = {
-  ...process.env,
-  NEXT_PUBLIC_API_URL: 'http://localhost:3000/api',
-}
-
-// Suppress console errors/warnings in tests
-const originalConsoleError = console.error
-const originalConsoleWarn = console.warn
-
-beforeAll(() => {
-  console.error = (...args: any[]) => {
-    if (
-      typeof args[0] === 'string' &&
-      args[0].includes('Warning: ReactDOM.render is no longer supported')
-    ) {
-      return
-    }
-    originalConsoleError.call(console, ...args)
-  }
-  console.warn = (...args: any[]) => {
-    if (
-      typeof args[0] === 'string' &&
-      args[0].includes('componentWillReceiveProps has been renamed')
-    ) {
-      return
-    }
-    originalConsoleWarn.call(console, ...args)
-  }
-})
-
-afterAll(() => {
-  console.error = originalConsoleError
-  console.warn = originalConsoleWarn
-})
+// Mock Next.js server components
+jest.mock('next/headers', () => ({
+  cookies() {
+    return {
+      get: jest.fn(),
+      set: jest.fn(),
+      delete: jest.fn(),
+    };
+  },
+  headers() {
+    return new Headers();
+  },
+}));

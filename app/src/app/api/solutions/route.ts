@@ -1,10 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { solutionSchema, type SolutionMetadata } from '@/lib/schemas/solution';
 import { prisma } from '@/lib/db/prisma';
-import { ZodError } from 'zod';
+import { ZodError, z } from 'zod';
 import { Prisma, Solution, Review, SolutionStatus } from '@prisma/client';
 
 const ANONYMOUS_USER_ID = 'anonymous-user';
+const DEFAULT_PAGE_SIZE = 10;
+
+// API Response Types
+type ApiResponse<T> = {
+  data: T;
+  meta?: {
+    page?: number;
+    pageSize?: number;
+    total?: number;
+    hasMore?: boolean;
+  };
+};
+
+type ApiErrorResponse = {
+  error: string;
+  details?: unknown;
+  code?: string;
+};
+
+// Query Parameter Schema
+const queryParamsSchema = z.object({
+  category: z.string().optional(),
+  provider: z.string().optional(),
+  search: z.string().optional(),
+  sort: z.enum(['recent', 'rating', 'popular']).optional().default('recent'),
+  status: z.enum(['ACTIVE', 'PENDING', 'INACTIVE']).optional(),
+  page: z.coerce.number().min(1).optional().default(1),
+  pageSize: z.coerce.number().min(1).max(100).optional().default(DEFAULT_PAGE_SIZE),
+});
 
 type SolutionWithAuthorAndReviews = Solution & {
   author: {
@@ -14,23 +43,37 @@ type SolutionWithAuthorAndReviews = Solution & {
   reviews: Pick<Review, 'rating'>[];
 };
 
+/**
+ * Ensures the anonymous user exists in the database
+ * @throws {Error} If unable to create anonymous user
+ */
 async function ensureAnonymousUser() {
-  const anonymousUser = await prisma.user.findUnique({
-    where: { id: ANONYMOUS_USER_ID },
-  });
-
-  if (!anonymousUser) {
-    await prisma.user.create({
-      data: {
-        id: ANONYMOUS_USER_ID,
-        email: 'anonymous@aixchange.ai',
-        name: 'Anonymous User',
-        role: 'USER',
-      },
+  try {
+    const anonymousUser = await prisma.user.findUnique({
+      where: { id: ANONYMOUS_USER_ID },
     });
+
+    if (!anonymousUser) {
+      await prisma.user.create({
+        data: {
+          id: ANONYMOUS_USER_ID,
+          email: 'anonymous@aixchange.ai',
+          name: 'Anonymous User',
+          role: 'USER',
+        },
+      });
+    }
+  } catch (error) {
+    console.error('Error ensuring anonymous user:', error);
+    throw new Error('Failed to ensure anonymous user');
   }
 }
 
+/**
+ * Creates a new solution
+ * @param request The incoming request containing solution data
+ * @returns The created solution
+ */
 export async function POST(request: NextRequest) {
   try {
     await ensureAnonymousUser();
@@ -84,32 +127,58 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(solution, { status: 201 });
+    const response: ApiResponse<Solution> = { data: solution };
+    return NextResponse.json(response, { status: 201 });
   } catch (error) {
     console.error('Error creating solution:', error);
 
     if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      );
+      const errorResponse: ApiErrorResponse = {
+        error: 'Validation error',
+        details: error.errors,
+        code: 'VALIDATION_ERROR',
+      };
+      return NextResponse.json(errorResponse, { status: 400 });
     }
 
-    return NextResponse.json(
-      { error: 'Failed to create solution' },
-      { status: 500 }
-    );
+    // Check for Prisma errors by code instead of instanceof
+    if (error && typeof error === 'object' && 'code' in error) {
+      const prismaError = error as { code: string; meta?: unknown };
+      const errorResponse: ApiErrorResponse = {
+        error: 'Database error',
+        code: prismaError.code,
+        details: prismaError.meta,
+      };
+      return NextResponse.json(errorResponse, { status: 500 });
+    }
+
+    const errorResponse: ApiErrorResponse = {
+      error: 'Failed to create solution',
+      code: 'INTERNAL_ERROR',
+    };
+    return NextResponse.json(errorResponse, { status: 500 });
   }
 }
 
+/**
+ * Retrieves solutions with filtering, sorting, and pagination
+ * @param request The incoming request containing query parameters
+ * @returns List of solutions matching the criteria
+ */
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const category = searchParams.get('category');
-    const provider = searchParams.get('provider');
-    const search = searchParams.get('search');
-    const sort = searchParams.get('sort') || 'recent';
-    const status = searchParams.get('status');
+    const params = Object.fromEntries(searchParams.entries());
+    
+    const { 
+      category, 
+      provider, 
+      search, 
+      sort, 
+      status,
+      page,
+      pageSize,
+    } = queryParamsSchema.parse(params);
 
     const where: Prisma.SolutionWhereInput = {
       isPublished: true,
@@ -124,7 +193,7 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    // Direct field filters (no longer in metadata)
+    // Direct field filters
     if (category) {
       where.category = category;
     }
@@ -134,8 +203,14 @@ export async function GET(request: NextRequest) {
     }
 
     if (status) {
-      where.status = status as SolutionStatus;
+      where.status = status;
     }
+
+    // Calculate pagination
+    const skip = (page - 1) * pageSize;
+
+    // Get total count for pagination
+    const total = await prisma.solution.count({ where });
 
     // Get solutions with related data
     const solutions = await prisma.solution.findMany({
@@ -158,6 +233,8 @@ export async function GET(request: NextRequest) {
         : sort === 'popular' 
         ? { reviews: { _count: 'desc' } }
         : { createdAt: 'desc' },
+      skip,
+      take: pageSize,
     });
 
     // Transform solutions for response
@@ -173,12 +250,44 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    return NextResponse.json(transformedSolutions);
+    const response: ApiResponse<typeof transformedSolutions> = {
+      data: transformedSolutions,
+      meta: {
+        page,
+        pageSize,
+        total,
+        hasMore: skip + solutions.length < total,
+      },
+    };
+
+    return NextResponse.json(response);
   } catch (error) {
     console.error('Error fetching solutions:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch solutions' },
-      { status: 500 }
-    );
+
+    if (error instanceof ZodError) {
+      const errorResponse: ApiErrorResponse = {
+        error: 'Invalid query parameters',
+        details: error.errors,
+        code: 'INVALID_QUERY',
+      };
+      return NextResponse.json(errorResponse, { status: 400 });
+    }
+
+    // Check for Prisma errors by code instead of instanceof
+    if (error && typeof error === 'object' && 'code' in error) {
+      const prismaError = error as { code: string; meta?: unknown };
+      const errorResponse: ApiErrorResponse = {
+        error: 'Database error',
+        code: prismaError.code,
+        details: prismaError.meta,
+      };
+      return NextResponse.json(errorResponse, { status: 500 });
+    }
+
+    const errorResponse: ApiErrorResponse = {
+      error: 'Failed to fetch solutions',
+      code: 'INTERNAL_ERROR',
+    };
+    return NextResponse.json(errorResponse, { status: 500 });
   }
 }

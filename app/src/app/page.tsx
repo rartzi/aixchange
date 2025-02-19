@@ -5,25 +5,37 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div>
+    <div className="min-h-screen">
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-20 flex items-center justify-between">
         <div className="max-w-xl">
+          <div className="inline-block px-4 py-2 bg-primary/10 rounded-full mb-4">
+            <span className="text-primary font-semibold">🚀 Now in Beta</span>
+          </div>
           <h1 className="text-6xl font-bold text-foreground mb-4">
-            The Perfect AI Wave is Here.
+            Accelerate Your AI Innovation Journey
           </h1>
           <h2 className="text-4xl font-bold text-gradient-primary mb-6">
-            AiXplore gets you on board.
+            1000 Tiny Innovations Start Here
           </h2>
           <p className="text-muted-foreground text-xl mb-8">
-            AiXplore helps you catch and ride the wave of artificial intelligence innovation.
+            AiXplore unites a dynamic marketplace, hands-on sandbox, and thriving community 
+            to turn everyday ideas into breakthrough AI solutions.
           </p>
-          <Link
-            href="/playground"
-            className="btn-primary text-lg"
-          >
-            Try AI Playground
-          </Link>
+          <div className="flex gap-4">
+            <Link
+              href="/solutions"
+              className="btn-primary text-lg"
+            >
+              Explore Solutions
+            </Link>
+            <Link
+              href="/register"
+              className="btn-secondary text-lg"
+            >
+              Join Community
+            </Link>
+          </div>
         </div>
         <div className="relative w-[500px] h-[500px]">
           <Image
@@ -31,16 +43,53 @@ export default function Home() {
             alt="AI Robot Surfing"
             fill
             sizes="(max-width: 768px) 100vw, 500px"
-            className="object-contain"
+            className="object-contain rounded-2xl"
             priority
             quality={90}
           />
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-20 bg-card">
+      {/* How it Works Section */}
+      <section className="py-20 bg-muted/50">
         <div className="container mx-auto px-4">
+          <h2 className="text-4xl font-bold text-center mb-12">How AiXplore Works</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+                <span className="text-2xl">1</span>
+              </div>
+              <h3 className="text-xl font-bold mb-4">Discover</h3>
+              <p className="text-muted-foreground">
+                Browse our marketplace of AI solutions and find the perfect match for your needs
+              </p>
+            </div>
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+                <span className="text-2xl">2</span>
+              </div>
+              <h3 className="text-xl font-bold mb-4">Experiment</h3>
+              <p className="text-muted-foreground">
+                Test and customize solutions in our sandbox environment with zero setup required
+              </p>
+            </div>
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+                <span className="text-2xl">3</span>
+              </div>
+              <h3 className="text-xl font-bold mb-4">Innovate</h3>
+              <p className="text-muted-foreground">
+                Deploy your solutions and contribute back to the community
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <h2 className="text-4xl font-bold text-center mb-12">Why Choose AiXplore</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="p-8 rounded-xl bg-card border border-border card-hover">
               <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4">
@@ -48,9 +97,9 @@ export default function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-card-foreground mb-2">Community-Driven</h3>
+              <h3 className="text-xl font-bold text-card-foreground mb-2">Vibrant Community</h3>
               <p className="text-muted-foreground">
-                Connect with AI enthusiasts, share knowledge, and collaborate on innovative projects.
+                Join a network of AI innovators, participate in hackathons, and share knowledge through weekly sessions.
               </p>
             </div>
 
@@ -62,7 +111,7 @@ export default function Home() {
               </div>
               <h3 className="text-xl font-bold text-card-foreground mb-2">Innovation Hub</h3>
               <p className="text-muted-foreground">
-                Access cutting-edge AI tools, resources, and a marketplace for solutions.
+                Access our AI sandbox, development tools, and resources to build and test solutions quickly.
               </p>
             </div>
 
@@ -74,7 +123,7 @@ export default function Home() {
               </div>
               <h3 className="text-xl font-bold text-card-foreground mb-2">Solution Marketplace</h3>
               <p className="text-muted-foreground">
-                Discover, share, and implement AI solutions tailored to your needs.
+                Browse, deploy, and monetize AI solutions with our app-store-like marketplace experience.
               </p>
             </div>
           </div>
@@ -84,18 +133,22 @@ export default function Home() {
       {/* Stats Section */}
       <section className="py-20 bg-gradient-primary">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
             <div>
-              <div className="text-5xl font-bold text-white mb-2">200</div>
+              <div className="text-5xl font-bold text-white mb-2">200+</div>
               <div className="text-white/80">Community Members</div>
             </div>
             <div>
-              <div className="text-5xl font-bold text-white mb-2">11</div>
+              <div className="text-5xl font-bold text-white mb-2">50+</div>
               <div className="text-white/80">AI Solutions</div>
             </div>
             <div>
-              <div className="text-5xl font-bold text-white mb-2">10</div>
+              <div className="text-5xl font-bold text-white mb-2">15+</div>
               <div className="text-white/80">Partners</div>
+            </div>
+            <div>
+              <div className="text-5xl font-bold text-white mb-2">24/7</div>
+              <div className="text-white/80">Support</div>
             </div>
           </div>
         </div>
@@ -103,18 +156,70 @@ export default function Home() {
 
       {/* CTA Section */}
       <section className="py-20">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl font-bold text-card-foreground mb-8">
-            Ready to Transform Your AI Journey?
+        <div className="container mx-auto px-4 text-center max-w-3xl">
+          <h2 className="text-4xl font-bold text-card-foreground mb-4">
+            Ready to Join the AI Innovation Wave?
           </h2>
-          <Link
-            href="/register"
-            className="btn-primary text-lg"
-          >
-            Get Started Today
-          </Link>
+          <p className="text-xl text-muted-foreground mb-8">
+            Start your journey today and be part of the next generation of AI innovation.
+          </p>
+          <div className="flex gap-4 justify-center">
+            <Link
+              href="/register"
+              className="btn-primary text-lg"
+            >
+              Get Started Free
+            </Link>
+            <Link
+              href="/solutions"
+              className="btn-secondary text-lg"
+            >
+              Browse Solutions
+            </Link>
+          </div>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="bg-muted/50 py-12">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+              <h3 className="font-bold text-lg mb-4">AiXplore</h3>
+              <p className="text-muted-foreground">
+                Transforming ideas into AI innovations, one solution at a time.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-bold mb-4">Platform</h4>
+              <ul className="space-y-2">
+                <li><Link href="/solutions" className="text-muted-foreground hover:text-primary">Solutions</Link></li>
+                <li><Link href="/playground" className="text-muted-foreground hover:text-primary">Playground</Link></li>
+                <li><Link href="/events" className="text-muted-foreground hover:text-primary">Events</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-bold mb-4">Community</h4>
+              <ul className="space-y-2">
+                <li><Link href="/blog" className="text-muted-foreground hover:text-primary">Blog</Link></li>
+                <li><Link href="/docs" className="text-muted-foreground hover:text-primary">Documentation</Link></li>
+                <li><Link href="/support" className="text-muted-foreground hover:text-primary">Support</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-bold mb-4">Company</h4>
+              <ul className="space-y-2">
+                <li><Link href="/about" className="text-muted-foreground hover:text-primary">About</Link></li>
+                <li><Link href="/contact" className="text-muted-foreground hover:text-primary">Contact</Link></li>
+                <li><Link href="/privacy" className="text-muted-foreground hover:text-primary">Privacy</Link></li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-border mt-12 pt-8 text-center text-muted-foreground">
+            <p>&copy; {new Date().getFullYear()} AiXplore. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

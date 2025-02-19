@@ -1,5 +1,74 @@
 # API Architecture Decision: Next.js API Routes vs. FastAPI Backend
 
+## API Data Handling Patterns
+
+### Metadata Field Architecture
+1. **Dual Field Pattern**
+   - Core fields as direct database columns
+   - Extended properties in metadata JSON
+   - Enables schema flexibility while maintaining performance
+   - Example:
+     ```typescript
+     // Database structure
+     {
+       id: "123",
+       title: "Solution",
+       metadata: {
+         category: "AI",
+         provider: "OpenAI"
+       }
+     }
+     ```
+
+2. **API Layer Transformation**
+   - Request processing:
+     ```typescript
+     // Incoming request
+     const data = await request.json();
+     // Validate with Zod schema
+     const validated = solutionSchema.parse(data);
+     // Transform to database structure
+     const dbData = {
+       title: validated.title,
+       metadata: {
+         category: validated.category,
+         provider: validated.provider
+       }
+     };
+     ```
+   - Response transformation:
+     ```typescript
+     // Database record to API response
+     const solution = await prisma.solution.findUnique();
+     const metadata = solution.metadata as Record<string, any>;
+     return {
+       ...solution,
+       category: metadata.category,
+       provider: metadata.provider,
+       metadata: undefined // Remove metadata from response
+     };
+     ```
+
+3. **Type Handling**
+   - TypeScript interfaces for metadata
+   - Zod schemas for validation
+   - Runtime type checking
+   - Example:
+     ```typescript
+     interface SolutionMetadata {
+       category: string;
+       provider: string;
+       tokenCost?: number;
+     }
+
+     const solutionSchema = z.object({
+       title: z.string(),
+       category: z.string(),
+       provider: z.string(),
+       tokenCost: z.number().optional()
+     });
+     ```
+
 ## Current Architecture (Next.js API Routes)
 
 ### Advantages
