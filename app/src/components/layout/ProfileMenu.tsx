@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from "react";
 import { signOut } from "next-auth/react";
-import Link from "next/link";
 import type { Session } from "next-auth";
 
 interface ProfileMenuProps {
@@ -60,29 +59,6 @@ export function ProfileMenu({ session }: ProfileMenuProps) {
 
       {isOpen && (
         <div className="absolute right-0 mt-2 w-48 py-2 bg-card rounded-lg shadow-lg border border-border">
-          <Link
-            href="/profile"
-            className="block px-4 py-2 text-sm hover:bg-muted transition-colors"
-            onClick={() => setIsOpen(false)}
-          >
-            Profile Settings
-          </Link>
-          <Link
-            href="/dashboard"
-            className="block px-4 py-2 text-sm hover:bg-muted transition-colors"
-            onClick={() => setIsOpen(false)}
-          >
-            Dashboard
-          </Link>
-          {session.user?.role === "ADMIN" && (
-            <Link
-              href="/admin"
-              className="block px-4 py-2 text-sm hover:bg-muted transition-colors"
-              onClick={() => setIsOpen(false)}
-            >
-              Admin Panel
-            </Link>
-          )}
           <button
             onClick={() => {
               setIsOpen(false);
