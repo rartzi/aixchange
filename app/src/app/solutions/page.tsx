@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { SolutionsGrid } from "@/components/features/solutions/SolutionsGrid";
 import { prisma } from "@/lib/db/prisma";
+import { predefinedCategories } from "@/lib/schemas/solution";
+import type { SolutionMetadata } from "@/lib/schemas/solution";
 
 // Add dynamic flag to prevent static page generation
 export const dynamic = 'force-dynamic';
@@ -32,13 +34,22 @@ async function getInitialSolutions() {
     });
 
     return solutions.map((solution) => ({
-      ...solution,
+      id: solution.id,
+      title: solution.title,
+      description: solution.description,
+      category: solution.category as typeof predefinedCategories[number],
+      provider: solution.provider,
+      launchUrl: solution.launchUrl,
+      tokenCost: solution.tokenCost,
+      imageUrl: solution.imageUrl || '',
+      tags: solution.tags,
+      rating: solution.reviews.reduce((acc, review) => acc + review.rating, 0) / solution.reviews.length || 0,
       createdAt: solution.createdAt.toISOString(),
-      updatedAt: solution.updatedAt.toISOString(),
-      reviewCount: solution.reviews.length,
-      resourceConfig: (solution.metadata as any)?.resourceConfig || {},
-      apiEndpoints: (solution.metadata as any)?.apiEndpoints || [],
-      documentation: (solution.metadata as any)?.documentation || {},
+      author: {
+        name: solution.author?.name,
+        image: solution.author?.image,
+      },
+      metadata: solution.metadata as SolutionMetadata | undefined,
     }));
   } catch (error) {
     console.error('Error fetching initial solutions:', error);

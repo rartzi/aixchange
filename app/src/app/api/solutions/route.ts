@@ -28,9 +28,13 @@ type ApiErrorResponse = {
 const queryParamsSchema = z.object({
   category: z.string().optional(),
   provider: z.string().optional(),
+  author: z.string().optional(),
   search: z.string().optional(),
-  sort: z.enum(['recent', 'rating', 'popular']).optional().default('recent'),
+  sort: z.enum(['recent', 'rating', 'popular', 'price-low', 'price-high']).optional().default('recent'),
   status: z.enum(['ACTIVE', 'PENDING', 'INACTIVE']).optional(),
+  minPrice: z.coerce.number().min(0).optional(),
+  maxPrice: z.coerce.number().min(0).optional(),
+  tags: z.string().optional(),
   page: z.coerce.number().min(1).optional().default(1),
   pageSize: z.coerce.number().min(1).max(100).optional().default(DEFAULT_PAGE_SIZE),
 });
@@ -172,10 +176,14 @@ export async function GET(request: NextRequest) {
     
     const { 
       category, 
-      provider, 
-      search, 
-      sort, 
+      provider,
+      author,
+      search,
+      sort,
       status,
+      minPrice,
+      maxPrice,
+      tags,
       page,
       pageSize,
     } = queryParamsSchema.parse(params);
@@ -199,11 +207,41 @@ export async function GET(request: NextRequest) {
     }
 
     if (provider) {
-      where.provider = provider;
+      where.provider = {
+        contains: provider,
+        mode: 'insensitive',
+      };
+    }
+
+    if (author) {
+      where.author = {
+        name: {
+          contains: author,
+          mode: 'insensitive',
+        },
+      };
     }
 
     if (status) {
       where.status = status;
+    }
+
+    // Price range filter
+    if (minPrice !== undefined || maxPrice !== undefined) {
+      where.tokenCost = {};
+      if (minPrice !== undefined) {
+        where.tokenCost.gte = minPrice;
+      }
+      if (maxPrice !== undefined) {
+        where.tokenCost.lte = maxPrice;
+      }
+    }
+
+    // Tags filter
+    if (tags) {
+      where.tags = {
+        hasSome: tags.split(','),
+      };
     }
 
     // Calculate pagination
@@ -211,6 +249,25 @@ export async function GET(request: NextRequest) {
 
     // Get total count for pagination
     const total = await prisma.solution.count({ where });
+
+    // Determine sort order
+    let orderBy: Prisma.SolutionOrderByWithRelationInput = {};
+    switch (sort) {
+      case 'rating':
+        orderBy = { rating: 'desc' };
+        break;
+      case 'popular':
+        orderBy = { reviews: { _count: 'desc' } };
+        break;
+      case 'price-low':
+        orderBy = { tokenCost: 'asc' };
+        break;
+      case 'price-high':
+        orderBy = { tokenCost: 'desc' };
+        break;
+      default:
+        orderBy = { createdAt: 'desc' };
+    }
 
     // Get solutions with related data
     const solutions = await prisma.solution.findMany({
@@ -228,11 +285,7 @@ export async function GET(request: NextRequest) {
           },
         },
       },
-      orderBy: sort === 'rating' 
-        ? { rating: 'desc' }
-        : sort === 'popular' 
-        ? { reviews: { _count: 'desc' } }
-        : { createdAt: 'desc' },
+      orderBy,
       skip,
       take: pageSize,
     });
@@ -244,7 +297,7 @@ export async function GET(request: NextRequest) {
       return {
         ...solution,
         reviewCount: solution.reviews.length,
-        resourceConfig: metadata?.resourceConfig || {},
+        rating: solution.reviews.reduce((acc, review) => acc + review.rating, 0) / solution.reviews.length || 0,
         apiEndpoints: metadata?.apiEndpoints || [],
         documentation: metadata?.documentation || {},
       };
