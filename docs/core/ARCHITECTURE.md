@@ -1,7 +1,7 @@
 # System Architecture
 
 ## Overview
-This document outlines the technical architecture and implementation plan for AiXplore, including system design, deployment strategies, and technical decisions.
+This document outlines the technical architecture and implementation plan for (AI)Xplore, including system design, deployment strategies, and technical decisions.
 
 ## 1. System Components
 
@@ -24,14 +24,18 @@ This document outlines the technical architecture and implementation plan for Ai
   - Elasticsearch for search
 
 - **Authentication**
-  - NextAuth.js integration
-  - OAuth providers
-  - JWT tokens
-  - RBAC implementation
-  - **TEMPORARY**: Authentication bypassed for development phase
-    - All routes accessible without auth
-    - Role simulation for UI testing
-    - Will be re-enabled before production
+  - NextAuth.js with JWT strategy
+  - Session duration: 30 days
+  - Session refresh: 24 hours
+  - Audit logging for all auth events
+  - Role-based access control (RBAC)
+  - User types:
+    - Admin (admin@aixchange.ai)
+    - Anonymous (system account)
+  - Security features:
+    - Password hashing (bcrypt)
+    - CSRF protection
+    - Return-to-page functionality
 
 ### 1.2 Microservices Architecture
 - **Solution Management Service**
@@ -108,8 +112,8 @@ This document outlines the technical architecture and implementation plan for Ai
 ### 3.1 Local Development
 ```bash
 # Repository setup
-git clone https://github.com/org/aixplore.git
-cd aixplore
+git clone https://github.com/org/(ai)xplore.git
+cd (ai)xplore
 
 # Environment configuration
 cp .env.example .env
@@ -142,7 +146,7 @@ services:
     environment:
       - POSTGRES_USER=dev
       - POSTGRES_PASSWORD=dev
-      - POSTGRES_DB=aixplore_dev
+      - POSTGRES_DB=(ai)xplore_dev
 ```
 
 ## 4. Testing Architecture
@@ -284,11 +288,15 @@ JWT_SECRET=your-secret-key
 ## Technical Decisions Log
 
 ### Authentication
-- **Decision**: Use NextAuth.js with JWT (Currently Bypassed for Development)
-- **Rationale**: Provides flexible auth options and good security
-- **Current Status**: Temporarily disabled for development speed
-- **Restoration Plan**: Re-enable before production with full security measures
-- **Impact**: Accelerated UI/UX development and testing
+- **Decision**: Use NextAuth.js with JWT and database session tracking
+- **Rationale**: Provides secure authentication with audit capabilities
+- **Current Status**: Fully implemented with role-based access
+- **Features**:
+  - JWT-based sessions with 30-day duration
+  - Database audit logging for all auth events
+  - Role-based access control (Admin/User)
+  - Return-to-page functionality
+- **Impact**: Secure, trackable user authentication with proper session management
 
 ### Database
 - **Decision**: PostgreSQL + Redis

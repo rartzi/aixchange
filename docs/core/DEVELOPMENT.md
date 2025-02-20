@@ -87,6 +87,41 @@ There are two ways to set up the development environment: with Docker (recommend
    pnpm dev
    ```
 
+## Authentication System
+
+### User Accounts
+
+The system includes two types of user accounts:
+
+1. **Admin User**
+   - Email: admin@aixchange.ai
+   - Password: admin123
+   - Role: ADMIN
+   - Full access to all features
+   - Can manage users and content
+
+2. **Anonymous User**
+   - System account for public content
+   - Not meant for login
+   - Used to attribute public solutions
+
+### Session Management
+
+The system uses JWT-based authentication with:
+- 30-day session duration
+- 24-hour refresh interval
+- Audit logging for sign-in/out events
+- Last login tracking
+- Return-to-page functionality
+
+### Security Features
+
+- Password hashing with bcrypt
+- CSRF protection
+- Secure session handling
+- Role-based access control
+- Activity audit logging
+
 ## Project Structure
 
 ```
