@@ -2,19 +2,10 @@ import { NextAuthOptions } from "next-auth"
 import NextAuth from "next-auth/next"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { prisma } from "@/lib/db/prisma"
-import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import bcrypt from "bcryptjs"
 import { User, UserRole } from "@prisma/client"
 
-// Extend the User type to match our schema
-type AdapterUser = Omit<User, "password"> & {
-  id: string
-  email: string
-  role: UserRole
-}
-
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
       name: "credentials",
@@ -57,7 +48,7 @@ export const authOptions: NextAuthOptions = {
     })
   ],
   session: {
-    strategy: "database",
+    strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
     updateAge: 24 * 60 * 60, // 24 hours
   },
@@ -66,10 +57,19 @@ export const authOptions: NextAuthOptions = {
     newUser: "/register"
   },
   callbacks: {
-    async session({ session, user }) {
-      if (session.user && user) {
-        session.user.id = user.id
-        session.user.role = user.role as UserRole
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id
+        token.email = user.email
+        token.role = user.role
+      }
+      return token
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.id as string
+        session.user.email = token.email as string
+        session.user.role = token.role as UserRole
       }
       return session
     }

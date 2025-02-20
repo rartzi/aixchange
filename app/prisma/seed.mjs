@@ -1,10 +1,28 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
 const ANONYMOUS_USER_ID = 'anonymous-user';
+const ADMIN_USER_ID = 'admin-user';
 
 async function main() {
+  // Create admin user
+  const hashedPassword = await bcrypt.hash('admin123', 10);
+  const adminUser = await prisma.user.upsert({
+    where: { id: ADMIN_USER_ID },
+    update: {},
+    create: {
+      id: ADMIN_USER_ID,
+      email: 'admin@aixchange.ai',
+      name: 'Admin User',
+      password: hashedPassword,
+      role: 'ADMIN',
+    },
+  });
+
+  console.log('Admin user created:', adminUser);
+
   // Create anonymous user if it doesn't exist
   const anonymousUser = await prisma.user.upsert({
     where: { id: ANONYMOUS_USER_ID },
