@@ -13,7 +13,7 @@ export default async function SolutionsPage() {
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-start">
             <div>
-              <h1 className="text-4xl font-bold mb-4 text-primary-foreground">Solutions Marketplace</h1>
+              <h1 className="text-4xl font-bold mb-4 text-primary-foreground">(AI)Xchange</h1>
               <p className="text-lg text-primary-foreground/80 max-w-2xl">
                 Discover and explore innovative AI solutions from our community
               </p>

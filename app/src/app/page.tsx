@@ -19,7 +19,7 @@ export default function Home() {
             1000 Tiny Innovations Start Here
           </h2>
           <p className="text-muted-foreground text-xl mb-8">
-            AiXplore unites a dynamic marketplace, hands-on sandbox, and thriving community 
+            (AI)Xplore unites a dynamic (AI)Xchange, hands-on (AI)Xperiment, and thriving community 
             to turn everyday ideas into breakthrough AI solutions.
           </p>
           <div className="flex gap-4">
@@ -53,7 +53,7 @@ export default function Home() {
       {/* How it Works Section */}
       <section className="py-20 bg-muted/50">
         <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center mb-12">How AiXplore Works</h2>
+          <h2 className="text-4xl font-bold text-center mb-12">How (AI)Xplore Works</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="flex flex-col items-center text-center">
               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
@@ -61,7 +61,7 @@ export default function Home() {
               </div>
               <h3 className="text-xl font-bold mb-4">Discover</h3>
               <p className="text-muted-foreground">
-                Browse our marketplace of AI solutions and find the perfect match for your needs
+                Browse our (AI)Xchange of AI solutions and find the perfect match for your needs
               </p>
             </div>
             <div className="flex flex-col items-center text-center">
@@ -70,7 +70,7 @@ export default function Home() {
               </div>
               <h3 className="text-xl font-bold mb-4">Experiment</h3>
               <p className="text-muted-foreground">
-                Test and customize solutions in our sandbox environment with zero setup required
+                Test and customize solutions in our (AI)Xperiment environment with zero setup required
               </p>
             </div>
             <div className="flex flex-col items-center text-center">
@@ -89,7 +89,7 @@ export default function Home() {
       {/* Features Section */}
       <section className="py-20">
         <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center mb-12">Why Choose AiXplore</h2>
+          <h2 className="text-4xl font-bold text-center mb-12">Why Choose (AI)Xplore</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="p-8 rounded-xl bg-card border border-border card-hover">
               <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4">
@@ -111,7 +111,7 @@ export default function Home() {
               </div>
               <h3 className="text-xl font-bold text-card-foreground mb-2">Innovation Hub</h3>
               <p className="text-muted-foreground">
-                Access our AI sandbox, development tools, and resources to build and test solutions quickly.
+                Access our (AI)Xperiment, development tools, and resources to build and test solutions quickly.
               </p>
             </div>
 
@@ -121,9 +121,9 @@ export default function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-card-foreground mb-2">Solution Marketplace</h3>
+              <h3 className="text-xl font-bold text-card-foreground mb-2">(AI)Xchange</h3>
               <p className="text-muted-foreground">
-                Browse, deploy, and monetize AI solutions with our app-store-like marketplace experience.
+                Browse, deploy, and monetize AI solutions with our app-store-like (AI)Xchange experience.
               </p>
             </div>
           </div>
@@ -185,7 +185,7 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <h3 className="font-bold text-lg mb-4">AiXplore</h3>
+              <h3 className="font-bold text-lg mb-4">(AI)Xplore</h3>
               <p className="text-muted-foreground">
                 Transforming ideas into AI innovations, one solution at a time.
               </p>
@@ -194,7 +194,7 @@ export default function Home() {
               <h4 className="font-bold mb-4">Platform</h4>
               <ul className="space-y-2">
                 <li><Link href="/solutions" className="text-muted-foreground hover:text-primary">Solutions</Link></li>
-                <li><Link href="/playground" className="text-muted-foreground hover:text-primary">Playground</Link></li>
+                <li><Link href="/playground" className="text-muted-foreground hover:text-primary">(AI)Xperiment</Link></li>
                 <li><Link href="/events" className="text-muted-foreground hover:text-primary">Events</Link></li>
               </ul>
             </div>
@@ -216,7 +216,7 @@ export default function Home() {
             </div>
           </div>
           <div className="border-t border-border mt-12 pt-8 text-center text-muted-foreground">
-            <p>&copy; {new Date().getFullYear()} AiXplore. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} (AI)Xplore. All rights reserved.</p>
           </div>
         </div>
       </footer>
