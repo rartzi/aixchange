@@ -2,12 +2,9 @@
 
 import Link from "next/link";
 import { useTheme } from "@/components/theme/ThemeProvider";
-import { useSession } from "next-auth/react";
-import { ProfileMenu } from "./ProfileMenu";
 
 export function Navbar() {
   const { theme, toggleTheme } = useTheme();
-  const { data: session, status } = useSession();
 
   return (
     <nav className="container mx-auto px-4 py-4 flex justify-between items-center border-b border-border">
@@ -16,13 +13,13 @@ export function Navbar() {
       </Link>
       <div className="flex items-center gap-6">
         <Link
-          href="/playground"
+          href="https://n8n.aixplore.odsp.astrazeneca.net"
           className="text-muted-foreground hover:text-foreground transition-colors"
         >
           (AI)Xperiment
         </Link>
         <Link
-          href="/solutions"
+          href="https://ghost.aixplore.odsp.astrazeneca.net"
           className="text-muted-foreground hover:text-foreground transition-colors"
         >
           (AI)Xchange
@@ -70,27 +67,12 @@ export function Navbar() {
             </svg>
           )}
         </button>
-        
-        {status === "loading" ? (
-          <div className="h-10 w-20 bg-muted animate-pulse rounded-md" />
-        ) : session ? (
-          <ProfileMenu session={session} />
-        ) : (
-          <>
-            <Link 
-              href={`/login?callbackUrl=${encodeURIComponent(window.location.pathname)}`} 
-              className="btn-primary"
-            >
-              Login
-            </Link>
-            <Link 
-              href={`/register?callbackUrl=${encodeURIComponent(window.location.pathname)}`} 
-              className="btn-secondary"
-            >
-              Register
-            </Link>
-          </>
-        )}
+        <Link href="/login" className="btn-primary">
+          Login
+        </Link>
+        <Link href="/register" className="btn-secondary">
+          Register
+        </Link>
       </div>
     </nav>
   );

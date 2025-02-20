@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 interface Stats {
   userCount: number;
@@ -12,6 +13,7 @@ interface Stats {
 export default function Home() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const pathname = usePathname();
 
   useEffect(() => {
     async function fetchStats() {
@@ -49,13 +51,13 @@ export default function Home() {
           </p>
           <div className="flex gap-4">
             <Link
-              href="/solutions"
+              href="https://ghost.aixplore.odsp.astrazeneca.net"
               className="btn-primary text-lg"
             >
-              Explore Solutions
+              Browse Solutions
             </Link>
             <Link
-              href="/register"
+              href={`/register?callbackUrl=${encodeURIComponent(pathname)}`}
               className="btn-secondary text-lg"
             >
               Join Community
@@ -194,16 +196,16 @@ export default function Home() {
           </p>
           <div className="flex gap-4 justify-center">
             <Link
-              href="/register"
+              href={`/register?callbackUrl=${encodeURIComponent(pathname)}`}
               className="btn-primary text-lg"
             >
               Get Started Free
             </Link>
             <Link
-              href="/solutions"
+              href="https://ghost.aixplore.odsp.astrazeneca.net"
               className="btn-secondary text-lg"
             >
-              Browse Solutions
+              Explore Solutions
             </Link>
           </div>
         </div>
@@ -222,9 +224,30 @@ export default function Home() {
             <div>
               <h4 className="font-bold mb-4">Platform</h4>
               <ul className="space-y-2">
-                <li><Link href="/solutions" className="text-muted-foreground hover:text-primary">Solutions</Link></li>
-                <li><Link href="/playground" className="text-muted-foreground hover:text-primary">(AI)Xperiment</Link></li>
-                <li><Link href="/events" className="text-muted-foreground hover:text-primary">Events</Link></li>
+                <li>
+                  <Link 
+                    href="https://ghost.aixplore.odsp.astrazeneca.net" 
+                    className="text-muted-foreground hover:text-primary"
+                  >
+                    (AI)Xchange
+                  </Link>
+                </li>
+                <li>
+                  <Link 
+                    href="https://n8n.aixplore.odsp.astrazeneca.net" 
+                    className="text-muted-foreground hover:text-primary"
+                  >
+                    (AI)Xperiment
+                  </Link>
+                </li>
+                <li>
+                  <Link 
+                    href="/events" 
+                    className="text-muted-foreground hover:text-primary"
+                  >
+                    Events
+                  </Link>
+                </li>
               </ul>
             </div>
             <div>
