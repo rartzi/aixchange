@@ -2,33 +2,36 @@
 
 import Link from "next/link";
 import { useTheme } from "@/components/theme/ThemeProvider";
+import { useSession } from "next-auth/react";
+import { ProfileMenu } from "./ProfileMenu";
 
 export function Navbar() {
   const { theme, toggleTheme } = useTheme();
+  const { data: session, status } = useSession();
 
   return (
     <nav className="container mx-auto px-4 py-4 flex justify-between items-center border-b border-border">
       <Link href="/" className="text-primary text-2xl font-bold">
-        AiXplore
+        (AI)Xplore
       </Link>
       <div className="flex items-center gap-6">
         <Link
           href="/playground"
           className="text-muted-foreground hover:text-foreground transition-colors"
         >
-          Playground
+          (AI)Xperiment
         </Link>
         <Link
           href="/solutions"
           className="text-muted-foreground hover:text-foreground transition-colors"
         >
-          Marketplace
+          (AI)Xchange
         </Link>
         <Link
           href="/think-tank"
           className="text-muted-foreground hover:text-foreground transition-colors"
         >
-          Think Tank
+          (AI)Xclelerate
         </Link>
         <button
           onClick={toggleTheme}
@@ -67,12 +70,27 @@ export function Navbar() {
             </svg>
           )}
         </button>
-        <Link href="/login" className="btn-primary">
-          Login
-        </Link>
-        <Link href="/register" className="btn-secondary">
-          Register
-        </Link>
+        
+        {status === "loading" ? (
+          <div className="h-10 w-20 bg-muted animate-pulse rounded-md" />
+        ) : session ? (
+          <ProfileMenu session={session} />
+        ) : (
+          <>
+            <Link 
+              href={`/login?callbackUrl=${encodeURIComponent(window.location.pathname)}`} 
+              className="btn-primary"
+            >
+              Login
+            </Link>
+            <Link 
+              href={`/register?callbackUrl=${encodeURIComponent(window.location.pathname)}`} 
+              className="btn-secondary"
+            >
+              Register
+            </Link>
+          </>
+        )}
       </div>
     </nav>
   );
