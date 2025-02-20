@@ -2,8 +2,33 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+
+interface Stats {
+  userCount: number;
+  solutionCount: number;
+}
 
 export default function Home() {
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        const response = await fetch('/api/stats');
+        const data = await response.json();
+        setStats(data);
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchStats();
+  }, []);
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -133,22 +158,26 @@ export default function Home() {
       {/* Stats Section */}
       <section className="py-20 bg-gradient-primary">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-center">
             <div>
-              <div className="text-5xl font-bold text-white mb-2">200+</div>
+              <div className="text-5xl font-bold text-white mb-2">
+                {isLoading ? (
+                  <span className="opacity-50">Loading...</span>
+                ) : (
+                  stats?.userCount ?? 0
+                )}
+              </div>
               <div className="text-white/80">Community Members</div>
             </div>
             <div>
-              <div className="text-5xl font-bold text-white mb-2">50+</div>
+              <div className="text-5xl font-bold text-white mb-2">
+                {isLoading ? (
+                  <span className="opacity-50">Loading...</span>
+                ) : (
+                  stats?.solutionCount ?? 0
+                )}
+              </div>
               <div className="text-white/80">AI Solutions</div>
-            </div>
-            <div>
-              <div className="text-5xl font-bold text-white mb-2">15+</div>
-              <div className="text-white/80">Partners</div>
-            </div>
-            <div>
-              <div className="text-5xl font-bold text-white mb-2">24/7</div>
-              <div className="text-white/80">Support</div>
             </div>
           </div>
         </div>
