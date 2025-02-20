@@ -25,7 +25,7 @@ export function Navbar() {
           (AI)Xchange
         </Link>
         <Link
-          href="/think-tank"
+          href="https://ghost.aixplore.odsp.astrazeneca.net"
           className="text-muted-foreground hover:text-foreground transition-colors"
         >
           (AI)Xclelerate
