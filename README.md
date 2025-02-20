@@ -1,7 +1,7 @@
-# AIXchange Platform
+# (AI)Xchange Platform
 
 <div align="center">
-  <img src="development-process-temp/mockups/robot-surfer.jpg" alt="AIXchange Robot Surfer" width="600">
+  <img src="development-process-temp/mockups/robot-surfer.jpg" alt="(AI)Xchange Robot Surfer" width="600">
 
   **A Modern Platform for AI Solution Discovery and Implementation**
 
@@ -14,14 +14,14 @@
 
 ## Overview
 
-AIXchange is an innovative platform designed to revolutionize how developers discover, share, and implement AI solutions. Built with modern web technologies and a focus on developer experience, AIXchange provides a robust marketplace for AI solutions with comprehensive documentation and seamless integration capabilities.
+(AI)Xchange is an innovative platform designed to revolutionize how developers discover, share, and implement AI solutions. Built with modern web technologies and a focus on developer experience, (AI)Xchange provides a robust marketplace for AI solutions with comprehensive documentation and seamless integration capabilities.
 
 ## Key Features
 
 - **Modern Interface**: Responsive design with light/dark theme support
 - **Secure Authentication**: Role-based access control with NextAuth.js
-- **AI Solutions Marketplace**: Discover and share AI implementations
-- **Interactive Playground**: Test solutions in real-time
+- **(AI)Xchange**: Discover and share AI implementations
+- **(AI)Xperiment**: Test solutions in real-time
 - **Community Platform**: Collaborate and contribute to solutions
 - **Version Control**: Track and manage solution versions
 
@@ -47,8 +47,8 @@ AIXchange is an innovative platform designed to revolutionize how developers dis
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/aixchange.git
-cd aixchange/app
+git clone https://github.com/yourusername/(ai)xchange.git
+cd (ai)xchange/app
 ```
 
 2. Configure environment:
@@ -69,8 +69,8 @@ The application will be available at `http://localhost:3000`
 
 1. Clone and install dependencies:
 ```bash
-git clone https://github.com/yourusername/aixchange.git
-cd aixchange/app
+git clone https://github.com/yourusername/(ai)xchange.git
+cd (ai)xchange/app
 npm install
 ```
 

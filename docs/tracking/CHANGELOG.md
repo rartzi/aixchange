@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Dynamic stats on landing page
+  - Real-time community member count
+  - Live AI solutions count
+  - Loading states for stats
+  - Stats API endpoint
 - Landing page implementation
   - Hero section with clear value proposition
   - How it Works section with step-by-step guide
@@ -42,6 +47,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cross-page theme consistency
 
 ### Changed
+- Updated landing page stats display
+  - Removed static Partners and Support stats
+  - Added dynamic data fetching
+  - Improved grid layout for stats section
 - Updated terminology for consistency
   - Changed "Create Solution" to "Submit Solution"
   - Changed "Bulk Import" to "Bulk Submission"

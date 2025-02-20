@@ -2,9 +2,12 @@
 
 import Link from "next/link";
 import { useTheme } from "@/components/theme/ThemeProvider";
+import { useSession } from "next-auth/react";
+import { ProfileMenu } from "./ProfileMenu";
 
 export function Navbar() {
   const { theme, toggleTheme } = useTheme();
+  const { data: session, status } = useSession();
 
   return (
     <nav className="container mx-auto px-4 py-4 flex justify-between items-center border-b border-border">
@@ -13,22 +16,22 @@ export function Navbar() {
       </Link>
       <div className="flex items-center gap-6">
         <Link
-          href="https://n8n.aixplore.odsp.astrazeneca.net"
-          className="text-muted-foreground hover:text-foreground transition-colors"
-        >
-          (AI)Xperiment
-        </Link>
-        <Link
-          href="https://ghost.aixplore.odsp.astrazeneca.net"
+          href="/solutions"
           className="text-muted-foreground hover:text-foreground transition-colors"
         >
           (AI)Xchange
         </Link>
         <Link
-          href="https://ghost.aixplore.odsp.astrazeneca.net"
+          href="/experiment"
           className="text-muted-foreground hover:text-foreground transition-colors"
         >
-          (AI)Xclelerate
+          (AI)Xperiment
+        </Link>
+        <Link
+          href="/community"
+          className="text-muted-foreground hover:text-foreground transition-colors"
+        >
+          (AI)Xccelerate
         </Link>
         <button
           onClick={toggleTheme}
@@ -67,12 +70,20 @@ export function Navbar() {
             </svg>
           )}
         </button>
-        <Link href="/login" className="btn-primary">
-          Login
-        </Link>
-        <Link href="/register" className="btn-secondary">
-          Register
-        </Link>
+        {status === "loading" ? (
+          <div className="w-20 h-10 bg-muted animate-pulse rounded-lg" />
+        ) : session ? (
+          <ProfileMenu session={session} />
+        ) : (
+          <>
+            <Link href="/login" className="btn-primary">
+              Login
+            </Link>
+            <Link href="/register" className="btn-secondary">
+              Register
+            </Link>
+          </>
+        )}
       </div>
     </nav>
   );

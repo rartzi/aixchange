@@ -1,13 +1,56 @@
 import Link from "next/link";
 import { SolutionsGrid } from "@/components/features/solutions/SolutionsGrid";
+import { prisma } from "@/lib/db/prisma";
 
 // Add dynamic flag to prevent static page generation
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+async function getInitialSolutions() {
+  try {
+    const solutions = await prisma.solution.findMany({
+      where: {
+        isPublished: true,
+      },
+      include: {
+        author: {
+          select: {
+            name: true,
+            image: true,
+          },
+        },
+        reviews: {
+          select: {
+            rating: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: 10,
+    });
+
+    return solutions.map((solution) => ({
+      ...solution,
+      createdAt: solution.createdAt.toISOString(),
+      updatedAt: solution.updatedAt.toISOString(),
+      reviewCount: solution.reviews.length,
+      resourceConfig: (solution.metadata as any)?.resourceConfig || {},
+      apiEndpoints: (solution.metadata as any)?.apiEndpoints || [],
+      documentation: (solution.metadata as any)?.documentation || {},
+    }));
+  } catch (error) {
+    console.error('Error fetching initial solutions:', error);
+    return [];
+  }
+}
+
 export default async function SolutionsPage() {
+  const initialSolutions = await getInitialSolutions();
+
   return (
-    <div>
+    <>
       {/* Header */}
       <section className="py-12 bg-gradient-primary">
         <div className="container mx-auto px-4">
@@ -37,7 +80,7 @@ export default async function SolutionsPage() {
       </section>
 
       {/* Solutions Grid with Search and Filters */}
-      <SolutionsGrid initialSolutions={[]} />
-    </div>
+      <SolutionsGrid initialSolutions={initialSolutions} />
+    </>
   );
 }

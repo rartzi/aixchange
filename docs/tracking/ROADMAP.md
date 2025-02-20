@@ -1,4 +1,4 @@
-# AiXchange Development Roadmap
+# (AI)Xchange Development Roadmap
 
 ## Phase 1: Planning & Design (Weeks 1-3)
 

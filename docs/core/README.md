@@ -1,7 +1,7 @@
-# AiXchange
+# (AI)Xchange
 
 ## Overview
-AiXchange is ODS's dynamic AI solutions marketplace within the AiXplore platform. It provides an app-store-like interface where users can browse, test, and deploy AI projects, complemented by a hands-on sandbox (AiX Lab) and a thriving community (AiXcelerate).
+(AI)Xchange is ODS's dynamic AI solutions marketplace within the (AI)Xplore platform. It provides an app-store-like interface where users can browse, test, and deploy AI projects, complemented by a hands-on (AI)Xperiment and a thriving community ((AI)Xclelerate).
 
 ## Key Features
 - App-store-like interface for AI solutions

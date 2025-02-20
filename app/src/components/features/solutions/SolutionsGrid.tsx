@@ -66,7 +66,7 @@ export function SolutionsGrid({ initialSolutions }: SolutionsGridProps) {
         const response = await fetch(`/api/solutions?${params.toString()}`);
         if (!response.ok) throw new Error('Failed to fetch solutions');
         
-        const data = await response.json();
+        const { data } = await response.json();
         setSolutions(data);
       } catch (error) {
         console.error('Error fetching solutions:', error);

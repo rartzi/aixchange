@@ -10,8 +10,6 @@ interface Stats {
   solutionCount: number;
 }
 
-const AIXCHANGE_URL = "https://ghost.aixplore.odsp.astrazeneca.net";
-
 export default function Home() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -53,7 +51,7 @@ export default function Home() {
           </p>
           <div className="flex gap-4">
             <Link
-              href={AIXCHANGE_URL}
+              href="/solutions"
               className="btn-primary text-lg"
             >
               Browse Solutions
@@ -204,7 +202,7 @@ export default function Home() {
               Get Started Free
             </Link>
             <Link
-              href={AIXCHANGE_URL}
+              href="/solutions"
               className="btn-secondary text-lg"
             >
               Explore Solutions
@@ -228,7 +226,7 @@ export default function Home() {
               <ul className="space-y-2">
                 <li>
                   <Link 
-                    href={AIXCHANGE_URL}
+                    href="/solutions"
                     className="text-muted-foreground hover:text-primary"
                   >
                     (AI)Xchange
