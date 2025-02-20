@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { z } from "zod"
 
@@ -18,6 +18,8 @@ const registerSchema = z.object({
 
 export function RegisterForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const callbackUrl = searchParams.get("callbackUrl") || "/"
   const [error, setError] = useState<string>("")
   const [isLoading, setIsLoading] = useState(false)
 
@@ -56,6 +58,7 @@ export function RegisterForm() {
         email: data.email,
         password: data.password,
         redirect: false,
+        callbackUrl,
       })
 
       if (signInResult?.error) {
@@ -63,7 +66,7 @@ export function RegisterForm() {
         return
       }
 
-      router.push("/dashboard")
+      router.push(callbackUrl)
       router.refresh()
     } catch (error) {
       if (error instanceof z.ZodError) {
