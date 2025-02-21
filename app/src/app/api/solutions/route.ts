@@ -82,7 +82,19 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const authorName = formData.get('authorName')?.toString() || 'Anonymous User';
-    await ensureAnonymousUser(authorName);
+    
+    // Update or create anonymous user with the provided name
+    await prisma.user.upsert({
+      where: { id: ANONYMOUS_USER_ID },
+      update: { name: authorName },
+      create: {
+        id: ANONYMOUS_USER_ID,
+        email: 'anonymous@aixchange.ai',
+        name: authorName,
+        role: 'USER',
+      },
+    });
+
     const data: Record<string, any> = {};
     
     // First get the imageUrl separately
