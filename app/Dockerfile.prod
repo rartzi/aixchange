@@ -50,12 +50,24 @@ RUN npx prisma generate
 # Build the application
 RUN npm run build
 
-# Create non-root user
+# Create non-root user and directories
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs && \
-    mkdir -p /app/uploads /app/public/external-images/solutions && \
-    chown -R nextjs:nodejs /app && \
-    chmod -R 755 /app/public/external-images
+    mkdir -p \
+        /app/uploads \
+        /app/public/external-images/solutions \
+        /app/.next/cache && \
+    chown -R nextjs:nodejs \
+        /app/uploads \
+        /app/public/external-images \
+        /app/.next/cache && \
+    chmod -R 755 \
+        /app/public/external-images \
+        /app/uploads
+
+# Move standalone build to root
+RUN cp -R /app/.next/standalone/* /app/ && \
+    rm -rf /app/.next/standalone
 
 # Copy and setup startup script
 COPY deploy/start.sh /app/start.sh

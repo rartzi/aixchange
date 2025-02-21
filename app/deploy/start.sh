@@ -5,11 +5,8 @@ MAX_RETRIES=30
 RETRY_INTERVAL=2
 
 echo "Waiting for database to be ready..."
-echo "Database URL: $DATABASE_URL"
-echo "Environment: $NODE_ENV"
-
 retries=0
-until npx prisma db push --skip-generate &>/dev/null || [ $retries -eq $MAX_RETRIES ]
+until pg_isready -h db -U $POSTGRES_USER -d $POSTGRES_DB &>/dev/null || [ $retries -eq $MAX_RETRIES ]
 do
   echo "Database connection attempt $((retries+1))/$MAX_RETRIES failed, retrying in ${RETRY_INTERVAL}s..."
   retries=$((retries+1))
