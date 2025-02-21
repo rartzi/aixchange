@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { SolutionCard } from './SolutionCard';
 import { FilterSidebar } from './FilterSidebar';
 import { useDebounce } from '@/lib/hooks/useDebounce';
@@ -8,9 +8,14 @@ import { Button } from '@/components/ui/button';
 import { Solution, FilterState, initialFilterState } from './types';
 
 interface SolutionStats {
-  total: number;
-  active: number;
-  pending: number;
+  solutions: {
+    total: number;
+    active: number;
+    pending: number;
+  };
+  community: {
+    members: number;
+  };
 }
 
 interface SolutionsGridProps {
@@ -24,7 +29,10 @@ export function SolutionsGrid({ initialSolutions }: SolutionsGridProps) {
   const [sort, setSort] = useState('recent');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [stats, setStats] = useState<SolutionStats>({ total: 0, active: 0, pending: 0 });
+  const [stats, setStats] = useState<SolutionStats>({
+    solutions: { total: 0, active: 0, pending: 0 },
+    community: { members: 0 }
+  });
   
   const debouncedSearch = useDebounce(searchQuery, 300);
 
@@ -42,6 +50,7 @@ export function SolutionsGrid({ initialSolutions }: SolutionsGridProps) {
     };
     fetchStats();
   }, []);
+
   const debouncedAuthor = useDebounce(filters.author, 300);
 
   // Extract unique tags from all solutions
@@ -51,7 +60,7 @@ export function SolutionsGrid({ initialSolutions }: SolutionsGridProps) {
       solution.tags.forEach(tag => tagSet.add(tag));
     });
     return Array.from(tagSet).sort();
-  }, [solutions]); // Update when solutions change to reflect all available tags
+  }, [solutions]);
 
   // Track if filters have changed
   const [filterKey, setFilterKey] = useState(0);
@@ -148,15 +157,19 @@ export function SolutionsGrid({ initialSolutions }: SolutionsGridProps) {
             <div className="flex justify-center gap-8 text-sm">
               <div className="flex items-center gap-2">
                 <span className="font-medium text-muted-foreground">Total Solutions:</span>
-                <span className="font-bold text-foreground">{stats.total}</span>
+                <span className="font-bold text-foreground">{stats.solutions.total}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="font-medium text-muted-foreground">Active:</span>
-                <span className="font-bold text-green-600 dark:text-green-400">{stats.active}</span>
+                <span className="font-bold text-green-600 dark:text-green-400">{stats.solutions.active}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="font-medium text-muted-foreground">Pending:</span>
-                <span className="font-bold text-yellow-600 dark:text-yellow-400">{stats.pending}</span>
+                <span className="font-bold text-yellow-600 dark:text-yellow-400">{stats.solutions.pending}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-muted-foreground">Community Members:</span>
+                <span className="font-bold text-blue-600 dark:text-blue-400">{stats.community.members}</span>
               </div>
             </div>
           </div>
