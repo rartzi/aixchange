@@ -81,6 +81,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced solution schema with additional metadata fields
 
 ### Fixed
+- Solution image display
+  - Fixed image URL format to properly serve through API route
+  - Added '/api' prefix to external image URLs
+  - Improved image loading reliability
 - Dark mode form input visibility
   - Added proper background and text colors to all form inputs
   - Improved contrast in dark mode for better readability

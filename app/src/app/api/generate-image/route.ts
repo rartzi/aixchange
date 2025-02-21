@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
         .toFile(filepath);
 
       // Return the relative path for the image URL
-      const imageUrl = `/external-images/solutions/${filename}`;
+      const imageUrl = `/api/external-images/solutions/${filename}`;
 
       return NextResponse.json({
         imageUrl,
