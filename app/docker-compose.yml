@@ -22,7 +22,7 @@ services:
       - ${PWD}/external-images:/app/public/external-images:ro
       # Mount source in development for hot reloading
       - ${NODE_ENV:-development}-node_modules:/app/node_modules
-      - ${NODE_ENV:-development}-source:/app:delegated
+      - .:/app:delegated
     user: "nextjs"
     depends_on:
       db:
@@ -110,8 +110,6 @@ volumes:
     name: aixplore-portal-dev-cache
   development-node_modules:
     name: aixplore-portal-dev-node-modules
-  development-source:
-    name: aixplore-portal-dev-source
   production-postgres:
     name: aixplore-portal-prod-postgres
   production-uploads:
