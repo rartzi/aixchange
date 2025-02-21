@@ -85,33 +85,35 @@ export async function POST(request: NextRequest) {
     await ensureAnonymousUser(authorName);
     const data: Record<string, any> = {};
     
+    // First get the imageUrl separately
+    const imageUrl = formData.get('imageUrl')?.toString();
+    
+    // Then process other fields
     for (const [key, value] of formData.entries()) {
       if (key === 'imageUrl') {
-        data[key] = value;
-      } else {
-        try {
-          data[key] = JSON.parse(value as string);
-        } catch {
-          data[key] = value;
-        }
+        continue; // Skip, we already got it
       }
+      try {
+        data[key] = JSON.parse(value as string);
+      } catch {
+        data[key] = value;
+      }
+    }
+
+    // Add imageUrl back if we have one
+    if (imageUrl) {
+      data.imageUrl = imageUrl;
+      console.log('Processing imageUrl in API:', imageUrl);
     }
 
     const validatedData = solutionSchema.parse(data);
 
-    // Log the data being sent to the database
-    console.log('Creating solution with data:', {
-      title: validatedData.title,
-      description: validatedData.description,
-      category: validatedData.category,
-      provider: validatedData.provider,
-      launchUrl: validatedData.launchUrl,
-      sourceCodeUrl: validatedData.sourceCodeUrl,
-      tokenCost: validatedData.tokenCost,
-      status: validatedData.status,
-      imageUrl: validatedData.imageUrl,
-      authorId: ANONYMOUS_USER_ID,
-      tags: validatedData.tags,
+    // Enhanced logging for image URL debugging
+    console.log('Solution Creation Debug:', {
+      rawFormData: Object.fromEntries(formData.entries()),
+      validatedImageUrl: validatedData.imageUrl,
+      imageUrlType: typeof validatedData.imageUrl,
+      finalImageUrl: typeof validatedData.imageUrl === 'string' ? validatedData.imageUrl : '/placeholder-image.jpg'
     });
 
     const solution = await prisma.solution.create({
@@ -126,7 +128,7 @@ export async function POST(request: NextRequest) {
         status: validatedData.status === 'Active' ? SolutionStatus.ACTIVE 
                : validatedData.status === 'Pending' ? SolutionStatus.PENDING 
                : SolutionStatus.INACTIVE,
-        imageUrl: typeof validatedData.imageUrl === 'string' ? validatedData.imageUrl : '/placeholder-image.jpg',
+        imageUrl: validatedData.imageUrl,
         author: {
           connect: { id: ANONYMOUS_USER_ID }
         },

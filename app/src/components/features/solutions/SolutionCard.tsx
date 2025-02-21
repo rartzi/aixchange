@@ -73,13 +73,21 @@ export function SolutionCard({
                 style={{ opacity: 0 }}
                 priority
                 onError={(e) => {
-                  console.error(`Image load error for ${imageUrl}`);
+                  console.error('Image load error:', {
+                    url: imageUrl,
+                    error: e,
+                    fallback: '/placeholder-image.jpg'
+                  });
                   setImageError(true);
                   const target = e.target as HTMLImageElement;
                   target.src = '/placeholder-image.jpg';
                   target.style.opacity = '1';
                 }}
                 onLoad={(e) => {
+                  console.log('Image loaded successfully:', {
+                    url: imageUrl,
+                    src: (e.target as HTMLImageElement).src
+                  });
                   const target = e.target as HTMLImageElement;
                   target.style.opacity = '1';
                   const skeleton = target.parentElement?.previousElementSibling;

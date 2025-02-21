@@ -81,25 +81,31 @@ export function CreateSolutionForm() {
           title: formData.title || 'solution'
         }),
       });
+const data = await response.json();
 
-      const data = await response.json();
+// Log the image generation response
+console.log('Image Generation Response:', {
+  status: response.status,
+  ok: response.ok,
+  data: data
+});
 
-      if (!response.ok) {
-        setStatusMessage({
-          type: 'error',
-          message: 'Failed to generate image',
-          details: data.details || 'Using default image instead'
-        });
-        return data.defaultImagePath || '/placeholder-image.jpg';
-      }
+if (!response.ok) {
+  setStatusMessage({
+    type: 'error',
+    message: 'Failed to generate image',
+    details: data.details || 'Using default image instead'
+  });
+  return data.defaultImagePath || '/placeholder-image.jpg';
+}
 
-      setStatusMessage({
-        type: 'success',
-        message: 'Image generated successfully',
-        details: `Generated image: ${data.filename}`
-      });
+setStatusMessage({
+  type: 'success',
+  message: 'Image generated successfully',
+  details: `Generated image: ${data.filename}`
+});
 
-      return data.imageUrl;
+return data.imageUrl;
     } catch (error) {
       console.error('Error generating image:', error);
       setStatusMessage({
@@ -134,19 +140,35 @@ export function CreateSolutionForm() {
       // Add author name to form data
       const formDataToSend = new FormData();
       formDataToSend.append('authorName', authorName);
+      // First append non-file fields
       Object.entries(formData).forEach(([key, value]) => {
         if (key === 'image' && value instanceof File) {
           formDataToSend.append(key, value);
-        } else if (key === 'imageUrl' && imageUrl) {
-          // Ensure we're using the latest generated imageUrl without stringifying
-          formDataToSend.append(key, imageUrl);
+        } else if (key === 'imageUrl') {
+          // Don't append imageUrl yet - we'll do it after
+          return;
         } else {
           formDataToSend.append(key, JSON.stringify(value));
         }
       });
-
-      // Log the image URL being sent
-      console.log('Sending solution with image URL:', imageUrl || formData.imageUrl || '/placeholder-image.jpg');
+      
+      // Now append imageUrl if we have one
+      if (imageUrl) {
+        console.log('Setting generated imageUrl in FormData:', imageUrl);
+        formDataToSend.append('imageUrl', imageUrl);
+      } else if (formData.imageUrl) {
+        console.log('Setting existing imageUrl in FormData:', formData.imageUrl);
+        formDataToSend.append('imageUrl', formData.imageUrl);
+      }
+// Enhanced logging for form data debugging
+console.log('Form Submission Debug:', {
+  generatedImageUrl: imageUrl,
+  formDataImageUrl: formData.imageUrl,
+  formDataEntries: Array.from(formDataToSend.entries()).reduce((acc, [key, value]) => {
+    acc[key] = value;
+    return acc;
+  }, {} as Record<string, any>)
+});
 
       const response = await fetch('/api/solutions', {
         method: 'POST',

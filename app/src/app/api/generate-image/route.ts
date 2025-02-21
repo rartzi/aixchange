@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
         .toFormat(IMAGE_FORMAT as 'png' | 'jpeg' | 'webp')
         .toFile(filepath);
 
-      // Return the relative path for the image URL
+      // Return the relative path for the image URL with /api prefix for serving
       const imageUrl = `/api/external-images/solutions/${filename}`;
 
       return NextResponse.json({
