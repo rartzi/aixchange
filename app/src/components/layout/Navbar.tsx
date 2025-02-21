@@ -17,19 +17,19 @@ export function Navbar() {
       <div className="flex items-center gap-6">
         <Link
           href="/solutions"
-          className="text-muted-foreground hover:text-foreground transition-colors"
+          className="text-lg font-medium text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-blue-300 transition-colors"
         >
           (AI)Xchange
         </Link>
         <Link
           href="/experiment"
-          className="text-muted-foreground hover:text-foreground transition-colors"
+          className="text-lg font-medium text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-blue-300 transition-colors"
         >
           (AI)Xperiment
         </Link>
         <Link
           href="/community"
-          className="text-muted-foreground hover:text-foreground transition-colors"
+          className="text-lg font-medium text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-blue-300 transition-colors"
         >
           (AI)Xccelerate
         </Link>
@@ -76,10 +76,16 @@ export function Navbar() {
           <ProfileMenu session={session} />
         ) : (
           <>
-            <Link href="/login" className="btn-primary">
+            <Link
+              href="/login"
+              className="px-4 py-2 text-lg font-medium bg-primary text-white hover:bg-primary/90 rounded-md transition-colors"
+            >
               Login
             </Link>
-            <Link href="/register" className="btn-secondary">
+            <Link
+              href="/register"
+              className="px-4 py-2 text-lg font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md transition-colors"
+            >
               Register
             </Link>
           </>
