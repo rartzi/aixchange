@@ -84,40 +84,26 @@ wait_for_migrations() {
     echo -e "${GREEN}Database migrations complete${NC}"
 }
 
-# Function to wait for container health
-wait_for_health() {
+# Function to wait for app readiness
+wait_for_app() {
     local container_name=$1
-    local start_period=120  # Match container's start_period
-    local interval=10       # Check every 10 seconds
-    local attempts=$((start_period / interval))
+    local max_wait=30  # 30 seconds should be enough
     local attempt=1
 
-    echo -e "${YELLOW}Waiting for application to be ready (timeout: ${start_period}s)...${NC}"
+    echo -e "${YELLOW}Waiting for application to be ready...${NC}"
     
-    while [ $attempt -le $attempts ]; do
-        STATUS=$(docker inspect --format='{{.State.Health.Status}}' $container_name 2>/dev/null)
-        
-        if [ "$STATUS" = "healthy" ]; then
-            echo -e "${GREEN}Application is healthy${NC}"
+    while [ $attempt -le $max_wait ]; do
+        if docker logs $container_name 2>&1 | grep -q "Ready in"; then
+            echo -e "${GREEN}Application is ready${NC}"
             return 0
-        elif [ "$STATUS" = "unhealthy" ]; then
-            echo -e "${RED}Container is unhealthy. Checking logs:${NC}"
-            docker logs $container_name
-            return 1
         fi
         
         echo -n "."
-        sleep $interval
+        sleep 1
         attempt=$((attempt + 1))
-        
-        # Show remaining time every 30 seconds
-        if [ $((attempt * interval % 30)) -eq 0 ]; then
-            remaining=$((start_period - attempt * interval))
-            echo -e "\n${YELLOW}Waiting... ${remaining}s remaining${NC}"
-        fi
     done
     
-    echo -e "${RED}Deployment failed - container did not become healthy within ${start_period}s${NC}"
+    echo -e "${RED}Deployment failed - application did not become ready within ${max_wait}s${NC}"
     echo -e "${YELLOW}Container logs:${NC}"
     docker logs $container_name
     return 1
@@ -157,9 +143,9 @@ greenfield() {
         fi
     '
     
-    # Wait for container to be healthy
+    # Wait for app to be ready
     CONTAINER_NAME="${PROJECT_NAME}-app-1"
-    if wait_for_health $CONTAINER_NAME; then
+    if wait_for_app $CONTAINER_NAME; then
         echo -e "${GREEN}Greenfield deployment complete${NC}"
         echo -e "${GREEN}Application is running on http://localhost:$APP_PORT${NC}"
         exit 0
@@ -182,9 +168,9 @@ preserve() {
         docker compose -f $COMPOSE_FILE -p $PROJECT_NAME up -d --build
     fi
     
-    # Wait for container to be healthy
+    # Wait for app to be ready
     CONTAINER_NAME="${PROJECT_NAME}-app-1"
-    if wait_for_health $CONTAINER_NAME; then
+    if wait_for_app $CONTAINER_NAME; then
         echo -e "${GREEN}Preserved deployment complete${NC}"
         echo -e "${GREEN}Application is running on http://localhost:$APP_PORT${NC}"
         exit 0
@@ -268,9 +254,9 @@ preserve_seed() {
     
     echo -e "${GREEN}Database seeding complete${NC}"
     
-    # Wait for container to be healthy
+    # Wait for app to be ready
     CONTAINER_NAME="${PROJECT_NAME}-app-1"
-    if wait_for_health $CONTAINER_NAME; then
+    if wait_for_app $CONTAINER_NAME; then
         echo -e "${GREEN}Preserved deployment with seeding complete${NC}"
         echo -e "${GREEN}Application is running on http://localhost:$APP_PORT${NC}"
         exit 0
