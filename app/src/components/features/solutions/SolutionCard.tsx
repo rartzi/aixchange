@@ -42,7 +42,7 @@ export function SolutionCard({
   status = 'Pending'
 }: SolutionCardProps) {
   return (
-    <Card className="bg-white dark:bg-gradient-to-br dark:from-purple-900/50 dark:to-purple-800/30 border-border hover:border-primary/40 transition-colors min-h-[500px] flex flex-col shadow-sm">
+    <Card className="bg-white dark:bg-[linear-gradient(135deg,rgb(17,24,39)_0%,rgb(29,40,58)_50%,rgb(30,58,138)_100%)] border-border hover:border-blue-400/30 transition-all min-h-[500px] flex flex-col shadow-md hover:shadow-xl dark:shadow-blue-900/20">
       <CardHeader className="pb-4">
         <div className="flex flex-col gap-6">
           <div className="relative w-full h-[200px] -mt-6 -mx-6 bg-gray-100 dark:bg-gray-800 overflow-hidden">
@@ -80,7 +80,7 @@ export function SolutionCard({
           
           <div className="flex justify-between items-start">
             <div>
-              <CardTitle className="text-xl font-semibold text-gray-900 dark:text-white hover:text-primary/80 transition-colors">
+              <CardTitle className="text-xl font-semibold text-gray-900 dark:text-white hover:text-primary/90 dark:hover:text-blue-200 transition-colors">
                 <Link href={`/solutions/${id}`}>{title}</Link>
               </CardTitle>
               <div className="flex items-center gap-2 mt-1">
@@ -117,33 +117,33 @@ export function SolutionCard({
       <CardContent className="flex-1 space-y-6">
         <div className="space-y-4">
           <div className="grid grid-cols-[auto,1fr] gap-x-4 gap-y-2">
-            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Status:</span>
+            <span className="text-sm font-medium text-gray-500 dark:text-blue-200">Status:</span>
             <span className={`text-sm px-2.5 py-0.5 rounded-full inline-flex items-center w-fit ${
-              status === 'Active' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
-              status === 'Pending' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
-              'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+              status === 'Active' ? 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-300' :
+              status === 'Pending' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-300' :
+              'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300'
             }`}>
               {status}
             </span>
 
-            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Category:</span>
-            <span className="text-sm text-gray-700 dark:text-gray-300">{category}</span>
+            <span className="text-sm font-medium text-gray-500 dark:text-blue-200/80">Category:</span>
+            <span className="text-sm text-gray-700 dark:text-white/90">{category}</span>
 
-            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Provider:</span>
-            <span className="text-sm text-gray-700 dark:text-gray-300">{provider}</span>
+            <span className="text-sm font-medium text-gray-500 dark:text-blue-200/80">Provider:</span>
+            <span className="text-sm text-gray-700 dark:text-white/90">{provider}</span>
 
-            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Cost:</span>
-            <span className="text-sm text-gray-700 dark:text-gray-300">{tokenCost} tokens</span>
+            <span className="text-sm font-medium text-gray-500 dark:text-blue-200/80">Cost:</span>
+            <span className="text-sm text-gray-700 dark:text-white/90">{tokenCost} tokens</span>
           </div>
         </div>
 
-        <p className="text-gray-600 dark:text-gray-300 line-clamp-2">{description}</p>
+        <p className="text-gray-600 dark:text-blue-100 line-clamp-2">{description}</p>
         
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 mt-2">
           {tags.map((tag) => (
             <span
               key={tag}
-              className="px-2.5 py-1 rounded-full text-sm bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground"
+              className="px-2.5 py-1 rounded-full text-sm bg-primary/10 text-primary dark:bg-blue-500/20 dark:text-blue-200"
             >
               {tag}
             </span>
@@ -156,7 +156,7 @@ export function SolutionCard({
           <Button
             variant="outline"
             size="sm"
-            className="text-gray-700 dark:text-gray-300"
+            className="text-gray-700 dark:text-blue-200 dark:border-blue-400/30 dark:hover:bg-blue-400/10"
             asChild
           >
             <a href={sourceCodeUrl} target="_blank" rel="noopener noreferrer">
@@ -170,7 +170,7 @@ export function SolutionCard({
         <Button
           variant="ghost"
           size="sm"
-          className="text-gray-700 dark:text-gray-300"
+          className="text-gray-700 dark:text-blue-200 dark:hover:bg-blue-400/10"
           asChild
         >
           <Link href={`/solutions/${id}`}>View Details</Link>
@@ -178,7 +178,7 @@ export function SolutionCard({
         <Button
           variant="default"
           size="sm"
-          className="bg-primary text-primary-foreground hover:bg-primary/90"
+          className="bg-primary text-primary-foreground hover:bg-primary/90 dark:bg-blue-500 dark:text-white dark:hover:bg-blue-600"
           asChild
         >
           <a href={launchUrl} target="_blank" rel="noopener noreferrer">
