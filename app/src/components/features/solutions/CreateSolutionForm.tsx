@@ -259,7 +259,7 @@ export function CreateSolutionForm() {
             id="description"
             value={formData.description}
             onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-            className={`w-full p-2 border rounded-md min-h-[100px] ${errors.description ? 'border-red-500' : ''}`}
+            className={`w-full p-2 border rounded-md min-h-[100px] bg-background text-foreground ${errors.description ? 'border-red-500' : ''}`}
           />
           {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
         </div>
@@ -278,7 +278,7 @@ export function CreateSolutionForm() {
                   setFormData(prev => ({ ...prev, category: value as typeof predefinedCategories[number] }));
                 }
               }}
-              className={`flex-1 p-2 border rounded-md ${errors.category ? 'border-red-500' : ''}`}
+              className={`flex-1 p-2 border rounded-md bg-background text-foreground ${errors.category ? 'border-red-500' : ''}`}
             >
               <option value="">Select a category</option>
               {predefinedCategories.map(category => (
@@ -301,7 +301,7 @@ export function CreateSolutionForm() {
             type="text"
             value={formData.provider}
             onChange={(e) => setFormData(prev => ({ ...prev, provider: e.target.value }))}
-            className={`w-full p-2 border rounded-md ${errors.provider ? 'border-red-500' : ''}`}
+            className={`w-full p-2 border rounded-md bg-background text-foreground ${errors.provider ? 'border-red-500' : ''}`}
           />
           {errors.provider && <p className="text-red-500 text-sm mt-1">{errors.provider}</p>}
         </div>
@@ -316,7 +316,7 @@ export function CreateSolutionForm() {
             type="url"
             value={formData.launchUrl}
             onChange={(e) => setFormData(prev => ({ ...prev, launchUrl: e.target.value }))}
-            className={`w-full p-2 border rounded-md ${errors.launchUrl ? 'border-red-500' : ''}`}
+            className={`w-full p-2 border rounded-md bg-background text-foreground ${errors.launchUrl ? 'border-red-500' : ''}`}
             placeholder="https://"
           />
           {errors.launchUrl && <p className="text-red-500 text-sm mt-1">{errors.launchUrl}</p>}
@@ -333,7 +333,7 @@ export function CreateSolutionForm() {
             min="0"
             value={formData.tokenCost}
             onChange={(e) => setFormData(prev => ({ ...prev, tokenCost: Number(e.target.value) }))}
-            className={`w-full p-2 border rounded-md ${errors.tokenCost ? 'border-red-500' : ''}`}
+            className={`w-full p-2 border rounded-md bg-background text-foreground ${errors.tokenCost ? 'border-red-500' : ''}`}
           />
           {errors.tokenCost && <p className="text-red-500 text-sm mt-1">{errors.tokenCost}</p>}
         </div>
@@ -365,7 +365,7 @@ export function CreateSolutionForm() {
               type="text"
               value={currentTag}
               onChange={(e) => setCurrentTag(e.target.value)}
-              className="flex-1 p-2 border rounded-md"
+              className="flex-1 p-2 border rounded-md bg-background text-foreground"
               placeholder="Add a tag"
               onKeyPress={(e) => {
                 if (e.key === 'Enter') {

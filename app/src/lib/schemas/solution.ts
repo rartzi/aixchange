@@ -50,9 +50,10 @@ export const solutionSchema = z.object({
   launchUrl: z.string()
     .url('Please enter a valid URL')
     .min(1, 'Launch URL is required'),
-  sourceCodeUrl: z.string()
-    .url('Please enter a valid GitHub URL')
-    .optional(),
+  sourceCodeUrl: z.union([
+    z.string().url('Please enter a valid GitHub URL'),
+    z.string().max(0)
+  ]).optional(),
   tokenCost: z.number()
     .min(0, 'Token cost must be 0 or greater')
     .default(0),

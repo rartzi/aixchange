@@ -81,6 +81,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced solution schema with additional metadata fields
 
 ### Fixed
+- Dark mode form input visibility
+  - Added proper background and text colors to all form inputs
+  - Improved contrast in dark mode for better readability
+- Optional GitHub repository URL submission
+  - Modified schema to accept empty strings
+  - Removed mandatory URL validation
+- Solutions grid infinite scroll
+  - Replaced "Load More" button with automatic loading
+  - Added intersection observer for better UX
+  - Improved loading state feedback
 - Theme persistence during page navigation
 - Color opacity support in Tailwind
 - Button hover transitions

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { SolutionCard } from './SolutionCard';
 import { FilterSidebar } from './FilterSidebar';
 import { useDebounce } from '@/lib/hooks/useDebounce';
@@ -71,11 +71,29 @@ export function SolutionsGrid({ initialSolutions }: SolutionsGridProps) {
     setPage(1); // Reset pagination when filters change
   };
 
-  const loadMore = () => {
+  const observerRef = useRef<HTMLDivElement>(null);
+  const loadMore = useCallback(() => {
     if (!isLoading && hasMore) {
       setPage(prev => prev + 1);
     }
-  };
+  }, [isLoading, hasMore]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isLoading) {
+          loadMore();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (observerRef.current) {
+      observer.observe(observerRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [loadMore, isLoading]);
 
   return (
     <>
@@ -151,24 +169,17 @@ export function SolutionsGrid({ initialSolutions }: SolutionsGridProps) {
           )}
         </div>
 
-        {/* Fixed Bottom Area */}
-        <div className="sticky bottom-0 bg-background/80 backdrop-blur-sm border-t border-border py-4">
-          <div className="container mx-auto px-4 flex justify-between items-center">
-            <div className="text-sm text-muted-foreground">
-              {solutions.length} solutions found
-            </div>
-            {hasMore && (
-              <Button
-                onClick={loadMore}
-                disabled={isLoading}
-                variant="outline"
-                className="hover:bg-primary/5"
-              >
-                {isLoading ? 'Loading...' : 'Load More'}
-              </Button>
+        {/* Infinite Scroll Trigger */}
+        {hasMore && (
+          <div
+            ref={observerRef}
+            className="h-10 w-full flex items-center justify-center py-8"
+          >
+            {isLoading && (
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             )}
           </div>
-        </div>
+        )}
       </div>
 
       {/* Filter Sidebar */}
