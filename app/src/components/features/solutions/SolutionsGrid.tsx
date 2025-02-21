@@ -7,6 +7,12 @@ import { useDebounce } from '@/lib/hooks/useDebounce';
 import { Button } from '@/components/ui/button';
 import { Solution, FilterState, initialFilterState } from './types';
 
+interface SolutionStats {
+  total: number;
+  active: number;
+  pending: number;
+}
+
 interface SolutionsGridProps {
   initialSolutions: Solution[];
 }
@@ -20,8 +26,24 @@ export function SolutionsGrid({ initialSolutions }: SolutionsGridProps) {
   const [hasMore, setHasMore] = useState(true);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [stats, setStats] = useState<SolutionStats>({ total: 0, active: 0, pending: 0 });
   
   const debouncedSearch = useDebounce(searchQuery, 300);
+
+  // Fetch statistics
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await fetch('/api/stats');
+        if (!response.ok) throw new Error('Failed to fetch stats');
+        const data = await response.json();
+        setStats(data);
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      }
+    };
+    fetchStats();
+  }, []);
   const debouncedAuthor = useDebounce(filters.author, 300);
 
   // Extract unique tags from all solutions
@@ -54,7 +76,9 @@ export function SolutionsGrid({ initialSolutions }: SolutionsGridProps) {
         if (!response.ok) throw new Error('Failed to fetch solutions');
         
         const { data, metadata } = await response.json();
-        setSolutions(page === 1 ? data : [...solutions, ...data]);
+        setSolutions(prevSolutions =>
+          page === 1 ? data : [...prevSolutions, ...data]
+        );
         setHasMore(metadata?.hasMore ?? false);
       } catch (error) {
         console.error('Error fetching solutions:', error);
@@ -98,6 +122,26 @@ export function SolutionsGrid({ initialSolutions }: SolutionsGridProps) {
   return (
     <>
       <div className="min-h-screen flex flex-col">
+        {/* Stats Bar */}
+        <div className="bg-background/80 backdrop-blur-sm border-b border-border py-3">
+          <div className="container mx-auto px-4">
+            <div className="flex justify-center gap-8 text-sm">
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-muted-foreground">Total Solutions:</span>
+                <span className="font-bold text-foreground">{stats.total}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-muted-foreground">Active:</span>
+                <span className="font-bold text-green-600 dark:text-green-400">{stats.active}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-muted-foreground">Pending:</span>
+                <span className="font-bold text-yellow-600 dark:text-yellow-400">{stats.pending}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Top Bar with Search and Filter Toggle */}
         <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-sm border-b border-border py-4">
           <div className="container mx-auto px-4 flex items-center gap-4">
