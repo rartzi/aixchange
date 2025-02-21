@@ -1,107 +1,61 @@
-# Image Guidelines for Solution Cards
+# Image Guidelines
 
-## Technical Specifications
-- Aspect Ratio: 16:9 (landscape)
-- Recommended Resolution: 1200x675 pixels (2x for retina displays)
-- Minimum Resolution: 600x338 pixels
-- Format: PNG or JPEG
-- Maximum File Size: 2MB
+## External Images Configuration
 
-## DALL-E Prompt Template
-When generating images with DALL-E or similar AI tools, use this template:
+The AIXchange platform supports serving images from an external directory without copying them into the container. This is useful for managing large image collections or sharing images across multiple services.
+
+### Directory Structure
+
+Images should be placed in the `external-images` directory at the root of the application. This directory is mounted read-only in the Docker container.
 
 ```
-Create a 16:9 landscape image of [your subject], centered in the frame, with [subject details]. 
-Include ample padding around the main subject. 
-Use [style/mood] visual style.
-Ensure the focal point is in the center of the composition.
+aixchange/
+├── app/
+├── external-images/    # Place your images here
+│   ├── solutions/     # Solution-related images
+│   └── profiles/      # Profile images
+└── ...
 ```
 
-### Example Prompts:
+### Configuration
 
-1. For Technology Solutions:
+1. Environment Variables:
+   - `NEXT_PUBLIC_EXTERNAL_IMAGES_URL`: Public URL for accessing images (default: http://localhost:3000/external-images)
+   - `EXTERNAL_IMAGES_PATH`: Local mount path in the container (default: /external-images)
+
+2. Using Images in Solutions:
+   - When creating a solution, set the `imageUrl` to a path relative to the external-images directory
+   - Example: If your image is in `external-images/solutions/my-solution.jpg`, set `imageUrl` to `/external-images/solutions/my-solution.jpg`
+
+### Example
+
+```typescript
+const solution = {
+  title: "My AI Solution",
+  imageUrl: "/external-images/solutions/my-solution.jpg",
+  // ... other fields
+};
 ```
-Create a 16:9 landscape image of a modern technological interface, centered in the frame, with holographic displays and subtle blue glowing elements. Include ample padding around the main interface. Use a clean, minimalist visual style with a dark background. Ensure the focal point is in the center of the composition.
-```
 
-2. For AI Solutions:
-```
-Create a 16:9 landscape image of an abstract AI neural network visualization, centered in the frame, with interconnected nodes and flowing data streams. Include ample padding around the main visualization. Use a futuristic, high-tech visual style with a gradient background. Ensure the focal point is in the center of the composition.
-```
+### Security Considerations
 
-## Best Practices
+1. The external-images directory is mounted read-only in the container
+2. Only image files should be placed in this directory
+3. Implement proper access controls if needed for sensitive images
+4. Consider using a CDN for production deployments
 
-1. Composition
-- Center the main subject/focal point
-- Leave sufficient padding around edges
-- Avoid crucial elements near the edges
-- Use symmetrical compositions when possible
+### Supported Image Formats
 
-2. Content
-- Keep the subject matter clear and focused
-- Avoid busy or cluttered backgrounds
-- Use consistent color schemes
-- Ensure good contrast for visibility
+- JPEG/JPG
+- PNG
+- GIF
+- WebP
+- AVIF
 
-3. Visual Style
-- Maintain professional and modern aesthetics
-- Use appropriate tech-focused imagery
-- Keep text minimal or avoid it entirely
-- Consider dark mode compatibility
+### Best Practices
 
-## Common Mistakes to Avoid
-
-1. Composition Issues
-- ❌ Subject too close to edges
-- ❌ Important elements outside center area
-- ❌ Asymmetrical or unbalanced layouts
-
-2. Technical Issues
-- ❌ Wrong aspect ratio
-- ❌ Low resolution
-- ❌ Poor image quality
-- ❌ Excessive file size
-
-3. Content Issues
-- ❌ Overcrowded compositions
-- ❌ Distracting backgrounds
-- ❌ Poor contrast
-- ❌ Text-heavy images
-
-## Tips for AI Image Generation
-
-1. Specify Composition
-- Always mention "centered in the frame"
-- Request "ample padding" or "negative space"
-- Specify "landscape orientation"
-- Include "16:9 aspect ratio" in prompts
-
-2. Style Guidance
-- Use clear style descriptors (e.g., "minimalist", "futuristic", "professional")
-- Specify color schemes when relevant
-- Request specific lighting effects if needed
-- Mention desired mood or atmosphere
-
-3. Quality Control
-- Generate multiple variations
-- Check resolution and aspect ratio
-- Verify center composition
-- Ensure subject clarity
-
-## Examples of Good vs Bad Images
-
-Good Image Characteristics:
-- ✅ Centered main subject
-- ✅ Proper 16:9 ratio
-- ✅ Clear focal point
-- ✅ Sufficient padding
-- ✅ Professional appearance
-- ✅ Consistent style
-
-Bad Image Characteristics:
-- ❌ Off-center composition
-- ❌ Incorrect aspect ratio
-- ❌ Cluttered layout
-- ❌ Edge-to-edge content
-- ❌ Inconsistent style
-- ❌ Poor quality or resolution
+1. Organize images in subdirectories by type (solutions, profiles, etc.)
+2. Use descriptive filenames
+3. Optimize images for web use
+4. Consider implementing image resizing for different use cases
+5. Regular cleanup of unused images

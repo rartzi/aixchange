@@ -19,6 +19,7 @@ AiXchange is a platform for sharing and discovering AI solutions, fostering coll
   - Usage instructions
   - Requirements
   - Metadata (version, author, creation date)
+  - Images (external storage support)
 - Validation ensures data quality and consistency
 - Admin-only access with security controls
 
@@ -28,6 +29,23 @@ AiXchange is a platform for sharing and discovering AI solutions, fostering coll
 - Category and tag assignment
 - Version tracking
 - Metadata management
+- Image management:
+  - External image storage support
+  - Flexible image organization
+  - Automatic fallback handling
+  - See [Image Guidelines](./IMAGE_GUIDELINES.md) for details
+
+### Media Management
+- External image storage system
+- Organized directory structure
+- Efficient image serving
+- Automatic fallback images
+- Support for multiple image formats
+- Separation of concerns:
+  - Images stored outside container
+  - Read-only access for security
+  - CDN-ready architecture
+  - Scalable storage solution
 
 ### User Management
 - User registration and authentication
@@ -46,7 +64,11 @@ AiXchange is a platform for sharing and discovering AI solutions, fostering coll
 
 ### Components
 - Reusable button styles (Primary, Secondary, Outline)
-- Card components with hover effects
+- Card components with hover effects:
+  - Dynamic image loading
+  - Loading skeleton animations
+  - Fallback image handling
+  - Responsive image display
 - Navigation bar with theme toggle
 - Form components with validation
 - Admin-specific interfaces
@@ -57,6 +79,11 @@ AiXchange is a platform for sharing and discovering AI solutions, fostering coll
 - Responsive layouts
 - Modern UI patterns
 - Consistent typography
+- Image presentation:
+  - Aspect ratio maintenance
+  - Loading states
+  - Error handling
+  - Responsive sizing
 
 ## Technical Features
 - Next.js 14 with App Router
@@ -66,6 +93,11 @@ AiXchange is a platform for sharing and discovering AI solutions, fostering coll
 - API routes with validation
 - Authentication system
 - Admin controls
+- External media handling:
+  - Configurable storage paths
+  - Environment-based configuration
+  - Docker volume integration
+  - CDN support readiness
 
 ## Roadmap Features
 - Enhanced search capabilities
@@ -74,3 +106,19 @@ AiXchange is a platform for sharing and discovering AI solutions, fostering coll
 - Solution versioning
 - Analytics dashboard
 - Community features
+- Advanced media features:
+  - Image optimization service
+  - Bulk image processing
+  - Image metadata handling
+  - CDN integration
+  - Multi-region image serving
+
+## Image Management Guidelines
+For detailed information about image management, including:
+- Directory structure
+- Supported formats
+- Configuration options
+- Best practices
+- Security considerations
+
+Please refer to our comprehensive [Image Guidelines](./IMAGE_GUIDELINES.md) documentation.

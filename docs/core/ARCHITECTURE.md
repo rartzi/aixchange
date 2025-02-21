@@ -23,6 +23,13 @@ This document outlines the technical architecture and implementation plan for (A
   - Redis for caching
   - Elasticsearch for search
 
+- **Media Layer**
+  - External images storage
+  - Read-only volume mounting
+  - CDN integration for production
+  - Configurable image paths
+  - See [Image Guidelines](./IMAGE_GUIDELINES.md) for details
+
 - **Authentication**
   - NextAuth.js with JWT strategy
   - Session duration: 30 days
@@ -43,6 +50,7 @@ This document outlines the technical architecture and implementation plan for (A
   - Version control integration
   - Resource management
   - Deployment orchestration
+  - Image management and validation
 
 - **Analytics Service**
   - Usage tracking
@@ -70,12 +78,14 @@ This document outlines the technical architecture and implementation plan for (A
   - Docker containerization
   - Service mesh integration
   - Auto-scaling capabilities
+  - External volume management for images
 
 - **Cloud Infrastructure**
   - Provider-agnostic design
   - Multi-region support
   - Load balancing
   - CDN integration
+  - Shared storage for images
 
 ### 2.2 Security Architecture
 - **Authentication & Authorization**
@@ -93,6 +103,7 @@ This document outlines the technical architecture and implementation plan for (A
   - Secure communication
   - Audit logging
   - Compliance monitoring
+  - Read-only access to external media
 
 ### 2.3 Monitoring & Observability
 - **Monitoring Stack**
@@ -106,6 +117,7 @@ This document outlines the technical architecture and implementation plan for (A
   - Performance tracking
   - Resource utilization
   - Error tracking
+  - Image serving metrics
 
 ## 3. Development Environment
 
@@ -118,6 +130,9 @@ cd (ai)xplore
 # Environment configuration
 cp .env.example .env
 # Configure environment variables
+
+# Create external images directory
+mkdir -p external-images/solutions external-images/profiles
 
 # Development servers
 npm run dev
@@ -133,6 +148,8 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=development
+    volumes:
+      - ./external-images:/external-images:ro
 
   backend:
     build: ./backend
@@ -161,17 +178,20 @@ services:
   - API testing
   - Service integration
   - Database integration
+  - Image serving validation
 
 - **End-to-End Testing**
   - User flow testing
   - Performance testing
   - Security testing
+  - Media access testing
 
 ### 4.2 Quality Assurance
 - Minimum 80% code coverage
 - Automated testing pipeline
 - Performance benchmarks
 - Security scanning
+- Image validation checks
 
 ## 5. Deployment Strategy
 
@@ -184,6 +204,7 @@ services:
 6. Production deployment
 7. Health checks
 8. Monitoring setup
+9. Image storage verification
 
 ### 5.2 Environment Management
 ```bash
@@ -192,6 +213,8 @@ NODE_ENV=production
 DATABASE_URL=postgresql://user:pass@host:5432/db
 REDIS_URL=redis://host:6379
 JWT_SECRET=your-secret-key
+EXTERNAL_IMAGES_PATH=/external-images
+NEXT_PUBLIC_EXTERNAL_IMAGES_URL=http://localhost:3000/external-images
 ```
 
 ## 6. Scalability & Performance
@@ -201,12 +224,14 @@ JWT_SECRET=your-secret-key
 - Database replication
 - Cache distribution
 - Load balancing
+- CDN for images
 
 ### 6.2 Performance Optimization
 - Code optimization
 - Cache strategies
 - Database indexing
 - CDN utilization
+- Image optimization
 
 ## 7. Disaster Recovery
 
@@ -215,12 +240,14 @@ JWT_SECRET=your-secret-key
 - Configuration backups
 - Code repository mirrors
 - Recovery procedures
+- Image storage backups
 
 ### 7.2 High Availability
 - Multi-region deployment
 - Failover mechanisms
 - Data replication
 - Service redundancy
+- Redundant image storage
 
 ## 8. Schema Design Patterns
 
@@ -235,6 +262,7 @@ JWT_SECRET=your-secret-key
       id          String    @id
       title       String
       description String
+      imageUrl    String?   // External image reference
       // Core fields as direct columns
       createdAt   DateTime  @default(now())
       updatedAt   DateTime  @updatedAt
@@ -258,6 +286,7 @@ JWT_SECRET=your-secret-key
     {
       id: "123",
       title: "Solution",
+      imageUrl: "/external-images/solutions/image.jpg",
       metadata: {
         category: "AI",
         provider: "OpenAI"
@@ -267,6 +296,7 @@ JWT_SECRET=your-secret-key
     {
       id: "123",
       title: "Solution",
+      imageUrl: "/external-images/solutions/image.jpg",
       category: "AI",
       provider: "OpenAI"
     }
@@ -310,8 +340,15 @@ JWT_SECRET=your-secret-key
 - **Alternatives Considered**: Remix, SvelteKit
 - **Impact**: Improved performance, better SEO
 
+### Media Storage
+- **Decision**: External images with read-only mounting
+- **Rationale**: Efficient image serving without container bloat
+- **Alternatives Considered**: S3, embedded storage
+- **Impact**: Better resource utilization, simplified image management
+
 ## References
 - [Development Guide](./DEVELOPMENT.md)
 - [Product Documentation](./PRODUCT.md)
 - [Governance Documentation](./GOVERNANCE.md)
 - [Vision Document](./VISION.md)
+- [Image Guidelines](./IMAGE_GUIDELINES.md)
