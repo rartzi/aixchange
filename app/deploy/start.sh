@@ -6,7 +6,7 @@ RETRY_INTERVAL=2
 
 echo "Waiting for database to be ready..."
 retries=0
-until npx prisma db push --skip-generate &>/dev/null || [ $retries -eq $MAX_RETRIES ]
+until npx prisma migrate deploy &>/dev/null || [ $retries -eq $MAX_RETRIES ]
 do
   echo "Database connection attempt $((retries+1))/$MAX_RETRIES failed, retrying in ${RETRY_INTERVAL}s..."
   retries=$((retries+1))
@@ -18,8 +18,7 @@ if [ $retries -eq $MAX_RETRIES ]; then
   exit 1
 fi
 
-echo "Database is ready, running migrations..."
-npx prisma migrate deploy
+echo "Database is ready..."
 
 echo "Starting application..."
 if [ "$NODE_ENV" = "production" ]; then
