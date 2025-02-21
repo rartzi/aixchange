@@ -36,7 +36,7 @@ RUN npx prisma generate
 # Build Next.js
 RUN npm run build
 
-# Production image, copy all the files and run next
+# Production image copy all the files and run next
 FROM base AS runner
 WORKDIR /app
 
