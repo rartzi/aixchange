@@ -109,7 +109,7 @@ greenfield() {
     
     # Wait for container to be healthy
     echo -e "${YELLOW}Waiting for application to be ready...${NC}"
-    CONTAINER_NAME="aixplore-portal-app"
+    CONTAINER_NAME="${PROJECT_NAME}-app-1"
     MAX_ATTEMPTS=30
     ATTEMPT=1
     
@@ -153,7 +153,7 @@ preserve() {
     
     # Wait for container to be healthy
     echo -e "${YELLOW}Waiting for application to be ready...${NC}"
-    CONTAINER_NAME="aixplore-portal-app"
+    CONTAINER_NAME="${PROJECT_NAME}-app-1"
     MAX_ATTEMPTS=30
     ATTEMPT=1
     
