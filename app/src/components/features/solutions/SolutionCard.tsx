@@ -4,6 +4,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
+import { useState } from "react";
 
 interface SolutionCardProps {
   id: string;
@@ -49,6 +50,8 @@ export function SolutionCard({
   status = 'Pending',
   onVote = () => {}
 }: SolutionCardProps) {
+  const [imageError, setImageError] = useState(false);
+
   return (
     <Card className="bg-white dark:bg-[linear-gradient(135deg,rgb(17,24,39)_0%,rgb(29,40,58)_50%,rgb(30,58,138)_100%)] border-border hover:border-blue-400/30 transition-all min-h-[500px] flex flex-col shadow-md hover:shadow-xl dark:shadow-blue-900/20">
       <CardHeader className="pb-4">
@@ -62,7 +65,7 @@ export function SolutionCard({
             
             <div className="relative w-full h-[200px] bg-gray-50 dark:bg-gray-900">
               <Image
-                src={imageUrl || '/placeholder-image.jpg'}
+                src={!imageError ? (imageUrl || '/placeholder-image.jpg') : '/placeholder-image.jpg'}
                 alt={title}
                 fill
                 sizes="600px"
@@ -70,6 +73,8 @@ export function SolutionCard({
                 style={{ opacity: 0 }}
                 priority
                 onError={(e) => {
+                  console.error(`Image load error for ${imageUrl}`);
+                  setImageError(true);
                   const target = e.target as HTMLImageElement;
                   target.src = '/placeholder-image.jpg';
                   target.style.opacity = '1';

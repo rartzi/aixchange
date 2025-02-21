@@ -6,6 +6,31 @@ const prisma = new PrismaClient();
 const ANONYMOUS_USER_ID = 'anonymous-user';
 const ADMIN_USER_ID = 'admin-user';
 
+// Available images in external-images/solutions with descriptive mapping
+const solutionImages = {
+  aiImageGenerator: 'promptpilot.png',
+  translationBot: 'n8n-workflow-engine.png',
+  sentimentAnalysis: 'dominodata-rag-chatbot--query-only-.png',
+  objectDetection: 'flowise-builder.png',
+  textGeneration: 'dominodata-rag-knowledgebase-manager.png'
+};
+
+// Function to generate random rating data
+const getRandomRatingData = () => {
+  const rating = Math.random() * 5; // Random rating between 0 and 5
+  const totalVotes = Math.floor(Math.random() * 100) + 1; // 1 to 100 votes
+  const upvotePercentage = 0.5 + (rating / 10); // Higher rating means more upvotes
+  const upvotes = Math.floor(totalVotes * upvotePercentage);
+  const downvotes = totalVotes - upvotes;
+
+  return {
+    rating: parseFloat(rating.toFixed(1)),
+    totalVotes,
+    upvotes,
+    downvotes
+  };
+};
+
 async function main() {
   // Create admin user
   const hashedPassword = await bcrypt.hash('admin123', 10);
@@ -47,9 +72,10 @@ async function main() {
       launchUrl: 'https://example.com/image-generator',
       tokenCost: 100,
       status: 'ACTIVE',
-      imageUrl: '/placeholder-image.jpg',
+      imageUrl: `/images/${solutionImages.aiImageGenerator}`,
       tags: ['image-generation', 'ai-art', 'creative'],
       isPublished: true,
+      ...getRandomRatingData(),
       metadata: {
         resourceConfig: {
           cpu: '2 cores',
@@ -74,9 +100,10 @@ async function main() {
       launchUrl: 'https://example.com/translator',
       tokenCost: 50,
       status: 'ACTIVE',
-      imageUrl: '/placeholder-image.jpg',
+      imageUrl: `/images/${solutionImages.translationBot}`,
       tags: ['translation', 'nlp', 'language'],
       isPublished: true,
+      ...getRandomRatingData(),
       metadata: {
         resourceConfig: {
           cpu: '1 core',
@@ -100,9 +127,10 @@ async function main() {
       launchUrl: 'https://example.com/sentiment',
       tokenCost: 75,
       status: 'ACTIVE',
-      imageUrl: '/placeholder-image.jpg',
+      imageUrl: `/images/${solutionImages.sentimentAnalysis}`,
       tags: ['sentiment', 'nlp', 'analytics'],
       isPublished: true,
+      ...getRandomRatingData(),
       metadata: {
         resourceConfig: {
           cpu: '1 core',
@@ -126,9 +154,10 @@ async function main() {
       launchUrl: 'https://example.com/object-detection',
       tokenCost: 150,
       status: 'ACTIVE',
-      imageUrl: '/placeholder-image.jpg',
+      imageUrl: `/images/${solutionImages.objectDetection}`,
       tags: ['computer-vision', 'object-detection', 'ml'],
       isPublished: true,
+      ...getRandomRatingData(),
       metadata: {
         resourceConfig: {
           cpu: '4 cores',
@@ -153,9 +182,10 @@ async function main() {
       launchUrl: 'https://example.com/text-gen',
       tokenCost: 200,
       status: 'ACTIVE',
-      imageUrl: '/placeholder-image.jpg',
+      imageUrl: `/images/${solutionImages.textGeneration}`,
       tags: ['text-generation', 'nlp', 'creative'],
       isPublished: true,
+      ...getRandomRatingData(),
       metadata: {
         resourceConfig: {
           cpu: '8 cores',

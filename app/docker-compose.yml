@@ -14,10 +14,12 @@ services:
       - NEXTAUTH_URL=${NEXTAUTH_URL}
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
       - UPLOAD_DIR=/app/uploads
+      - EXTERNAL_IMAGES_PATH=/app/public/external-images
       - NEXT_TELEMETRY_DISABLED=1
     volumes:
       - solution_uploads:/app/uploads
       - next_cache:/app/.next/cache
+      - ${PWD}/external-images:/app/public/external-images:ro
     user: "node"
     depends_on:
       db:

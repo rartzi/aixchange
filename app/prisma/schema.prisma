@@ -94,8 +94,11 @@ model Solution {
   sourceCodeUrl String?        // GitHub repository URL (optional)
   tokenCost     Int           @default(0)
   rating        Float         @default(0)
+  totalVotes    Int           @default(0)
+  upvotes       Int           @default(0)
+  downvotes     Int           @default(0)
   status        SolutionStatus @default(PENDING)
-  imageUrl      String        @default("/placeholder-image.jpg")
+  imageUrl      String?       // Made optional to test fallback
   
   // Structured metadata for additional fields
   metadata      Json?         // Type-safe via Zod schema
