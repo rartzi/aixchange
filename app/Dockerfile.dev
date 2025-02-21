@@ -1,0 +1,59 @@
+# Use Node.js LTS as base image
+FROM node:18-alpine AS base
+
+# Install dependencies only when needed
+FROM base AS deps
+WORKDIR /app
+
+# Install additional development tools
+RUN apk add --no-cache \
+    curl \
+    wget \
+    git \
+    python3 \
+    make \
+    g++
+
+# Install dependencies based on the preferred package manager
+COPY package.json package-lock.json ./
+RUN npm ci
+
+# Development image
+FROM base AS development
+WORKDIR /app
+
+# Copy dependency manifests and install dependencies
+COPY --from=deps /app/node_modules ./node_modules
+COPY package.json package-lock.json ./
+
+# Set development environment
+ENV NODE_ENV=development
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PATH /app/node_modules/.bin:$PATH
+
+# Install development tools
+RUN apk add --no-cache \
+    curl \
+    wget \
+    git
+
+# Generate Prisma Client
+COPY prisma ./prisma
+RUN npx prisma generate
+
+# Create non-root user
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Create necessary directories with proper permissions
+RUN mkdir -p /app/uploads /app/.next /app/public/external-images && \
+    chown -R nextjs:nodejs /app
+
+# Switch to non-root user
+USER nextjs
+
+# Expose ports for the application and debugging
+EXPOSE 3000 9229
+
+# Start the application in development mode
+CMD ["npm", "run", "dev"]

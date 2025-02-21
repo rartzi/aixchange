@@ -1,28 +1,25 @@
-name: aixplore-portal
+version: '3.8'
 
 services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile
-    container_name: aixplore-portal-app
+      dockerfile: Dockerfile.prod
+      target: runner
     ports:
       - "${PORT:-3000}:3000"
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
-      - NODE_ENV=${NODE_ENV:-development}
+      - NODE_ENV=production
       - NEXTAUTH_URL=${NEXTAUTH_URL}
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
       - UPLOAD_DIR=/app/uploads
       - EXTERNAL_IMAGES_PATH=/app/public/external-images
       - NEXT_TELEMETRY_DISABLED=1
     volumes:
-      - ${NODE_ENV:-development}-uploads:/app/uploads
-      - ${NODE_ENV:-development}-cache:/app/.next/cache
+      - solution_uploads:/app/uploads
+      - next_cache:/app/.next/cache
       - ${PWD}/external-images:/app/public/external-images:ro
-      # Mount source in development for hot reloading
-      - ${NODE_ENV:-development}-node_modules:/app/node_modules
-      - ${NODE_ENV:-development}-source:/app:delegated
     user: "nextjs"
     depends_on:
       db:
@@ -32,6 +29,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 40s
     deploy:
       resources:
         limits:
@@ -40,15 +38,19 @@ services:
         reservations:
           cpus: '0.5'
           memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     networks:
-      - aixplore-network
+      - aixchange-network
     restart: unless-stopped
 
   db:
     image: postgres:14-alpine
-    container_name: aixplore-portal-db
     volumes:
-      - ${NODE_ENV:-development}-postgres:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
       - ./backups:/backups
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
@@ -67,13 +69,17 @@ services:
         reservations:
           cpus: '0.5'
           memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     networks:
-      - aixplore-network
+      - aixchange-network
     restart: unless-stopped
 
   backup:
     image: postgres:14-alpine
-    container_name: aixplore-portal-backup
     volumes:
       - ./backups:/backups
     environment:
@@ -93,32 +99,17 @@ services:
     depends_on:
       - db
     networks:
-      - aixplore-network
+      - aixchange-network
     restart: unless-stopped
 
 networks:
-  aixplore-network:
-    name: aixplore-portal-network
+  aixchange-network:
     driver: bridge
 
 volumes:
-  development-postgres:
-    name: aixplore-portal-dev-postgres
-  development-uploads:
-    name: aixplore-portal-dev-uploads
-  development-cache:
-    name: aixplore-portal-dev-cache
-  development-node_modules:
-    name: aixplore-portal-dev-node-modules
-  development-source:
-    name: aixplore-portal-dev-source
-  production-postgres:
-    name: aixplore-portal-prod-postgres
-  production-uploads:
-    name: aixplore-portal-prod-uploads
-  production-cache:
-    name: aixplore-portal-prod-cache
-  production-node_modules:
-    name: aixplore-portal-prod-node-modules
-  production-source:
-    name: aixplore-portal-prod-source
+  postgres_data:
+    driver: local
+  solution_uploads:
+    driver: local
+  next_cache:
+    driver: local
