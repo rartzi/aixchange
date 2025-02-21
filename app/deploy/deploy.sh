@@ -75,6 +75,10 @@ greenfield() {
     cleanup
     
     # Build and start containers
+    # Export port for docker-compose and update NEXTAUTH_URL
+    export PORT=$APP_PORT
+    export NEXTAUTH_URL="http://localhost:$APP_PORT"
+    
     if [ "$USE_PROD" = true ]; then
         docker compose -f $COMPOSE_PROD_FILE -p $PROJECT_NAME up -d --build
     else
@@ -85,9 +89,19 @@ greenfield() {
     echo -e "${YELLOW}Waiting for database to be ready...${NC}"
     sleep 10
     
-    # Run database migrations and create admin user
+    # Run database migrations
     docker compose -p $PROJECT_NAME exec app npx prisma migrate deploy
-    docker compose -p $PROJECT_NAME exec app node scripts/create-admin.js
+
+    # Create admin user with proper environment variables
+    echo "Creating admin user..."
+    docker compose -p $PROJECT_NAME exec app bash -c '
+        if [[ -n "$ADMIN_EMAIL" && -n "$ADMIN_PASSWORD" ]]; then
+            ADMIN_EMAIL="$ADMIN_EMAIL" ADMIN_PASSWORD="$ADMIN_PASSWORD" node scripts/create-admin.js
+        else
+            echo "Warning: ADMIN_EMAIL and/or ADMIN_PASSWORD not set. Using defaults."
+            node scripts/create-admin.js
+        fi
+    '
     
     echo -e "${GREEN}Greenfield deployment complete${NC}"
     echo -e "${GREEN}Application is running on http://localhost:$APP_PORT${NC}"
