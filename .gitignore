@@ -70,3 +70,6 @@ Thumbs.db
 # Docker
 .docker/
 docker-compose.override.yml
+
+# Generated Content
+app/external-images/
