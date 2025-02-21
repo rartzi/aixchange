@@ -13,10 +13,8 @@ const DEFAULT_PAGE_SIZE = 30;
 type ApiResponse<T> = {
   data: T;
   meta?: {
-    page?: number;
-    pageSize?: number;
-    total?: number;
     hasMore?: boolean;
+    nextCursor?: string;
   };
 };
 
@@ -37,8 +35,8 @@ const queryParamsSchema = z.object({
   minPrice: z.coerce.number().min(0).optional(),
   maxPrice: z.coerce.number().min(0).optional(),
   tags: z.string().optional(),
-  page: z.coerce.number().min(1).optional().default(1),
-  pageSize: z.coerce.number().min(1).max(100).optional().default(DEFAULT_PAGE_SIZE),
+  cursor: z.string().optional(),
+  limit: z.coerce.number().min(1).max(100).optional().default(DEFAULT_PAGE_SIZE),
 });
 
 type SolutionWithAuthorAndReviews = Solution & {
@@ -215,8 +213,8 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const params = Object.fromEntries(searchParams.entries());
     
-    const { 
-      category, 
+    const {
+      category,
       provider,
       author,
       search,
@@ -225,13 +223,23 @@ export async function GET(request: NextRequest) {
       minPrice,
       maxPrice,
       tags,
-      page,
-      pageSize,
+      cursor,
+      limit,
     } = queryParamsSchema.parse(params);
 
     const where: Prisma.SolutionWhereInput = {
       isPublished: true,
     };
+
+    // Cursor-based pagination
+    let skip: number | undefined;
+    let take: number = limit;
+    
+    if (cursor) {
+      where.id = {
+        gt: cursor // Get items after the cursor
+      };
+    }
 
     // Text search across multiple fields
     if (search) {
@@ -308,9 +316,10 @@ export async function GET(request: NextRequest) {
         orderBy = { createdAt: 'desc' };
     }
 
-    // Get all solutions with related data
+    // Get solutions with cursor-based pagination
     const solutions = await prisma.solution.findMany({
       where,
+      take: take + 1, // Fetch one extra to determine if there are more items
       include: {
         author: {
           select: {
@@ -327,8 +336,13 @@ export async function GET(request: NextRequest) {
       orderBy,
     });
 
+    // Check if there are more items
+    const hasMore = solutions.length > take;
+    const items = hasMore ? solutions.slice(0, -1) : solutions;
+    const nextCursor = hasMore ? items[items.length - 1].id : undefined;
+
     // Transform solutions for response
-    const transformedSolutions = solutions.map((solution: SolutionWithAuthorAndReviews) => {
+    const transformedSolutions = items.map((solution: SolutionWithAuthorAndReviews) => {
       const metadata = solution.metadata as SolutionMetadata;
       
       return {
@@ -343,8 +357,8 @@ export async function GET(request: NextRequest) {
     const response: ApiResponse<typeof transformedSolutions> = {
       data: transformedSolutions,
       meta: {
-        total: transformedSolutions.length,
-        hasMore: false,
+        hasMore,
+        nextCursor,
       },
     };
 

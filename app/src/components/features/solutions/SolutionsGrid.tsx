@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { SolutionCard } from './SolutionCard';
 import { FilterSidebar } from './FilterSidebar';
 import { useDebounce } from '@/lib/hooks/useDebounce';
@@ -33,6 +33,9 @@ export function SolutionsGrid({ initialSolutions }: SolutionsGridProps) {
     solutions: { total: 0, active: 0, pending: 0 },
     community: { members: 0 }
   });
+  const [cursor, setCursor] = useState<string | undefined>(undefined);
+  const [hasMore, setHasMore] = useState(true);
+  const observerTarget = useRef<HTMLDivElement>(null);
   
   const debouncedSearch = useDebounce(searchQuery, 300);
 
@@ -70,36 +73,63 @@ export function SolutionsGrid({ initialSolutions }: SolutionsGridProps) {
     setFilterKey(prev => prev + 1);
   }, [debouncedSearch, filters.category, filters.provider, debouncedAuthor, filters.selectedTags, sort]);
 
-  // Fetch solutions when filters change
-  useEffect(() => {
-    const fetchSolutions = async () => {
-      setIsLoading(true);
-      try {
-        const params = new URLSearchParams();
-        if (debouncedSearch) params.append('search', debouncedSearch);
-        if (filters.category) params.append('category', filters.category);
-        if (filters.provider) params.append('provider', filters.provider);
-        if (debouncedAuthor) params.append('author', debouncedAuthor);
-        if (sort) params.append('sort', sort);
-        
-        if (filters.selectedTags.length > 0) {
-          params.append('tags', filters.selectedTags.join(','));
-        }
-
-        const response = await fetch(`/api/solutions?${params.toString()}`);
-        if (!response.ok) throw new Error('Failed to fetch solutions');
-        
-        const { data } = await response.json();
-        setSolutions(data);
-      } catch (error) {
-        console.error('Error fetching solutions:', error);
-      } finally {
-        setIsLoading(false);
+  // Fetch solutions
+  const fetchSolutions = useCallback(async (isInitialFetch: boolean = false) => {
+    if (isLoading || (!hasMore && !isInitialFetch)) return;
+    
+    setIsLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (debouncedSearch) params.append('search', debouncedSearch);
+      if (filters.category) params.append('category', filters.category);
+      if (filters.provider) params.append('provider', filters.provider);
+      if (debouncedAuthor) params.append('author', debouncedAuthor);
+      if (sort) params.append('sort', sort);
+      if (cursor && !isInitialFetch) params.append('cursor', cursor);
+      
+      if (filters.selectedTags.length > 0) {
+        params.append('tags', filters.selectedTags.join(','));
       }
-    };
 
-    fetchSolutions();
+      const response = await fetch(`/api/solutions?${params.toString()}`);
+      if (!response.ok) throw new Error('Failed to fetch solutions');
+      
+      const { data, meta } = await response.json();
+      
+      setSolutions(prev => isInitialFetch ? data : [...prev, ...data]);
+      setHasMore(meta.hasMore);
+      setCursor(meta.nextCursor);
+    } catch (error) {
+      console.error('Error fetching solutions:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [debouncedSearch, filters.category, filters.provider, debouncedAuthor, filters.selectedTags, sort, cursor, isLoading, hasMore]);
+
+  // Reset and fetch when filters change
+  useEffect(() => {
+    setCursor(undefined);
+    setHasMore(true);
+    fetchSolutions(true);
   }, [debouncedSearch, filters.category, filters.provider, debouncedAuthor, filters.selectedTags, sort]);
+
+  // Intersection Observer for infinite scroll
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isLoading && hasMore) {
+          fetchSolutions();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => observer.disconnect();
+  }, [fetchSolutions, isLoading, hasMore]);
 
   const renderContent = () => {
     if (isLoading) {
@@ -129,17 +159,29 @@ export function SolutionsGrid({ initialSolutions }: SolutionsGridProps) {
     }
 
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 max-w-[1600px] mx-auto">
-        {solutions.map((solution) => (
-          <SolutionCard
-            key={solution.id}
-            {...solution}
-            author={{
-              name: solution.author?.name ?? 'Anonymous',
-              image: solution.author?.image ?? undefined,
-            }}
-          />
-        ))}
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 max-w-[1600px] mx-auto">
+          {solutions.map((solution) => (
+            <SolutionCard
+              key={solution.id}
+              {...solution}
+              author={{
+                name: solution.author?.name ?? 'Anonymous',
+                image: solution.author?.image ?? undefined,
+              }}
+            />
+          ))}
+        </div>
+        
+        {/* Intersection Observer Target */}
+        <div
+          ref={observerTarget}
+          className="h-10 flex items-center justify-center"
+        >
+          {isLoading && hasMore && (
+            <div className="animate-spin rounded-full h-6 w-6 border-2 border-primary border-t-transparent" />
+          )}
+        </div>
       </div>
     );
   };

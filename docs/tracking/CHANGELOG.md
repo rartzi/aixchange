@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 ### Added
+- Cursor-based pagination for solutions page
+  - Efficient data retrieval for large datasets
+  - Optimized performance with infinite scroll
+  - Maintained search and filter capabilities
+  - Improved loading states and feedback
 - Placeholder pages for upcoming features:
   - Experiment platform
   - Events
@@ -13,7 +18,6 @@
   - Privacy policy
 - Reusable PlaceholderPage component for consistent "coming soon" pages
 - New deployment option `preserve-seed` to deploy with database seeding
-- Reusable PlaceholderPage component for consistent "coming soon" pages
 
 ### Fixed
 - Image generation and storage issues:
