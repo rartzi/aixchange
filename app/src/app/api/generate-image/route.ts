@@ -8,8 +8,8 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// Get paths relative to the project root
-const EXTERNAL_IMAGES_PATH = path.join(process.cwd(), process.env.EXTERNAL_IMAGES_PATH || 'external-images');
+// Use the exact path from environment variable
+const EXTERNAL_IMAGES_PATH = process.env.EXTERNAL_IMAGES_PATH || '/app/public/external-images';
 const IMAGE_SIZE = process.env.DALLE_IMAGE_SIZE || '1024x1024';
 const IMAGE_QUALITY = process.env.DALLE_IMAGE_QUALITY || 'standard';
 const IMAGE_FORMAT = process.env.DALLE_IMAGE_FORMAT || 'png';
@@ -72,6 +72,15 @@ export async function POST(request: NextRequest) {
       const filename = `${sanitizedTitle}-${timestamp}.${IMAGE_FORMAT}`;
       const filepath = path.join(solutionsDir, filename);
 
+      console.log('Image generation debug:', {
+        EXTERNAL_IMAGES_PATH,
+        solutionsDir,
+        filename,
+        filepath,
+        exists: fs.existsSync(solutionsDir),
+        dirContents: fs.existsSync(solutionsDir) ? fs.readdirSync(solutionsDir) : []
+      });
+
       // Convert base64 to buffer
       const imageBuffer = Buffer.from(response.data[0].b64_json, 'base64');
 
@@ -79,6 +88,12 @@ export async function POST(request: NextRequest) {
       await sharp(imageBuffer)
         .toFormat(IMAGE_FORMAT as 'png' | 'jpeg' | 'webp')
         .toFile(filepath);
+
+      console.log('Image saved successfully:', {
+        filepath,
+        fileExists: fs.existsSync(filepath),
+        fileSize: fs.existsSync(filepath) ? fs.statSync(filepath).size : 0
+      });
 
       // Return the relative path for the image URL with /api prefix for serving
       const imageUrl = `/api/external-images/solutions/${filename}`;

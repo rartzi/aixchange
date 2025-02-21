@@ -1,5 +1,30 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- Placeholder pages for upcoming features:
+  - Experiment platform
+  - Events
+  - Blog
+  - Documentation
+  - Support center
+  - About page
+  - Contact form
+  - Privacy policy
+- Reusable PlaceholderPage component for consistent "coming soon" pages
+
+### Fixed
+- Image generation and storage issues:
+  - Added external-images API route for serving generated images
+  - Fixed file permissions in Docker containers
+  - Improved volume mount configurations
+  - Added proper error handling and logging
+- Docker deployment improvements:
+  - Made project name configurable
+  - Added container health checks
+  - Fixed volume permissions
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),

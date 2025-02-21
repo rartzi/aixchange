@@ -46,13 +46,18 @@ ENV NEXT_TELEMETRY_DISABLED 1
 # Create non-root user with specific UID/GID for better security
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs && \
-    mkdir -p /app/uploads /app/public/external-images && \
-    chown -R nextjs:nodejs /app
+    mkdir -p /app/uploads /app/public/external-images/solutions && \
+    chown -R nextjs:nodejs /app && \
+    chmod -R 755 /app/public/external-images
 
 # Install only necessary production dependencies
 RUN apk --no-cache add \
     curl \
     tini
+
+# Copy and setup startup script first
+COPY deploy/start.sh /app/start.sh
+RUN chmod +x /app/start.sh
 
 # Copy built files and set proper permissions
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
@@ -61,15 +66,6 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
-
-# Create startup script with proper error handling
-RUN echo '#!/bin/sh' > /app/start.sh && \
-    echo 'set -e' >> /app/start.sh && \
-    echo 'echo "Running database migrations..."' >> /app/start.sh && \
-    echo 'npx prisma migrate deploy' >> /app/start.sh && \
-    echo 'echo "Starting application..."' >> /app/start.sh && \
-    echo 'exec node server.js' >> /app/start.sh && \
-    chmod +x /app/start.sh
 
 # Switch to non-root user
 USER nextjs
@@ -85,4 +81,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
 ENTRYPOINT ["/sbin/tini", "--"]
 
 # Start the application
-CMD ["/app/start.sh"]
+CMD ["/bin/sh", "/app/start.sh"]

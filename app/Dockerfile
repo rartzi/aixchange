@@ -25,11 +25,16 @@ COPY . .
 # Build the application
 RUN npm run build
 
+# Copy and setup startup script first
+COPY deploy/start.sh /app/start.sh
+RUN chmod +x /app/start.sh
+
 # Create non-root user
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs && \
-    mkdir -p /app/uploads /app/public/external-images && \
-    chown -R nextjs:nodejs /app
+    mkdir -p /app/uploads /app/public/external-images/solutions && \
+    chown -R nextjs:nodejs /app && \
+    chmod -R 755 /app/public/external-images
 
 # Switch to non-root user
 USER nextjs
@@ -37,20 +42,9 @@ USER nextjs
 # Expose port
 EXPOSE 3000
 
-# Create startup script
-RUN echo '#!/bin/sh' > /app/start.sh && \
-    echo 'set -e' >> /app/start.sh && \
-    echo 'npx prisma migrate deploy' >> /app/start.sh && \
-    echo 'if [ "$NODE_ENV" = "production" ]; then' >> /app/start.sh && \
-    echo '  node server.js' >> /app/start.sh && \
-    echo 'else' >> /app/start.sh && \
-    echo '  npm run dev' >> /app/start.sh && \
-    echo 'fi' >> /app/start.sh && \
-    chmod +x /app/start.sh
-
 # Add health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
     CMD curl -f http://localhost:3000/api/health || exit 1
 
 # Start the application
-CMD ["/app/start.sh"]
+CMD ["/bin/sh", "/app/start.sh"]

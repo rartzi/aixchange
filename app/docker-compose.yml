@@ -19,7 +19,7 @@ services:
     volumes:
       - ${NODE_ENV:-development}-uploads:/app/uploads
       - ${NODE_ENV:-development}-cache:/app/.next/cache
-      - ${PWD}/external-images:/app/public/external-images:ro
+      - ${PWD}/external-images:/app/public/external-images
       # Mount source in development for hot reloading
       - ${NODE_ENV:-development}-node_modules:/app/node_modules
       - .:/app:delegated

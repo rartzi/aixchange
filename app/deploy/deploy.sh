@@ -12,7 +12,10 @@ DB_PORT=5432
 ENV_FILE="../.env"
 COMPOSE_FILE="../docker-compose.yml"
 COMPOSE_PROD_FILE="../docker-compose.prod.yml"
-PROJECT_NAME="aixplore-portal"
+PROJECT_NAME=${PROJECT_NAME:-"aixplore-portal"}
+
+# Load container name from project name
+CONTAINER_NAME="${PROJECT_NAME}-app"
 
 # Function to display usage
 usage() {
@@ -103,8 +106,34 @@ greenfield() {
         fi
     '
     
-    echo -e "${GREEN}Greenfield deployment complete${NC}"
-    echo -e "${GREEN}Application is running on http://localhost:$APP_PORT${NC}"
+    # Wait for container to be healthy
+    echo -e "${YELLOW}Waiting for application to be ready...${NC}"
+    CONTAINER_NAME="aixplore-portal-app"
+    MAX_ATTEMPTS=30
+    ATTEMPT=1
+    
+    while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
+        STATUS=$(docker inspect --format='{{.State.Health.Status}}' $CONTAINER_NAME 2>/dev/null)
+        
+        if [ "$STATUS" = "healthy" ]; then
+            echo -e "${GREEN}Greenfield deployment complete${NC}"
+            echo -e "${GREEN}Application is running on http://localhost:$APP_PORT${NC}"
+            exit 0
+        elif [ "$STATUS" = "unhealthy" ]; then
+            echo -e "${RED}Container is unhealthy. Checking logs:${NC}"
+            docker logs $CONTAINER_NAME
+            exit 1
+        fi
+        
+        echo -n "."
+        sleep 2
+        ATTEMPT=$((ATTEMPT + 1))
+    done
+    
+    echo -e "${RED}Deployment failed - container did not become healthy within timeout${NC}"
+    echo -e "${YELLOW}Container logs:${NC}"
+    docker logs $CONTAINER_NAME
+    exit 1
 }
 
 # Function for preserved deployment
@@ -121,8 +150,34 @@ preserve() {
         docker compose -f $COMPOSE_FILE -p $PROJECT_NAME up -d --build
     fi
     
-    echo -e "${GREEN}Preserved deployment complete${NC}"
-    echo -e "${GREEN}Application is running on http://localhost:$APP_PORT${NC}"
+    # Wait for container to be healthy
+    echo -e "${YELLOW}Waiting for application to be ready...${NC}"
+    CONTAINER_NAME="aixplore-portal-app"
+    MAX_ATTEMPTS=30
+    ATTEMPT=1
+    
+    while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
+        STATUS=$(docker inspect --format='{{.State.Health.Status}}' $CONTAINER_NAME 2>/dev/null)
+        
+        if [ "$STATUS" = "healthy" ]; then
+            echo -e "${GREEN}Preserved deployment complete${NC}"
+            echo -e "${GREEN}Application is running on http://localhost:$APP_PORT${NC}"
+            exit 0
+        elif [ "$STATUS" = "unhealthy" ]; then
+            echo -e "${RED}Container is unhealthy. Checking logs:${NC}"
+            docker logs $CONTAINER_NAME
+            exit 1
+        fi
+        
+        echo -n "."
+        sleep 2
+        ATTEMPT=$((ATTEMPT + 1))
+    done
+    
+    echo -e "${RED}Deployment failed - container did not become healthy within timeout${NC}"
+    echo -e "${YELLOW}Container logs:${NC}"
+    docker logs $CONTAINER_NAME
+    exit 1
 }
 
 # Function for portal-only deployment
