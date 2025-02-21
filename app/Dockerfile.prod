@@ -53,8 +53,11 @@ RUN addgroup --system --gid 1001 nodejs && \
 # Install only necessary production dependencies
 RUN apk --no-cache add \
     curl \
-    tini && \
-    npm install -g bcryptjs
+    tini
+
+# Copy package files for seeding
+COPY --from=deps /app/node_modules/@prisma/client /app/node_modules/@prisma/client
+COPY --from=deps /app/node_modules/bcryptjs /app/node_modules/bcryptjs
 
 # Copy and setup startup script first
 COPY deploy/start.sh /app/start.sh
