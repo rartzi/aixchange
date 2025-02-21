@@ -78,80 +78,87 @@ export function SolutionCard({
             </div>
           </div>
           
-          <div className="flex justify-between items-start">
-            <div>
-              <CardTitle className="text-xl font-semibold text-gray-900 dark:text-white hover:text-primary/90 dark:hover:text-blue-200 transition-colors">
-                <Link href={`/solutions/${id}`}>{title}</Link>
-              </CardTitle>
-              <div className="flex items-center gap-2 mt-1">
-                <CardDescription className="text-muted-foreground">
-                  by {author.name}
-                </CardDescription>
-                <span className="text-muted-foreground">•</span>
-                <CardDescription className="text-muted-foreground">
-                  {new Date(createdAt).toLocaleDateString()}
-                </CardDescription>
+          <div className="space-y-4">
+            <div className="flex justify-between items-start">
+              <div>
+                <CardTitle className="text-xl font-semibold text-gray-900 dark:text-white hover:text-primary/90 dark:hover:text-blue-200 transition-colors">
+                  <Link href={`/solutions/${id}`}>{title}</Link>
+                </CardTitle>
+                <div className="flex items-center gap-2 mt-1">
+                  <CardDescription className="text-muted-foreground">
+                    by {author.name}
+                  </CardDescription>
+                  <span className="text-muted-foreground">•</span>
+                  <CardDescription className="text-muted-foreground">
+                    {new Date(createdAt).toLocaleDateString()}
+                  </CardDescription>
+                </div>
+              </div>
+              {rating !== undefined && (
+                <div className="flex items-center gap-1 text-yellow-400">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    className="w-5 h-5"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <span className="font-medium">{rating.toFixed(1)}</span>
+                </div>
+              )}
+            </div>
+            
+            <div className="relative min-h-[4.5em]">
+              <p className="text-gray-600 dark:text-blue-100 line-clamp-3 hover:line-clamp-none transition-all cursor-pointer">
+                {description}
+              </p>
+            </div>
+            
+            <div className="min-h-[4em] flex items-start">
+              <div className="flex flex-wrap gap-2 max-h-[3.6em] overflow-hidden">
+                {tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="px-2.5 py-1 rounded-full text-sm bg-primary/10 text-primary dark:bg-blue-500/20 dark:text-blue-200"
+                  >
+                    {tag}
+                  </span>
+                ))}
               </div>
             </div>
-            {rating !== undefined && (
-              <div className="flex items-center gap-1 text-yellow-400">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  className="w-5 h-5"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <span className="font-medium">{rating.toFixed(1)}</span>
-              </div>
-            )}
           </div>
         </div>
       </CardHeader>
 
       <CardContent className="flex-1 space-y-6">
-        <div className="space-y-4">
-          <div className="grid grid-cols-[auto,1fr] gap-x-4 gap-y-2">
-            <span className="text-sm font-medium text-gray-500 dark:text-blue-200">Status:</span>
-            <span className={`text-sm px-2.5 py-0.5 rounded-full inline-flex items-center w-fit ${
-              status === 'Active' ? 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-300' :
-              status === 'Pending' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-300' :
-              'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300'
-            }`}>
-              {status}
-            </span>
+        <div className="grid grid-cols-[auto,1fr] gap-x-4 gap-y-3">
+          <span className="text-sm font-medium text-gray-500 dark:text-blue-200">Status:</span>
+          <span className={`text-sm px-2.5 py-0.5 rounded-full inline-flex items-center w-fit ${
+            status === 'Active' ? 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-300' :
+            status === 'Pending' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-300' :
+            'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300'
+          }`}>
+            {status}
+          </span>
 
-            <span className="text-sm font-medium text-gray-500 dark:text-blue-200/80">Category:</span>
-            <span className="text-sm text-gray-700 dark:text-white/90">{category}</span>
+          <span className="text-sm font-medium text-gray-500 dark:text-blue-200/80">Category:</span>
+          <span className="text-sm text-gray-700 dark:text-white/90">{category}</span>
 
-            <span className="text-sm font-medium text-gray-500 dark:text-blue-200/80">Provider:</span>
-            <span className="text-sm text-gray-700 dark:text-white/90">{provider}</span>
-
-            <span className="text-sm font-medium text-gray-500 dark:text-blue-200/80">Cost:</span>
-            <span className="text-sm text-gray-700 dark:text-white/90">{tokenCost} tokens</span>
-          </div>
-        </div>
-
-        <p className="text-gray-600 dark:text-blue-100 line-clamp-2">{description}</p>
-        
-        <div className="flex flex-wrap gap-2 mt-2">
-          {tags.map((tag) => (
-            <span
-              key={tag}
-              className="px-2.5 py-1 rounded-full text-sm bg-primary/10 text-primary dark:bg-blue-500/20 dark:text-blue-200"
-            >
-              {tag}
-            </span>
-          ))}
+          <span className="text-sm font-medium text-gray-500 dark:text-blue-200/80">Provider:</span>
+          <span className="text-sm text-gray-700 dark:text-white/90">{provider}</span>
         </div>
       </CardContent>
 
-      <CardFooter className="pt-6 flex flex-wrap gap-3 justify-end border-t border-border">
+      <CardFooter className="pt-6 flex flex-wrap gap-3 items-center border-t border-border">
+        <div className="flex-1 text-sm text-gray-700 dark:text-white/90">
+          <span className="font-medium">{tokenCost} tokens</span>
+        </div>
+        
         {sourceCodeUrl && (
           <Button
             variant="outline"
