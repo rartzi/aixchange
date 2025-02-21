@@ -51,7 +51,7 @@ type SolutionWithAuthorAndReviews = Solution & {
  * Ensures the anonymous user exists in the database
  * @throws {Error} If unable to create anonymous user
  */
-async function ensureAnonymousUser() {
+async function ensureAnonymousUser(name: string = 'Anonymous User') {
   try {
     const anonymousUser = await prisma.user.findUnique({
       where: { id: ANONYMOUS_USER_ID },
@@ -62,7 +62,7 @@ async function ensureAnonymousUser() {
         data: {
           id: ANONYMOUS_USER_ID,
           email: 'anonymous@aixchange.ai',
-          name: 'Anonymous User',
+          name: name,
           role: 'USER',
         },
       });
@@ -80,20 +80,39 @@ async function ensureAnonymousUser() {
  */
 export async function POST(request: NextRequest) {
   try {
-    await ensureAnonymousUser();
-
     const formData = await request.formData();
+    const authorName = formData.get('authorName')?.toString() || 'Anonymous User';
+    await ensureAnonymousUser(authorName);
     const data: Record<string, any> = {};
     
     for (const [key, value] of formData.entries()) {
-      try {
-        data[key] = JSON.parse(value as string);
-      } catch {
+      if (key === 'imageUrl') {
         data[key] = value;
+      } else {
+        try {
+          data[key] = JSON.parse(value as string);
+        } catch {
+          data[key] = value;
+        }
       }
     }
 
     const validatedData = solutionSchema.parse(data);
+
+    // Log the data being sent to the database
+    console.log('Creating solution with data:', {
+      title: validatedData.title,
+      description: validatedData.description,
+      category: validatedData.category,
+      provider: validatedData.provider,
+      launchUrl: validatedData.launchUrl,
+      sourceCodeUrl: validatedData.sourceCodeUrl,
+      tokenCost: validatedData.tokenCost,
+      status: validatedData.status,
+      imageUrl: validatedData.imageUrl,
+      authorId: ANONYMOUS_USER_ID,
+      tags: validatedData.tags,
+    });
 
     const solution = await prisma.solution.create({
       data: {
@@ -107,7 +126,7 @@ export async function POST(request: NextRequest) {
         status: validatedData.status === 'Active' ? SolutionStatus.ACTIVE 
                : validatedData.status === 'Pending' ? SolutionStatus.PENDING 
                : SolutionStatus.INACTIVE,
-        imageUrl: validatedData.imageUrl || '/placeholder-image.jpg',
+        imageUrl: typeof validatedData.imageUrl === 'string' ? validatedData.imageUrl : '/placeholder-image.jpg',
         author: {
           connect: { id: ANONYMOUS_USER_ID }
         },

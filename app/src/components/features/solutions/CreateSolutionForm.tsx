@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { solutionSchema, predefinedCategories, type SolutionFormData } from '@/lib/schemas/solution';
@@ -13,6 +14,14 @@ type ExtendedFormData = Partial<SolutionFormData> & {
 };
 
 export function CreateSolutionForm() {
+  const { data: session } = useSession();
+  const [authorName, setAuthorName] = useState(session?.user?.name || 'Anonymous');
+
+  useEffect(() => {
+    if (session?.user?.name) {
+      setAuthorName(session.user.name);
+    }
+  }, [session]);
   const [formData, setFormData] = useState<ExtendedFormData>({
     title: '',
     description: '',
@@ -122,13 +131,15 @@ export function CreateSolutionForm() {
         }
       }
 
+      // Add author name to form data
       const formDataToSend = new FormData();
+      formDataToSend.append('authorName', authorName);
       Object.entries(formData).forEach(([key, value]) => {
         if (key === 'image' && value instanceof File) {
           formDataToSend.append(key, value);
         } else if (key === 'imageUrl' && imageUrl) {
-          // Ensure we're using the latest generated imageUrl
-          formDataToSend.append(key, JSON.stringify(imageUrl));
+          // Ensure we're using the latest generated imageUrl without stringifying
+          formDataToSend.append(key, imageUrl);
         } else {
           formDataToSend.append(key, JSON.stringify(value));
         }
@@ -248,6 +259,21 @@ export function CreateSolutionForm() {
             className={`w-full p-2 border rounded-md bg-background text-foreground ${errors.title ? 'border-red-500' : 'border-border'}`}
           />
           {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
+        </div>
+
+        {/* Author Name */}
+        <div>
+          <label htmlFor="authorName" className="block text-sm font-medium mb-1 text-card-foreground">
+            Author Name
+          </label>
+          <input
+            id="authorName"
+            type="text"
+            value={authorName}
+            onChange={(e) => setAuthorName(e.target.value)}
+            className="w-full p-2 border rounded-md bg-background text-foreground"
+            placeholder={session?.user?.name || 'Anonymous'}
+          />
         </div>
 
         {/* Description */}

@@ -81,6 +81,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced solution schema with additional metadata fields
 
 ### Fixed
+- Solution author attribution
+  - Added customizable author name input
+  - Default to current user's name
+  - Improved anonymous user handling
 - Solution image display
   - Fixed image URL format to properly serve through API route
   - Added '/api' prefix to external image URLs
