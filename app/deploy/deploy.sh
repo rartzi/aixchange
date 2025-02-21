@@ -73,6 +73,56 @@ cleanup() {
     echo -e "${GREEN}Cleanup complete${NC}"
 }
 
+# Function to wait for migrations
+wait_for_migrations() {
+    echo -e "${YELLOW}Running database migrations...${NC}"
+    if ! docker compose -p $PROJECT_NAME exec app npx prisma migrate deploy; then
+        echo -e "${RED}Database migrations failed${NC}"
+        docker compose -p $PROJECT_NAME logs app
+        exit 1
+    fi
+    echo -e "${GREEN}Database migrations complete${NC}"
+}
+
+# Function to wait for container health
+wait_for_health() {
+    local container_name=$1
+    local start_period=120  # Match container's start_period
+    local interval=10       # Check every 10 seconds
+    local attempts=$((start_period / interval))
+    local attempt=1
+
+    echo -e "${YELLOW}Waiting for application to be ready (timeout: ${start_period}s)...${NC}"
+    
+    while [ $attempt -le $attempts ]; do
+        STATUS=$(docker inspect --format='{{.State.Health.Status}}' $container_name 2>/dev/null)
+        
+        if [ "$STATUS" = "healthy" ]; then
+            echo -e "${GREEN}Application is healthy${NC}"
+            return 0
+        elif [ "$STATUS" = "unhealthy" ]; then
+            echo -e "${RED}Container is unhealthy. Checking logs:${NC}"
+            docker logs $container_name
+            return 1
+        fi
+        
+        echo -n "."
+        sleep $interval
+        attempt=$((attempt + 1))
+        
+        # Show remaining time every 30 seconds
+        if [ $((attempt * interval % 30)) -eq 0 ]; then
+            remaining=$((start_period - attempt * interval))
+            echo -e "\n${YELLOW}Waiting... ${remaining}s remaining${NC}"
+        fi
+    done
+    
+    echo -e "${RED}Deployment failed - container did not become healthy within ${start_period}s${NC}"
+    echo -e "${YELLOW}Container logs:${NC}"
+    docker logs $container_name
+    return 1
+}
+
 # Function for greenfield deployment
 greenfield() {
     echo -e "${YELLOW}Starting greenfield deployment...${NC}"
@@ -93,8 +143,8 @@ greenfield() {
     echo -e "${YELLOW}Waiting for database to be ready...${NC}"
     sleep 10
     
-    # Run database migrations
-    docker compose -p $PROJECT_NAME exec app npx prisma migrate deploy
+    # Run and wait for migrations
+    wait_for_migrations
 
     # Create admin user with proper environment variables
     echo "Creating admin user..."
@@ -108,33 +158,14 @@ greenfield() {
     '
     
     # Wait for container to be healthy
-    echo -e "${YELLOW}Waiting for application to be ready...${NC}"
     CONTAINER_NAME="${PROJECT_NAME}-app-1"
-    MAX_ATTEMPTS=30
-    ATTEMPT=1
-    
-    while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
-        STATUS=$(docker inspect --format='{{.State.Health.Status}}' $CONTAINER_NAME 2>/dev/null)
-        
-        if [ "$STATUS" = "healthy" ]; then
-            echo -e "${GREEN}Greenfield deployment complete${NC}"
-            echo -e "${GREEN}Application is running on http://localhost:$APP_PORT${NC}"
-            exit 0
-        elif [ "$STATUS" = "unhealthy" ]; then
-            echo -e "${RED}Container is unhealthy. Checking logs:${NC}"
-            docker logs $CONTAINER_NAME
-            exit 1
-        fi
-        
-        echo -n "."
-        sleep 2
-        ATTEMPT=$((ATTEMPT + 1))
-    done
-    
-    echo -e "${RED}Deployment failed - container did not become healthy within timeout${NC}"
-    echo -e "${YELLOW}Container logs:${NC}"
-    docker logs $CONTAINER_NAME
-    exit 1
+    if wait_for_health $CONTAINER_NAME; then
+        echo -e "${GREEN}Greenfield deployment complete${NC}"
+        echo -e "${GREEN}Application is running on http://localhost:$APP_PORT${NC}"
+        exit 0
+    else
+        exit 1
+    fi
 }
 
 # Function for preserved deployment
@@ -152,33 +183,14 @@ preserve() {
     fi
     
     # Wait for container to be healthy
-    echo -e "${YELLOW}Waiting for application to be ready...${NC}"
     CONTAINER_NAME="${PROJECT_NAME}-app-1"
-    MAX_ATTEMPTS=30
-    ATTEMPT=1
-    
-    while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
-        STATUS=$(docker inspect --format='{{.State.Health.Status}}' $CONTAINER_NAME 2>/dev/null)
-        
-        if [ "$STATUS" = "healthy" ]; then
-            echo -e "${GREEN}Preserved deployment complete${NC}"
-            echo -e "${GREEN}Application is running on http://localhost:$APP_PORT${NC}"
-            exit 0
-        elif [ "$STATUS" = "unhealthy" ]; then
-            echo -e "${RED}Container is unhealthy. Checking logs:${NC}"
-            docker logs $CONTAINER_NAME
-            exit 1
-        fi
-        
-        echo -n "."
-        sleep 2
-        ATTEMPT=$((ATTEMPT + 1))
-    done
-    
-    echo -e "${RED}Deployment failed - container did not become healthy within timeout${NC}"
-    echo -e "${YELLOW}Container logs:${NC}"
-    docker logs $CONTAINER_NAME
-    exit 1
+    if wait_for_health $CONTAINER_NAME; then
+        echo -e "${GREEN}Preserved deployment complete${NC}"
+        echo -e "${GREEN}Application is running on http://localhost:$APP_PORT${NC}"
+        exit 0
+    else
+        exit 1
+    fi
 }
 
 # Function for portal-only deployment
@@ -257,33 +269,14 @@ preserve_seed() {
     echo -e "${GREEN}Database seeding complete${NC}"
     
     # Wait for container to be healthy
-    echo -e "${YELLOW}Waiting for application to be ready...${NC}"
     CONTAINER_NAME="${PROJECT_NAME}-app-1"
-    MAX_ATTEMPTS=30
-    ATTEMPT=1
-    
-    while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
-        STATUS=$(docker inspect --format='{{.State.Health.Status}}' $CONTAINER_NAME 2>/dev/null)
-        
-        if [ "$STATUS" = "healthy" ]; then
-            echo -e "${GREEN}Preserved deployment with seeding complete${NC}"
-            echo -e "${GREEN}Application is running on http://localhost:$APP_PORT${NC}"
-            exit 0
-        elif [ "$STATUS" = "unhealthy" ]; then
-            echo -e "${RED}Container is unhealthy. Checking logs:${NC}"
-            docker logs $CONTAINER_NAME
-            exit 1
-        fi
-        
-        echo -n "."
-        sleep 2
-        ATTEMPT=$((ATTEMPT + 1))
-    done
-    
-    echo -e "${RED}Deployment failed - container did not become healthy within timeout${NC}"
-    echo -e "${YELLOW}Container logs:${NC}"
-    docker logs $CONTAINER_NAME
-    exit 1
+    if wait_for_health $CONTAINER_NAME; then
+        echo -e "${GREEN}Preserved deployment with seeding complete${NC}"
+        echo -e "${GREEN}Application is running on http://localhost:$APP_PORT${NC}"
+        exit 0
+    else
+        exit 1
+    fi
 }
 
 # Parse command line arguments
