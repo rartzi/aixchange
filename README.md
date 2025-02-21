@@ -24,6 +24,7 @@
 - **(AI)Xperiment**: Test solutions in real-time
 - **Community Platform**: Collaborate and contribute to solutions
 - **Version Control**: Track and manage solution versions
+- **Media Management**: External image storage with efficient serving
 
 ## Technology Stack
 
@@ -33,6 +34,7 @@
 - **State Management**: React Context API
 - **Testing**: Jest, React Testing Library
 - **Deployment**: Docker, Docker Compose
+- **Media Storage**: External volume mounting with read-only access
 
 ## Installation
 
@@ -57,7 +59,12 @@ cp .env.example .env
 # Edit .env with your configuration
 ```
 
-3. Start the application:
+3. Create external images directory:
+```bash
+mkdir -p external-images/solutions external-images/profiles
+```
+
+4. Start the application:
 ```bash
 docker compose up -d
 docker compose exec app npx prisma migrate deploy
@@ -80,7 +87,12 @@ cp .env.example .env.local
 # Edit .env.local with your configuration
 ```
 
-3. Initialize database:
+3. Create external images directory:
+```bash
+mkdir -p external-images/solutions external-images/profiles
+```
+
+4. Initialize database:
 ```bash
 # For PostgreSQL
 npx prisma migrate dev
@@ -90,7 +102,7 @@ npx prisma migrate dev
 npx prisma migrate dev
 ```
 
-4. Start development server:
+5. Start development server:
 ```bash
 npm run dev
 ```
@@ -113,7 +125,10 @@ app/
 │   └── types/              # TypeScript types
 ├── prisma/                 # Database schema
 ├── docker-compose.yml      # Docker configuration
-└── public/                # Static assets
+├── public/                # Static assets
+└── external-images/       # External image storage
+    ├── solutions/         # Solution images
+    └── profiles/          # Profile images
 ```
 
 ## Documentation
@@ -123,6 +138,7 @@ app/
 - [API Documentation](docs/core/API.md)
 - [Style Guide](docs/core/STYLE_GUIDE.md)
 - [Deployment Guide](docs/core/DEPLOYMENT.md)
+- [Image Guidelines](docs/core/IMAGE_GUIDELINES.md)
 
 ## Contributing
 
