@@ -55,12 +55,12 @@ export function SolutionCard({
         <div className="flex flex-col gap-6">
           <div className="relative w-full h-[200px] -mt-6 -mx-6 bg-gray-100 dark:bg-gray-800 overflow-hidden">
             {/* Loading skeleton */}
-            <div 
+            <div
               className="absolute inset-0 animate-pulse bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 transition-opacity duration-300"
               aria-hidden="true"
             />
             
-            <div className="relative w-full h-[200px]">
+            <div className="relative w-full h-[200px] bg-gray-50 dark:bg-gray-900">
               <Image
                 src={imageUrl || '/placeholder-image.jpg'}
                 alt={title}
@@ -89,15 +89,15 @@ export function SolutionCard({
           <div className="space-y-4">
             <div className="flex justify-between items-start">
               <div className="w-full">
-                <CardTitle className="text-xl font-semibold text-gray-900 dark:text-white hover:text-primary/90 dark:hover:text-blue-200 transition-colors">
+                <CardTitle className="text-2xl font-semibold text-gray-900 dark:text-white hover:text-primary/90 dark:hover:text-blue-200 transition-colors">
                   <Link href={`/solutions/${id}`}>{title}</Link>
                 </CardTitle>
-                <div className="flex items-center gap-2 mt-1">
-                  <CardDescription className="text-muted-foreground">
+                <div className="flex items-center gap-2 mt-2">
+                  <CardDescription className="text-base text-muted-foreground">
                     by {author.name}
                   </CardDescription>
-                  <span className="text-muted-foreground">•</span>
-                  <CardDescription className="text-muted-foreground">
+                  <span className="text-base text-muted-foreground">•</span>
+                  <CardDescription className="text-base text-muted-foreground">
                     {new Date(createdAt).toLocaleDateString()}
                   </CardDescription>
                 </div>
@@ -105,7 +105,7 @@ export function SolutionCard({
             </div>
             
             <div className="relative min-h-[4.5em]">
-              <p className="text-gray-600 dark:text-blue-100 line-clamp-3 hover:line-clamp-none transition-all cursor-pointer">
+              <p className="text-base text-gray-600 dark:text-blue-100 line-clamp-3 hover:line-clamp-none transition-all cursor-pointer leading-relaxed">
                 {description}
               </p>
             </div>
@@ -128,8 +128,8 @@ export function SolutionCard({
 
       <CardContent className="flex-1 space-y-6">
         <div className="grid grid-cols-[auto,1fr] gap-x-4 gap-y-3">
-          <span className="text-sm font-medium text-gray-500 dark:text-blue-200">Status:</span>
-          <span className={`text-sm px-2.5 py-0.5 rounded-full inline-flex items-center w-fit ${
+          <span className="text-base font-medium text-gray-500 dark:text-blue-200">Status:</span>
+          <span className={`text-base px-3 py-1 rounded-full inline-flex items-center w-fit ${
             status === 'Active' ? 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-300' :
             status === 'Pending' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-300' :
             'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300'
@@ -137,11 +137,11 @@ export function SolutionCard({
             {status}
           </span>
 
-          <span className="text-sm font-medium text-gray-500 dark:text-blue-200/80">Category:</span>
-          <span className="text-sm text-gray-700 dark:text-white/90">{category}</span>
+          <span className="text-base font-medium text-gray-500 dark:text-blue-200/80">Category:</span>
+          <span className="text-base text-gray-700 dark:text-white/90">{category}</span>
 
-          <span className="text-sm font-medium text-gray-500 dark:text-blue-200/80">Provider:</span>
-          <span className="text-sm text-gray-700 dark:text-white/90">{provider}</span>
+          <span className="text-base font-medium text-gray-500 dark:text-blue-200/80">Provider:</span>
+          <span className="text-base text-gray-700 dark:text-white/90">{provider}</span>
         </div>
 
         {/* Rating and Voting Section */}
