@@ -237,11 +237,15 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Tags filter
+    // Tags filter - using AND logic
     if (tags) {
-      where.tags = {
-        hasSome: tags.split(','),
-      };
+      const tagList = tags.split(',');
+      // Create an AND condition for each tag
+      where.AND = tagList.map(tag => ({
+        tags: {
+          has: tag
+        }
+      }));
     }
 
     // Calculate pagination

@@ -70,7 +70,3 @@ Thumbs.db
 # Docker
 .docker/
 docker-compose.override.yml
-
-# Generated documentation
-docs/tracking/sessions/*
-!docs/tracking/sessions/.gitkeep.pgdata
