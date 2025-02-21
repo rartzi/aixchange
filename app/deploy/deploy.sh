@@ -230,14 +230,60 @@ restore() {
 preserve_seed() {
     echo -e "${YELLOW}Starting preserved deployment with seeding...${NC}"
     
-    # First run preserve
-    preserve
+    # Stop containers but preserve volumes
+    docker compose -p $PROJECT_NAME down
     
-    # Then run database seeding
+    # Build and start containers
+    if [ "$USE_PROD" = true ]; then
+        docker compose -f $COMPOSE_PROD_FILE -p $PROJECT_NAME up -d --build
+    else
+        docker compose -f $COMPOSE_FILE -p $PROJECT_NAME up -d --build
+    fi
+    
+    # Wait for database to be ready
+    echo -e "${YELLOW}Waiting for database to be ready...${NC}"
+    sleep 10
+    
+    # Run database seeding
     echo -e "${YELLOW}Running database seeding...${NC}"
     docker compose -p $PROJECT_NAME exec app npx prisma db seed
     
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}Database seeding failed${NC}"
+        docker compose -p $PROJECT_NAME logs app
+        exit 1
+    fi
+    
     echo -e "${GREEN}Database seeding complete${NC}"
+    
+    # Wait for container to be healthy
+    echo -e "${YELLOW}Waiting for application to be ready...${NC}"
+    CONTAINER_NAME="${PROJECT_NAME}-app-1"
+    MAX_ATTEMPTS=30
+    ATTEMPT=1
+    
+    while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
+        STATUS=$(docker inspect --format='{{.State.Health.Status}}' $CONTAINER_NAME 2>/dev/null)
+        
+        if [ "$STATUS" = "healthy" ]; then
+            echo -e "${GREEN}Preserved deployment with seeding complete${NC}"
+            echo -e "${GREEN}Application is running on http://localhost:$APP_PORT${NC}"
+            exit 0
+        elif [ "$STATUS" = "unhealthy" ]; then
+            echo -e "${RED}Container is unhealthy. Checking logs:${NC}"
+            docker logs $CONTAINER_NAME
+            exit 1
+        fi
+        
+        echo -n "."
+        sleep 2
+        ATTEMPT=$((ATTEMPT + 1))
+    done
+    
+    echo -e "${RED}Deployment failed - container did not become healthy within timeout${NC}"
+    echo -e "${YELLOW}Container logs:${NC}"
+    docker logs $CONTAINER_NAME
+    exit 1
 }
 
 # Parse command line arguments
