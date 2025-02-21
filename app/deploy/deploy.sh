@@ -73,15 +73,57 @@ cleanup() {
     echo -e "${GREEN}Cleanup complete${NC}"
 }
 
+# Function to wait for migrations
+wait_for_migrations() {
+    echo -e "${YELLOW}Running database migrations...${NC}"
+    if ! docker compose -p $PROJECT_NAME exec app npx prisma migrate deploy; then
+        echo -e "${RED}Database migrations failed${NC}"
+        docker compose -p $PROJECT_NAME logs app
+        exit 1
+    fi
+    echo -e "${GREEN}Database migrations complete${NC}"
+}
+
+# Function to wait for app readiness
+wait_for_app() {
+    local container_name=$1
+    local max_wait=30  # 30 seconds should be enough
+    local attempt=1
+
+    echo -e "${YELLOW}Waiting for application to be ready...${NC}"
+    
+    while [ $attempt -le $max_wait ]; do
+        if docker logs $container_name 2>&1 | grep -q "Ready in"; then
+            echo -e "${GREEN}Application is ready${NC}"
+            return 0
+        fi
+        
+        echo -n "."
+        sleep 1
+        attempt=$((attempt + 1))
+    done
+    
+    echo -e "${RED}Deployment failed - application did not become ready within ${max_wait}s${NC}"
+    echo -e "${YELLOW}Container logs:${NC}"
+    docker logs $container_name
+    return 1
+}
+
+# Function to set deployment environment
+set_deployment_env() {
+    # Export port for docker-compose and update NEXTAUTH_URL
+    export PORT=$APP_PORT
+    export NEXTAUTH_URL="http://localhost:$APP_PORT"
+    echo -e "${YELLOW}Setting up deployment with port: $APP_PORT${NC}"
+}
+
 # Function for greenfield deployment
 greenfield() {
     echo -e "${YELLOW}Starting greenfield deployment...${NC}"
     cleanup
     
-    # Build and start containers
-    # Export port for docker-compose and update NEXTAUTH_URL
-    export PORT=$APP_PORT
-    export NEXTAUTH_URL="http://localhost:$APP_PORT"
+    # Set deployment environment
+    set_deployment_env
     
     if [ "$USE_PROD" = true ]; then
         docker compose -f $COMPOSE_PROD_FILE -p $PROJECT_NAME up -d --build
@@ -93,8 +135,8 @@ greenfield() {
     echo -e "${YELLOW}Waiting for database to be ready...${NC}"
     sleep 10
     
-    # Run database migrations
-    docker compose -p $PROJECT_NAME exec app npx prisma migrate deploy
+    # Run and wait for migrations
+    wait_for_migrations
 
     # Create admin user with proper environment variables
     echo "Creating admin user..."
@@ -107,34 +149,15 @@ greenfield() {
         fi
     '
     
-    # Wait for container to be healthy
-    echo -e "${YELLOW}Waiting for application to be ready...${NC}"
+    # Wait for app to be ready
     CONTAINER_NAME="${PROJECT_NAME}-app-1"
-    MAX_ATTEMPTS=30
-    ATTEMPT=1
-    
-    while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
-        STATUS=$(docker inspect --format='{{.State.Health.Status}}' $CONTAINER_NAME 2>/dev/null)
-        
-        if [ "$STATUS" = "healthy" ]; then
-            echo -e "${GREEN}Greenfield deployment complete${NC}"
-            echo -e "${GREEN}Application is running on http://localhost:$APP_PORT${NC}"
-            exit 0
-        elif [ "$STATUS" = "unhealthy" ]; then
-            echo -e "${RED}Container is unhealthy. Checking logs:${NC}"
-            docker logs $CONTAINER_NAME
-            exit 1
-        fi
-        
-        echo -n "."
-        sleep 2
-        ATTEMPT=$((ATTEMPT + 1))
-    done
-    
-    echo -e "${RED}Deployment failed - container did not become healthy within timeout${NC}"
-    echo -e "${YELLOW}Container logs:${NC}"
-    docker logs $CONTAINER_NAME
-    exit 1
+    if wait_for_app $CONTAINER_NAME; then
+        echo -e "${GREEN}Greenfield deployment complete${NC}"
+        echo -e "${GREEN}Application is running on http://localhost:$APP_PORT${NC}"
+        exit 0
+    else
+        exit 1
+    fi
 }
 
 # Function for preserved deployment
@@ -144,6 +167,9 @@ preserve() {
     # Stop containers but preserve volumes
     docker compose -p $PROJECT_NAME down
     
+    # Set deployment environment
+    set_deployment_env
+    
     # Build and start containers
     if [ "$USE_PROD" = true ]; then
         docker compose -f $COMPOSE_PROD_FILE -p $PROJECT_NAME up -d --build
@@ -151,34 +177,15 @@ preserve() {
         docker compose -f $COMPOSE_FILE -p $PROJECT_NAME up -d --build
     fi
     
-    # Wait for container to be healthy
-    echo -e "${YELLOW}Waiting for application to be ready...${NC}"
+    # Wait for app to be ready
     CONTAINER_NAME="${PROJECT_NAME}-app-1"
-    MAX_ATTEMPTS=30
-    ATTEMPT=1
-    
-    while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
-        STATUS=$(docker inspect --format='{{.State.Health.Status}}' $CONTAINER_NAME 2>/dev/null)
-        
-        if [ "$STATUS" = "healthy" ]; then
-            echo -e "${GREEN}Preserved deployment complete${NC}"
-            echo -e "${GREEN}Application is running on http://localhost:$APP_PORT${NC}"
-            exit 0
-        elif [ "$STATUS" = "unhealthy" ]; then
-            echo -e "${RED}Container is unhealthy. Checking logs:${NC}"
-            docker logs $CONTAINER_NAME
-            exit 1
-        fi
-        
-        echo -n "."
-        sleep 2
-        ATTEMPT=$((ATTEMPT + 1))
-    done
-    
-    echo -e "${RED}Deployment failed - container did not become healthy within timeout${NC}"
-    echo -e "${YELLOW}Container logs:${NC}"
-    docker logs $CONTAINER_NAME
-    exit 1
+    if wait_for_app $CONTAINER_NAME; then
+        echo -e "${GREEN}Preserved deployment complete${NC}"
+        echo -e "${GREEN}Application is running on http://localhost:$APP_PORT${NC}"
+        exit 0
+    else
+        exit 1
+    fi
 }
 
 # Function for portal-only deployment
@@ -195,6 +202,9 @@ portal_only() {
     DB_PORT=$(echo $EXTERNAL_DB | cut -d: -f2)
     export DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${DB_HOST}:${DB_PORT}/${POSTGRES_DB}"
     
+    # Set deployment environment
+    set_deployment_env
+    
     # Deploy only the app service
     if [ "$USE_PROD" = true ]; then
         docker compose -f $COMPOSE_PROD_FILE -p $PROJECT_NAME up -d --build app
@@ -202,8 +212,15 @@ portal_only() {
         docker compose -f $COMPOSE_FILE -p $PROJECT_NAME up -d --build app
     fi
     
-    echo -e "${GREEN}Portal-only deployment complete${NC}"
-    echo -e "${GREEN}Application is running on http://localhost:$APP_PORT${NC}"
+    # Wait for app to be ready
+    CONTAINER_NAME="${PROJECT_NAME}-app-1"
+    if wait_for_app $CONTAINER_NAME; then
+        echo -e "${GREEN}Portal-only deployment complete${NC}"
+        echo -e "${GREEN}Application is running on http://localhost:$APP_PORT${NC}"
+        exit 0
+    else
+        exit 1
+    fi
 }
 
 # Function to create database backup
@@ -233,6 +250,9 @@ preserve_seed() {
     # Stop containers but preserve volumes
     docker compose -p $PROJECT_NAME down
     
+    # Set deployment environment
+    set_deployment_env
+    
     # Build and start containers
     if [ "$USE_PROD" = true ]; then
         docker compose -f $COMPOSE_PROD_FILE -p $PROJECT_NAME up -d --build
@@ -256,34 +276,15 @@ preserve_seed() {
     
     echo -e "${GREEN}Database seeding complete${NC}"
     
-    # Wait for container to be healthy
-    echo -e "${YELLOW}Waiting for application to be ready...${NC}"
+    # Wait for app to be ready
     CONTAINER_NAME="${PROJECT_NAME}-app-1"
-    MAX_ATTEMPTS=30
-    ATTEMPT=1
-    
-    while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
-        STATUS=$(docker inspect --format='{{.State.Health.Status}}' $CONTAINER_NAME 2>/dev/null)
-        
-        if [ "$STATUS" = "healthy" ]; then
-            echo -e "${GREEN}Preserved deployment with seeding complete${NC}"
-            echo -e "${GREEN}Application is running on http://localhost:$APP_PORT${NC}"
-            exit 0
-        elif [ "$STATUS" = "unhealthy" ]; then
-            echo -e "${RED}Container is unhealthy. Checking logs:${NC}"
-            docker logs $CONTAINER_NAME
-            exit 1
-        fi
-        
-        echo -n "."
-        sleep 2
-        ATTEMPT=$((ATTEMPT + 1))
-    done
-    
-    echo -e "${RED}Deployment failed - container did not become healthy within timeout${NC}"
-    echo -e "${YELLOW}Container logs:${NC}"
-    docker logs $CONTAINER_NAME
-    exit 1
+    if wait_for_app $CONTAINER_NAME; then
+        echo -e "${GREEN}Preserved deployment with seeding complete${NC}"
+        echo -e "${GREEN}Application is running on http://localhost:$APP_PORT${NC}"
+        exit 0
+    else
+        exit 1
+    fi
 }
 
 # Parse command line arguments
