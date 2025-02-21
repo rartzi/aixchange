@@ -22,14 +22,15 @@ usage() {
     echo -e "${GREEN}Usage: $0 [OPTIONS] COMMAND${NC}"
     echo
     echo "Commands:"
-    echo "  cleanup        Stop containers, remove containers, images, volumes and prune images"
-    echo "  greenfield    First-time deployment with clean database and admin user"
-    echo "  preserve      Build images and run containers while preserving existing database"
-    echo "  portal-only   Deploy only the portal (no database) and connect to existing database"
-    echo "  update        Update application without affecting data"
-    echo "  backup        Create a database backup"
-    echo "  restore       Restore database from backup"
-    echo "  logs          View container logs"
+    echo "  cleanup         Stop containers, remove containers, images, volumes and prune images"
+    echo "  greenfield     First-time deployment with clean database and admin user"
+    echo "  preserve       Build images and run containers while preserving existing database"
+    echo "  preserve-seed  Like preserve but also runs database seeding"
+    echo "  portal-only    Deploy only the portal (no database) and connect to existing database"
+    echo "  update         Update application without affecting data"
+    echo "  backup         Create a database backup"
+    echo "  restore        Restore database from backup"
+    echo "  logs           View container logs"
     echo
     echo "Options:"
     echo "  -p, --port PORT             Application port (default: 3000)"
@@ -225,6 +226,20 @@ restore() {
     echo -e "${GREEN}Database restored from: $1${NC}"
 }
 
+# Function for preserved deployment with seeding
+preserve_seed() {
+    echo -e "${YELLOW}Starting preserved deployment with seeding...${NC}"
+    
+    # First run preserve
+    preserve
+    
+    # Then run database seeding
+    echo -e "${YELLOW}Running database seeding...${NC}"
+    docker compose -p $PROJECT_NAME exec app npx prisma db seed
+    
+    echo -e "${GREEN}Database seeding complete${NC}"
+}
+
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -252,7 +267,7 @@ while [[ $# -gt 0 ]]; do
             usage
             exit 0
             ;;
-        cleanup|greenfield|preserve|portal-only|update|backup|restore|logs)
+        cleanup|greenfield|preserve|preserve-seed|portal-only|update|backup|restore|logs)
             COMMAND="$1"
             shift
             ;;
@@ -284,6 +299,9 @@ case $COMMAND in
         ;;
     preserve)
         preserve
+        ;;
+    preserve-seed)
+        preserve_seed
         ;;
     portal-only)
         portal_only

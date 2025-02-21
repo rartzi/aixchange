@@ -1,7 +1,6 @@
 # Changelog
 
 ## [Unreleased]
-
 ### Added
 - Placeholder pages for upcoming features:
   - Experiment platform
@@ -12,6 +11,8 @@
   - About page
   - Contact form
   - Privacy policy
+- Reusable PlaceholderPage component for consistent "coming soon" pages
+- New deployment option `preserve-seed` to deploy with database seeding
 - Reusable PlaceholderPage component for consistent "coming soon" pages
 
 ### Fixed
