@@ -109,15 +109,21 @@ wait_for_app() {
     return 1
 }
 
+# Function to set deployment environment
+set_deployment_env() {
+    # Export port for docker-compose and update NEXTAUTH_URL
+    export PORT=$APP_PORT
+    export NEXTAUTH_URL="http://localhost:$APP_PORT"
+    echo -e "${YELLOW}Setting up deployment with port: $APP_PORT${NC}"
+}
+
 # Function for greenfield deployment
 greenfield() {
     echo -e "${YELLOW}Starting greenfield deployment...${NC}"
     cleanup
     
-    # Build and start containers
-    # Export port for docker-compose and update NEXTAUTH_URL
-    export PORT=$APP_PORT
-    export NEXTAUTH_URL="http://localhost:$APP_PORT"
+    # Set deployment environment
+    set_deployment_env
     
     if [ "$USE_PROD" = true ]; then
         docker compose -f $COMPOSE_PROD_FILE -p $PROJECT_NAME up -d --build
@@ -161,6 +167,9 @@ preserve() {
     # Stop containers but preserve volumes
     docker compose -p $PROJECT_NAME down
     
+    # Set deployment environment
+    set_deployment_env
+    
     # Build and start containers
     if [ "$USE_PROD" = true ]; then
         docker compose -f $COMPOSE_PROD_FILE -p $PROJECT_NAME up -d --build
@@ -193,6 +202,9 @@ portal_only() {
     DB_PORT=$(echo $EXTERNAL_DB | cut -d: -f2)
     export DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${DB_HOST}:${DB_PORT}/${POSTGRES_DB}"
     
+    # Set deployment environment
+    set_deployment_env
+    
     # Deploy only the app service
     if [ "$USE_PROD" = true ]; then
         docker compose -f $COMPOSE_PROD_FILE -p $PROJECT_NAME up -d --build app
@@ -200,8 +212,15 @@ portal_only() {
         docker compose -f $COMPOSE_FILE -p $PROJECT_NAME up -d --build app
     fi
     
-    echo -e "${GREEN}Portal-only deployment complete${NC}"
-    echo -e "${GREEN}Application is running on http://localhost:$APP_PORT${NC}"
+    # Wait for app to be ready
+    CONTAINER_NAME="${PROJECT_NAME}-app-1"
+    if wait_for_app $CONTAINER_NAME; then
+        echo -e "${GREEN}Portal-only deployment complete${NC}"
+        echo -e "${GREEN}Application is running on http://localhost:$APP_PORT${NC}"
+        exit 0
+    else
+        exit 1
+    fi
 }
 
 # Function to create database backup
@@ -230,6 +249,9 @@ preserve_seed() {
     
     # Stop containers but preserve volumes
     docker compose -p $PROJECT_NAME down
+    
+    # Set deployment environment
+    set_deployment_env
     
     # Build and start containers
     if [ "$USE_PROD" = true ]; then
