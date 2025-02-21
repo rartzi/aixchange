@@ -94,8 +94,8 @@ greenfield() {
 
     # Create admin user with proper environment variables
     echo "Creating admin user..."
-    docker compose -p $PROJECT_NAME exec app bash -c '
-        if [[ -n "$ADMIN_EMAIL" && -n "$ADMIN_PASSWORD" ]]; then
+    docker compose -p $PROJECT_NAME exec app sh -c '
+        if [ -n "$ADMIN_EMAIL" ] && [ -n "$ADMIN_PASSWORD" ]; then
             ADMIN_EMAIL="$ADMIN_EMAIL" ADMIN_PASSWORD="$ADMIN_PASSWORD" node scripts/create-admin.js
         else
             echo "Warning: ADMIN_EMAIL and/or ADMIN_PASSWORD not set. Using defaults."
