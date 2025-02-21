@@ -7,11 +7,16 @@ import { solutionSchema, predefinedCategories, type SolutionFormData } from '@/l
 import Image from 'next/image';
 import { ZodError } from 'zod';
 
+// Extended form data type to include file upload
+type ExtendedFormData = Partial<SolutionFormData> & {
+  image?: File;
+};
+
 export function CreateSolutionForm() {
-  const [formData, setFormData] = useState<Partial<SolutionFormData>>({
+  const [formData, setFormData] = useState<ExtendedFormData>({
     title: '',
     description: '',
-    category: '',
+    category: 'Other',
     provider: '',
     launchUrl: '',
     sourceCodeUrl: '',
@@ -22,14 +27,21 @@ export function CreateSolutionForm() {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [currentTag, setCurrentTag] = useState('');
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [customCategory, setCustomCategory] = useState('');
+  const [statusMessage, setStatusMessage] = useState<{
+    type: 'info' | 'success' | 'error';
+    message: string;
+    details?: string;
+  } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const validateForm = () => {
     try {
-      solutionSchema.parse(formData);
+      const { image, ...dataToValidate } = formData;
+      solutionSchema.parse(dataToValidate);
       setErrors({});
       return true;
     } catch (error) {
@@ -45,21 +57,85 @@ export function CreateSolutionForm() {
     }
   };
 
+  const generateImage = async (description: string) => {
+    try {
+      setIsGeneratingImage(true);
+      setStatusMessage({ type: 'info', message: 'Generating image with DALL-E...' });
+
+      const response = await fetch('/api/generate-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          description,
+          title: formData.title || 'solution'
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setStatusMessage({
+          type: 'error',
+          message: 'Failed to generate image',
+          details: data.details || 'Using default image instead'
+        });
+        return data.defaultImagePath || '/placeholder-image.jpg';
+      }
+
+      setStatusMessage({
+        type: 'success',
+        message: 'Image generated successfully',
+        details: `Generated image: ${data.filename}`
+      });
+
+      return data.imageUrl;
+    } catch (error) {
+      console.error('Error generating image:', error);
+      setStatusMessage({
+        type: 'error',
+        message: 'Error generating image',
+        details: 'Using default image instead'
+      });
+      return '/placeholder-image.jpg';
+    } finally {
+      setIsGeneratingImage(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
 
     setIsSubmitting(true);
+    setStatusMessage({ type: 'info', message: 'Creating solution...' });
     
     try {
+      // If no image is uploaded, generate one using DALL-E
+      let imageUrl: string | undefined;
+      if (!formData.image && formData.description) {
+        const generatedImageUrl = await generateImage(formData.description);
+        if (generatedImageUrl) {
+          imageUrl = generatedImageUrl;
+          setFormData(prev => ({ ...prev, imageUrl }));
+        }
+      }
+
       const formDataToSend = new FormData();
       Object.entries(formData).forEach(([key, value]) => {
         if (key === 'image' && value instanceof File) {
           formDataToSend.append(key, value);
+        } else if (key === 'imageUrl' && imageUrl) {
+          // Ensure we're using the latest generated imageUrl
+          formDataToSend.append(key, JSON.stringify(imageUrl));
         } else {
           formDataToSend.append(key, JSON.stringify(value));
         }
       });
+
+      // Log the image URL being sent
+      console.log('Sending solution with image URL:', imageUrl || formData.imageUrl || '/placeholder-image.jpg');
 
       const response = await fetch('/api/solutions', {
         method: 'POST',
@@ -70,17 +146,23 @@ export function CreateSolutionForm() {
         throw new Error('Failed to create solution');
       }
 
+      const result = await response.json();
+      setStatusMessage({
+        type: 'success',
+        message: 'Solution created successfully',
+        details: `Solution ID: ${result.data.id}`
+      });
+
       // Reset form after successful submission
       setFormData({
         title: '',
         description: '',
-        category: '',
+        category: 'Other',
         provider: '',
         launchUrl: '',
         tokenCost: 0,
         rating: 0,
         status: 'Pending',
-        resourceConfig: initialResourceConfig,
         tags: [],
       });
       setCustomCategory('');
@@ -90,6 +172,11 @@ export function CreateSolutionForm() {
       }
     } catch (error) {
       console.error('Error creating solution:', error);
+      setStatusMessage({
+        type: 'error',
+        message: 'Failed to create solution',
+        details: error instanceof Error ? error.message : 'An unexpected error occurred'
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -98,12 +185,17 @@ export function CreateSolutionForm() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setFormData(prev => ({ ...prev, image: file }));
+      setFormData(prev => ({ ...prev, image: file, imageUrl: undefined }));
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreviewImage(reader.result as string);
       };
       reader.readAsDataURL(file);
+      setStatusMessage({
+        type: 'info',
+        message: 'Image uploaded',
+        details: `File: ${file.name}`
+      });
     }
   };
 
@@ -127,6 +219,21 @@ export function CreateSolutionForm() {
   return (
     <Card className="p-6 max-w-2xl mx-auto bg-card">
       <h2 className="text-2xl font-bold mb-6 text-card-foreground">Add Solution</h2>
+
+      {/* Status Message */}
+      {statusMessage && (
+        <div className={`mb-4 p-4 rounded-md ${
+          statusMessage.type === 'success' ? 'bg-green-100 text-green-800' :
+          statusMessage.type === 'error' ? 'bg-red-100 text-red-800' :
+          'bg-blue-100 text-blue-800'
+        }`}>
+          <p className="font-medium">{statusMessage.message}</p>
+          {statusMessage.details && (
+            <p className="text-sm mt-1">{statusMessage.details}</p>
+          )}
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Title */}
         <div>
@@ -167,11 +274,8 @@ export function CreateSolutionForm() {
               value={formData.category}
               onChange={(e) => {
                 const value = e.target.value;
-                if (value === 'custom') {
-                  setFormData(prev => ({ ...prev, category: '' }));
-                } else {
-                  setFormData(prev => ({ ...prev, category: value }));
-                  setCustomCategory('');
+                if (predefinedCategories.includes(value as any)) {
+                  setFormData(prev => ({ ...prev, category: value as typeof predefinedCategories[number] }));
                 }
               }}
               className={`flex-1 p-2 border rounded-md ${errors.category ? 'border-red-500' : ''}`}
@@ -182,21 +286,8 @@ export function CreateSolutionForm() {
                   {category}
                 </option>
               ))}
-              <option value="custom">Add Custom Category</option>
             </select>
           </div>
-          {formData.category === '' && (
-            <input
-              type="text"
-              value={customCategory}
-              onChange={(e) => {
-                setCustomCategory(e.target.value);
-                setFormData(prev => ({ ...prev, category: e.target.value }));
-              }}
-              placeholder="Enter custom category"
-              className="mt-2 w-full p-2 border rounded-md"
-            />
-          )}
           {errors.category && <p className="text-red-500 text-sm mt-1">{errors.category}</p>}
         </div>
 
@@ -333,10 +424,11 @@ export function CreateSolutionForm() {
                   type="button"
                   onClick={() => {
                     setPreviewImage(null);
-                    setFormData(prev => ({ ...prev, image: undefined }));
+                    setFormData(prev => ({ ...prev, image: undefined, imageUrl: undefined }));
                     if (fileInputRef.current) {
                       fileInputRef.current.value = '';
                     }
+                    setStatusMessage(null);
                   }}
                   className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
                 >
@@ -344,13 +436,21 @@ export function CreateSolutionForm() {
                 </button>
               </div>
             ) : (
-              <Button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                variant="outline"
-              >
-                Upload Image
-              </Button>
+              <div className="flex flex-col gap-2">
+                <Button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  variant="outline"
+                  className="w-full"
+                >
+                  Upload Image
+                </Button>
+                <p className="text-sm text-gray-500">
+                  {isGeneratingImage 
+                    ? 'Generating image with DALL-E...' 
+                    : 'Or leave empty for AI-generated image'}
+                </p>
+              </div>
             )}
           </div>
           {errors.image && <p className="text-red-500 text-sm mt-1">{errors.image}</p>}
@@ -359,9 +459,13 @@ export function CreateSolutionForm() {
         <Button
           type="submit"
           className="w-full"
-          disabled={isSubmitting}
+          disabled={isSubmitting || isGeneratingImage}
         >
-          {isSubmitting ? 'Creating...' : 'Create Card'}
+          {isSubmitting 
+            ? 'Creating Solution...' 
+            : isGeneratingImage 
+              ? 'Generating Image...' 
+              : 'Create Solution'}
         </Button>
       </form>
     </Card>

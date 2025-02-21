@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- DALL-E image generation for solutions
+  - Automated image generation API endpoint
+  - Integration with solution creation form
+  - Secure file storage for generated images
+  - Loading states and error handling
 - Dynamic stats on landing page
   - Real-time community member count
   - Live AI solutions count
