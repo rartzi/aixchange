@@ -38,6 +38,28 @@ model Solution {
 
 ## API Routes
 
+#### POST /api/generate-image
+- DALL-E image generation endpoint
+- Request body:
+  ```typescript
+  {
+    prompt: string;
+  }
+  ```
+- Response format:
+  ```typescript
+  {
+    success: boolean;
+    imagePath?: string;
+    error?: {
+      code: string;
+      message: string;
+    };
+  }
+  ```
+- Saves generated images to external-images directory
+- Requires valid OpenAI API key
+
 ### Admin Routes
 
 #### POST /api/admin/solutions/import
@@ -144,6 +166,8 @@ npm run test:coverage
 ```
 DATABASE_URL=
 NEXTAUTH_SECRET=
+NEXTAUTH_URL=
+OPENAI_API_KEY=  # Required for image generation
 NEXTAUTH_URL=
 ```
 
