@@ -3,6 +3,8 @@ import { solutionSchema, type SolutionMetadata } from '@/lib/schemas/solution';
 import { prisma } from '@/lib/db/prisma';
 import { ZodError, z } from 'zod';
 import { Prisma, Solution, Review, SolutionStatus } from '@prisma/client';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 const ANONYMOUS_USER_ID = 'anonymous-user';
 const DEFAULT_PAGE_SIZE = 10;
@@ -82,18 +84,24 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const authorName = formData.get('authorName')?.toString() || 'Anonymous User';
+    const session = await getServerSession();
     
-    // Update or create anonymous user with the provided name
-    await prisma.user.upsert({
-      where: { id: ANONYMOUS_USER_ID },
-      update: { name: authorName },
-      create: {
-        id: ANONYMOUS_USER_ID,
-        email: 'anonymous@aixchange.ai',
-        name: authorName,
-        role: 'USER',
-      },
-    });
+    // Use authenticated user ID if available, otherwise use/create anonymous user
+    const userId = session?.user?.id;
+    
+    if (!userId) {
+      // Update or create anonymous user with the provided name
+      await prisma.user.upsert({
+        where: { id: ANONYMOUS_USER_ID },
+        update: { name: authorName },
+        create: {
+          id: ANONYMOUS_USER_ID,
+          email: 'anonymous@aixchange.ai',
+          name: authorName,
+          role: 'USER',
+        },
+      });
+    }
 
     const data: Record<string, any> = {};
     
@@ -142,7 +150,7 @@ export async function POST(request: NextRequest) {
                : SolutionStatus.INACTIVE,
         imageUrl: validatedData.imageUrl,
         author: {
-          connect: { id: ANONYMOUS_USER_ID }
+          connect: { id: userId || ANONYMOUS_USER_ID }
         },
         tags: validatedData.tags,
         isPublished: true,
@@ -155,7 +163,7 @@ export async function POST(request: NextRequest) {
         action: 'CREATE',
         entityType: 'Solution',
         entityId: solution.id,
-        userId: ANONYMOUS_USER_ID,
+        userId: userId || ANONYMOUS_USER_ID,
         metadata: {
           title: solution.title,
           category: solution.category,
