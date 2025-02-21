@@ -18,7 +18,8 @@ interface FilterSidebarProps {
 const SORT_OPTIONS = [
   { value: 'recent', label: 'Most Recent' },
   { value: 'rating', label: 'Highest Rated' },
-  { value: 'popular', label: 'Most Popular' },
+  { value: 'most-voted', label: 'Most Voted' },
+  { value: 'most-upvoted', label: 'Most Upvoted' },
 ] as const;
 
 export function FilterSidebar({ 
@@ -79,17 +80,14 @@ export function FilterSidebar({
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
             <h3 className="text-lg font-semibold">Filters</h3>
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={onClose}
               className="hover:bg-background/80"
-              aria-label="Close filters"
+              aria-label="Apply filters and close"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
+              Apply & Close
             </Button>
           </div>
 
@@ -175,7 +173,7 @@ export function FilterSidebar({
                       </span>
                     )}
                   </label>
-                  <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-2 border border-border rounded-md">
+                  <div className="flex flex-wrap gap-2 max-h-80 overflow-y-auto p-2 border border-border rounded-md">
                     {filteredTags.map((tag) => (
                       <Button
                         key={tag}
@@ -227,18 +225,18 @@ export function FilterSidebar({
                   </div>
                 )}
               </div>
-            </div>
-          </div>
 
-          {/* Footer */}
-          <div className="p-6 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-            <Button 
-              onClick={onClose}
-              className="w-full"
-              variant="default"
-            >
-              Apply Filters
-            </Button>
+              {/* Apply Filters Button */}
+              <div className="mt-12">
+                <Button 
+                  onClick={onClose}
+                  className="w-full"
+                  variant="default"
+                >
+                  Apply Filters
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </aside>

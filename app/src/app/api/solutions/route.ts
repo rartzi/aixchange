@@ -30,10 +30,8 @@ const queryParamsSchema = z.object({
   provider: z.string().optional(),
   author: z.string().optional(),
   search: z.string().optional(),
-  sort: z.enum(['recent', 'rating', 'popular', 'price-low', 'price-high']).optional().default('recent'),
+  sort: z.enum(['recent', 'rating', 'most-voted', 'most-upvoted']).optional().default('recent'),
   status: z.enum(['ACTIVE', 'PENDING', 'INACTIVE']).optional(),
-  minPrice: z.coerce.number().min(0).optional(),
-  maxPrice: z.coerce.number().min(0).optional(),
   tags: z.string().optional(),
   cursor: z.string().optional(),
   limit: z.coerce.number().min(1).max(100).optional().default(DEFAULT_PAGE_SIZE),
@@ -220,8 +218,6 @@ export async function GET(request: NextRequest) {
       search,
       sort,
       status,
-      minPrice,
-      maxPrice,
       tags,
       cursor,
       limit,
@@ -275,16 +271,6 @@ export async function GET(request: NextRequest) {
       where.status = status;
     }
 
-    // Price range filter
-    if (minPrice !== undefined || maxPrice !== undefined) {
-      where.tokenCost = {};
-      if (minPrice !== undefined) {
-        where.tokenCost.gte = minPrice;
-      }
-      if (maxPrice !== undefined) {
-        where.tokenCost.lte = maxPrice;
-      }
-    }
 
     // Tags filter - using AND logic
     if (tags) {
@@ -303,14 +289,11 @@ export async function GET(request: NextRequest) {
       case 'rating':
         orderBy = { rating: 'desc' };
         break;
-      case 'popular':
-        orderBy = { reviews: { _count: 'desc' } };
+      case 'most-voted':
+        orderBy = { totalVotes: 'desc' };
         break;
-      case 'price-low':
-        orderBy = { tokenCost: 'asc' };
-        break;
-      case 'price-high':
-        orderBy = { tokenCost: 'desc' };
+      case 'most-upvoted':
+        orderBy = { upvotes: 'desc' };
         break;
       default:
         orderBy = { createdAt: 'desc' };

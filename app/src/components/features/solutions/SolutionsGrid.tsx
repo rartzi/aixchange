@@ -6,6 +6,7 @@ import { FilterSidebar } from './FilterSidebar';
 import { useDebounce } from '@/lib/hooks/useDebounce';
 import { Button } from '@/components/ui/button';
 import { Solution, FilterState, initialFilterState } from './types';
+import { useToast } from '@/components/ui/use-toast';
 
 interface SolutionStats {
   solutions: {
@@ -36,8 +37,52 @@ export function SolutionsGrid({ initialSolutions }: SolutionsGridProps) {
   const [cursor, setCursor] = useState<string | undefined>(undefined);
   const [hasMore, setHasMore] = useState(true);
   const observerTarget = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
   
   const debouncedSearch = useDebounce(searchQuery, 300);
+
+  const handleVote = async (id: string, voteType: 'up' | 'down') => {
+    try {
+      const response = await fetch(`/api/solutions/${id}/vote`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ vote: voteType }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to vote');
+      }
+
+      const data = await response.json();
+      
+      // Update the solution's vote counts
+      setSolutions(prev => prev.map(solution =>
+        solution.id === id
+          ? {
+              ...solution,
+              upvotes: data.upvotes,
+              downvotes: data.downvotes,
+              totalVotes: data.totalVotes,
+            }
+          : solution
+      ));
+
+      toast({
+        title: 'Vote recorded',
+        description: `Successfully ${voteType === 'up' ? 'upvoted' : 'downvoted'} the solution.`,
+      });
+    } catch (error) {
+      console.error('Error voting:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to vote',
+        variant: 'destructive',
+      });
+    }
+  };
 
   // Fetch statistics
   useEffect(() => {
@@ -169,6 +214,7 @@ export function SolutionsGrid({ initialSolutions }: SolutionsGridProps) {
                 name: solution.author?.name ?? 'Anonymous',
                 image: solution.author?.image ?? undefined,
               }}
+              onVote={handleVote}
             />
           ))}
         </div>

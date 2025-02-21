@@ -26,6 +26,9 @@ export interface Solution {
   };
   tags: string[];
   rating?: number;
+  totalVotes?: number;
+  upvotes?: number;
+  downvotes?: number;
   createdAt: string;
   category: typeof predefinedCategories[number];
   provider: string;
