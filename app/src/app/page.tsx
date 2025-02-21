@@ -6,8 +6,14 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 
 interface Stats {
-  userCount: number;
-  solutionCount: number;
+  solutions: {
+    total: number;
+    active: number;
+    pending: number;
+  };
+  community: {
+    members: number;
+  };
 }
 
 export default function Home() {
@@ -166,7 +172,7 @@ export default function Home() {
                 {isLoading ? (
                   <span className="opacity-50">Loading...</span>
                 ) : (
-                  stats?.userCount ?? 0
+                  stats?.community.members ?? 0
                 )}
               </div>
               <div className="text-white/80">Community Members</div>
@@ -176,7 +182,7 @@ export default function Home() {
                 {isLoading ? (
                   <span className="opacity-50">Loading...</span>
                 ) : (
-                  stats?.solutionCount ?? 0
+                  stats?.solutions.total ?? 0
                 )}
               </div>
               <div className="text-white/80">AI Solutions</div>

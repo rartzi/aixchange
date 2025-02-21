@@ -4,27 +4,37 @@ import { SolutionStatus } from '@prisma/client';
 
 export async function GET() {
   try {
-    // Get total count
+    // Get solution counts
     const total = await prisma.solution.count();
-
-    // Get active count
     const active = await prisma.solution.count({
       where: {
         status: SolutionStatus.ACTIVE,
       },
     });
-
-    // Get pending count
     const pending = await prisma.solution.count({
       where: {
         status: SolutionStatus.PENDING,
       },
     });
 
+    // Get community member count (all users except admins)
+    const communityMembers = await prisma.user.count({
+      where: {
+        role: {
+          not: 'ADMIN'
+        }
+      }
+    });
+
     return NextResponse.json({
-      total,
-      active,
-      pending,
+      solutions: {
+        total,
+        active,
+        pending,
+      },
+      community: {
+        members: communityMembers
+      }
     });
   } catch (error) {
     console.error('Error fetching stats:', error);
