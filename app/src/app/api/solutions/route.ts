@@ -7,7 +7,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 const ANONYMOUS_USER_ID = 'anonymous-user';
-const DEFAULT_PAGE_SIZE = 10;
+const DEFAULT_PAGE_SIZE = 30;
 
 // API Response Types
 type ApiResponse<T> = {
@@ -289,12 +289,6 @@ export async function GET(request: NextRequest) {
       }));
     }
 
-    // Calculate pagination
-    const skip = (page - 1) * pageSize;
-
-    // Get total count for pagination
-    const total = await prisma.solution.count({ where });
-
     // Determine sort order
     let orderBy: Prisma.SolutionOrderByWithRelationInput = {};
     switch (sort) {
@@ -314,7 +308,7 @@ export async function GET(request: NextRequest) {
         orderBy = { createdAt: 'desc' };
     }
 
-    // Get solutions with related data
+    // Get all solutions with related data
     const solutions = await prisma.solution.findMany({
       where,
       include: {
@@ -331,8 +325,6 @@ export async function GET(request: NextRequest) {
         },
       },
       orderBy,
-      skip,
-      take: pageSize,
     });
 
     // Transform solutions for response
@@ -351,10 +343,8 @@ export async function GET(request: NextRequest) {
     const response: ApiResponse<typeof transformedSolutions> = {
       data: transformedSolutions,
       meta: {
-        page,
-        pageSize,
-        total,
-        hasMore: skip + solutions.length < total,
+        total: transformedSolutions.length,
+        hasMore: false,
       },
     };
 

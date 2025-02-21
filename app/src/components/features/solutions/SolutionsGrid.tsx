@@ -22,8 +22,6 @@ export function SolutionsGrid({ initialSolutions }: SolutionsGridProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [filters, setFilters] = useState<FilterState>(initialFilterState);
   const [sort, setSort] = useState('recent');
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [stats, setStats] = useState<SolutionStats>({ total: 0, active: 0, pending: 0 });
@@ -49,12 +47,21 @@ export function SolutionsGrid({ initialSolutions }: SolutionsGridProps) {
   // Extract unique tags from all solutions
   const availableTags = useMemo(() => {
     const tagSet = new Set<string>();
-    initialSolutions.forEach(solution => {
+    solutions.forEach(solution => {
       solution.tags.forEach(tag => tagSet.add(tag));
     });
     return Array.from(tagSet).sort();
-  }, [initialSolutions]); // Use initialSolutions instead of solutions to maintain stable tag list
+  }, [solutions]); // Update when solutions change to reflect all available tags
 
+  // Track if filters have changed
+  const [filterKey, setFilterKey] = useState(0);
+
+  // Update filter key when any filter changes
+  useEffect(() => {
+    setFilterKey(prev => prev + 1);
+  }, [debouncedSearch, filters.category, filters.provider, debouncedAuthor, filters.selectedTags, sort]);
+
+  // Fetch solutions when filters change
   useEffect(() => {
     const fetchSolutions = async () => {
       setIsLoading(true);
@@ -65,9 +72,7 @@ export function SolutionsGrid({ initialSolutions }: SolutionsGridProps) {
         if (filters.provider) params.append('provider', filters.provider);
         if (debouncedAuthor) params.append('author', debouncedAuthor);
         if (sort) params.append('sort', sort);
-        if (page > 1) params.append('page', page.toString());
         
-        // Tags - using AND logic
         if (filters.selectedTags.length > 0) {
           params.append('tags', filters.selectedTags.join(','));
         }
@@ -75,11 +80,8 @@ export function SolutionsGrid({ initialSolutions }: SolutionsGridProps) {
         const response = await fetch(`/api/solutions?${params.toString()}`);
         if (!response.ok) throw new Error('Failed to fetch solutions');
         
-        const { data, metadata } = await response.json();
-        setSolutions(prevSolutions =>
-          page === 1 ? data : [...prevSolutions, ...data]
-        );
-        setHasMore(metadata?.hasMore ?? false);
+        const { data } = await response.json();
+        setSolutions(data);
       } catch (error) {
         console.error('Error fetching solutions:', error);
       } finally {
@@ -88,36 +90,54 @@ export function SolutionsGrid({ initialSolutions }: SolutionsGridProps) {
     };
 
     fetchSolutions();
-  }, [debouncedSearch, filters.category, filters.provider, debouncedAuthor, filters.selectedTags, sort, page]);
+  }, [debouncedSearch, filters.category, filters.provider, debouncedAuthor, filters.selectedTags, sort]);
+
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 max-w-[1600px] mx-auto">
+          {[...Array(6)].map((_, i) => (
+            <div
+              key={i}
+              className="h-[500px] rounded-lg bg-card/50 animate-pulse"
+            />
+          ))}
+        </div>
+      );
+    }
+
+    if (solutions.length === 0) {
+      return (
+        <div className="text-center py-12">
+          <h3 className="text-2xl font-semibold text-muted-foreground">
+            No solutions found
+          </h3>
+          <p className="text-muted-foreground/80 mt-2">
+            Try adjusting your search or filters
+          </p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 max-w-[1600px] mx-auto">
+        {solutions.map((solution) => (
+          <SolutionCard
+            key={solution.id}
+            {...solution}
+            author={{
+              name: solution.author?.name ?? 'Anonymous',
+              image: solution.author?.image ?? undefined,
+            }}
+          />
+        ))}
+      </div>
+    );
+  };
 
   const handleFilterChange = (key: keyof FilterState, value: any) => {
     setFilters(prev => ({ ...prev, [key]: value }));
-    setPage(1); // Reset pagination when filters change
   };
-
-  const observerRef = useRef<HTMLDivElement>(null);
-  const loadMore = useCallback(() => {
-    if (!isLoading && hasMore) {
-      setPage(prev => prev + 1);
-    }
-  }, [isLoading, hasMore]);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && !isLoading) {
-          loadMore();
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    if (observerRef.current) {
-      observer.observe(observerRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, [loadMore, isLoading]);
 
   return (
     <>
@@ -179,51 +199,8 @@ export function SolutionsGrid({ initialSolutions }: SolutionsGridProps) {
 
         {/* Main Content */}
         <div className="flex-1 container mx-auto px-4 py-8">
-          {isLoading && page === 1 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 max-w-[1600px] mx-auto">
-              {[...Array(6)].map((_, i) => (
-                <div
-                  key={i}
-                  className="h-[500px] rounded-lg bg-card/50 animate-pulse"
-                />
-              ))}
-            </div>
-          ) : solutions.length === 0 ? (
-            <div className="text-center py-12">
-              <h3 className="text-2xl font-semibold text-muted-foreground">
-                No solutions found
-              </h3>
-              <p className="text-muted-foreground/80 mt-2">
-                Try adjusting your search or filters
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 max-w-[1600px] mx-auto">
-              {solutions.map((solution) => (
-                <SolutionCard
-                  key={solution.id}
-                  {...solution}
-                  author={{
-                    name: solution.author?.name ?? 'Anonymous',
-                    image: solution.author?.image ?? undefined,
-                  }}
-                />
-              ))}
-            </div>
-          )}
+          {renderContent()}
         </div>
-
-        {/* Infinite Scroll Trigger */}
-        {hasMore && (
-          <div
-            ref={observerRef}
-            className="h-10 w-full flex items-center justify-center py-8"
-          >
-            {isLoading && (
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            )}
-          </div>
-        )}
       </div>
 
       {/* Filter Sidebar */}
