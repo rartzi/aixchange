@@ -333,7 +333,7 @@ export default function SolutionsAdminPage() {
         {/* Bulk Import Section */}
         <div className="space-y-4">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Bulk Import</h2>
-          <BulkImport />
+          <BulkImport onImportSuccess={fetchSolutions} />
         </div>
 
         {/* Solutions Table */}

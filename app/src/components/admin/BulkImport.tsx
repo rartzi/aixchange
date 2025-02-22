@@ -31,7 +31,11 @@ type ImportStatus = {
   progress?: number;
 };
 
-export function BulkImport() {
+interface BulkImportProps {
+  onImportSuccess?: () => void;
+}
+
+export function BulkImport({ onImportSuccess }: BulkImportProps) {
   const { data: session } = useSession();
   const { toast } = useToast();
   const [file, setFile] = useState<File | null>(null);
@@ -149,6 +153,9 @@ export function BulkImport() {
         title: "Success",
         description: result.message
       });
+
+      // Call the success callback to refresh the solutions list
+      onImportSuccess?.();
     } catch (error) {
       setStatus({
         success: false,

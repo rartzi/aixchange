@@ -39,7 +39,7 @@ export function Navbar() {
             <div className="relative group">
               <Link
                 href="/admin/users"
-                className="text-lg font-medium text-primary hover:text-primary/90 transition-colors flex items-center gap-1"
+                className="text-lg font-medium bg-gradient-to-r from-primary/20 to-primary/10 dark:from-primary/30 dark:to-primary/20 px-4 py-2 rounded-md text-primary dark:text-blue-300 hover:from-primary/30 hover:to-primary/20 dark:hover:from-primary/40 dark:hover:to-primary/30 transition-all flex items-center gap-1"
               >
                 Admin
                 <svg
@@ -59,13 +59,13 @@ export function Navbar() {
                 <div className="py-1">
                   <Link
                     href="/admin/users"
-                    className="block px-4 py-2 text-sm text-gray-800 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="block px-4 py-2 text-sm text-gray-800 dark:text-gray-100 hover:bg-primary/10 dark:hover:bg-primary/20"
                   >
                     User Management
                   </Link>
                   <Link
                     href="/admin/solutions"
-                    className="block px-4 py-2 text-sm text-gray-800 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="block px-4 py-2 text-sm text-gray-800 dark:text-gray-100 hover:bg-primary/10 dark:hover:bg-primary/20"
                   >
                     Solutions Management
                   </Link>
