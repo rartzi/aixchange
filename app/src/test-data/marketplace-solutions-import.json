@@ -1,0 +1,56 @@
+{
+  "solutions": [
+    {
+      "title": "BiomarkerNavigator",
+      "description": "The Biomarkers Navigator One stop shop for biomarker analysis. Center of knowledge which facilitates the sharing of clinical Biomarker insights throughout the organization. Streamlines multiple approaches for time-to-Event Analysis, reducing workload for bioinformatics teams. Accelerates knowledge retrieval for stakeholders.",
+      "version": "1.0.0",
+      "category": "AppliedDataScience",
+      "provider": "Ioannis Kagiampakis",
+      "launchUrl": "https://bionav.scp.astrazeneca.net/",
+      "tokenCost": 16,
+      "tags": ["EDS", "AI", "Biomarkers"],
+      "imageUrl": "/api/external-images/solutions/biomarkerbavigator.jpg",
+      "isPublished": true,
+      "metadata": {
+        "rating": 5,
+        "reviews": 0,
+        "type": "marketplace"
+      }
+    },
+    {
+      "title": "Population Models",
+      "description": "This application provides real-time data-driven insights to identify trial designs likely to outperform standard of care (SoC) by integrating evidence across real-world data (RWD), AstraZeneca and competitor clinical trials",
+      "version": "1.0.0",
+      "category": "AppliedDataScience",
+      "provider": "Leonidas Souliotis",
+      "launchUrl": "https://prd.domino.astrazeneca.net/modelproducts/6711094f3343160ad98f5b04",
+      "tokenCost": 16,
+      "tags": ["LASER", "AI", "Population Models"],
+      "imageUrl": "/api/external-images/solutions/population-models.png",
+      "isPublished": true,
+      "metadata": {
+        "rating": 5,
+        "reviews": 0,
+        "type": "marketplace"
+      }
+    },
+    {
+      "title": "DominoData RAG KnowledgeBase Manager",
+      "description": "Enterprise-grade knowledge base management system for RAG applications. Features comprehensive document processing, metadata management, and embedding generation. Supports multiple file formats, Azure OpenAI integration, and includes built-in privacy controls and compliance with AZ AI governance framework.",
+      "version": "1.0.0",
+      "category": "AI",
+      "provider": "Ronen Artzi (ODSP)",
+      "launchUrl": "https://prd.domino.astrazeneca.net/modelproducts/67633eb1cd6c33537e4f502e",
+      "tokenCost": 2,
+      "tags": ["Azure OpenAI", "RAG", "Enterprise", "Document Management", "Embeddings", "Compliance"],
+      "imageUrl": "/api/external-images/solutions/dominodata-rag-knowledgebase-manager.png",
+      "isPublished": true,
+      "metadata": {
+        "rating": 4.8,
+        "reviews": 48,
+        "type": "marketplace"
+      }
+    }
+  ],
+  "defaultAuthorId": "admin-user"
+}
