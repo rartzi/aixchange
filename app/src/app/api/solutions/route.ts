@@ -223,9 +223,12 @@ export async function GET(request: NextRequest) {
       limit,
     } = queryParamsSchema.parse(params);
 
-    const where: Prisma.SolutionWhereInput = {
-      isPublished: true,
-    };
+    const where: Prisma.SolutionWhereInput = {};
+    
+    // Only apply isPublished filter if no status is specified
+    if (!status) {
+      where.isPublished = true;
+    }
 
     // Cursor-based pagination
     let skip: number | undefined;

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
@@ -20,6 +21,7 @@ interface Solution {
   rating: number;
   tags: string[];
   imageUrl?: string;
+  isPublished: boolean;
   author: {
     name: string;
     email: string;
@@ -46,6 +48,7 @@ export function AdminSolutionDialog({ open, onOpenChange, solution, onSave }: Ad
     rating: 0,
     tags: [],
     imageUrl: '',
+    isPublished: false,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -63,6 +66,7 @@ export function AdminSolutionDialog({ open, onOpenChange, solution, onSave }: Ad
         rating,
         tags,
         imageUrl,
+        isPublished,
       } = solution;
       
       setFormData({
@@ -77,6 +81,7 @@ export function AdminSolutionDialog({ open, onOpenChange, solution, onSave }: Ad
         rating,
         tags,
         imageUrl,
+        isPublished,
       });
     } else {
       setFormData({
@@ -129,23 +134,41 @@ export function AdminSolutionDialog({ open, onOpenChange, solution, onSave }: Ad
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-900 dark:text-gray-100">Status</label>
-              <Select
-                value={formData.status}
-                onValueChange={(value: "ACTIVE" | "PENDING" | "INACTIVE") => 
-                  setFormData(prev => ({ ...prev, status: value }))
-                }
-              >
-                <SelectTrigger className="bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ACTIVE">Active</SelectItem>
-                  <SelectItem value="PENDING">Pending</SelectItem>
-                  <SelectItem value="INACTIVE">Inactive</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-900 dark:text-gray-100">Status</label>
+                <Select
+                  value={formData.status}
+                  onValueChange={(value: "ACTIVE" | "PENDING" | "INACTIVE") =>
+                    setFormData(prev => ({ ...prev, status: value }))
+                  }
+                >
+                  <SelectTrigger className="bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ACTIVE">Active</SelectItem>
+                    <SelectItem value="PENDING">Pending</SelectItem>
+                    <SelectItem value="INACTIVE">Inactive</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="isPublished"
+                  checked={formData.isPublished}
+                  onCheckedChange={(checked) =>
+                    setFormData(prev => ({ ...prev, isPublished: checked as boolean }))
+                  }
+                />
+                <label
+                  htmlFor="isPublished"
+                  className="text-sm font-medium leading-none text-gray-900 dark:text-gray-100"
+                >
+                  Published
+                </label>
+              </div>
             </div>
 
             <div className="space-y-2">
