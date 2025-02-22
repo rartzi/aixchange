@@ -12,9 +12,12 @@
 - Status filtering in solutions admin page
 - New API endpoint for bulk solution updates
 - Improved description field with larger height and placeholder
+- Gradient background in navigation bar with improved visibility
 
 ### Changed
 - Improved dark mode contrast throughout admin interface
+- Enhanced bulk import results visibility in dark mode
+- Added text gradient effects for better brand presence
 - Streamlined admin navigation to focus on core management features
 - Enhanced UI components with better dark mode support
 - Updated status badges with improved visibility
@@ -23,6 +26,8 @@
 
 ### Fixed
 - Dark mode contrast issues in admin pages
+- Bulk import results visibility in dark mode
+- Navigation text contrast and readability
 - Admin dropdown menu redundant items
 - Table component dark mode styling
 - Edit dialog text contrast in dark mode

@@ -179,7 +179,7 @@ export function BulkImport() {
   };
 
   return (
-    <Card className="p-6">
+    <Card className="p-6 bg-white dark:bg-gray-800">
       <Tabs defaultValue="import" className="space-y-4">
         <TabsList>
           <TabsTrigger value="import">Import Solutions</TabsTrigger>
@@ -188,27 +188,31 @@ export function BulkImport() {
 
         <TabsContent value="import" className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2">
+            <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">
               Select JSON File
             </label>
             <input
               type="file"
               accept=".json"
               onChange={handleFileChange}
-              className="block w-full text-sm text-gray-500
+              className="block w-full text-sm text-gray-500 dark:text-gray-400
                 file:mr-4 file:py-2 file:px-4
                 file:rounded-md file:border-0
                 file:text-sm file:font-semibold
-                file:bg-blue-50 file:text-blue-700
-                hover:file:bg-blue-100"
+                file:bg-blue-50 file:text-blue-700 dark:file:bg-blue-900 dark:file:text-blue-100
+                hover:file:bg-blue-100 dark:hover:file:bg-blue-800"
             />
-            <p className="mt-2 text-sm text-gray-500">
+            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
               Current Mode: {mode === 'transaction' ? 'Transaction (All-or-nothing)' : 'Partial (Continue on error)'}
             </p>
           </div>
 
           {preview && (
-            <Alert className={preview.validSolutions === preview.totalSolutions ? 'bg-green-50' : 'bg-yellow-50'}>
+            <Alert className={`${
+              preview.validSolutions === preview.totalSolutions 
+                ? 'bg-green-50 dark:bg-green-900/30 text-green-900 dark:text-green-100' 
+                : 'bg-yellow-50 dark:bg-yellow-900/30 text-yellow-900 dark:text-yellow-100'
+            }`}>
               <AlertTitle>Import Preview</AlertTitle>
               <AlertDescription>
                 <div className="space-y-2">
@@ -227,7 +231,7 @@ export function BulkImport() {
                               {s.errors && (
                                 <ul className="ml-4 list-disc">
                                   {s.errors.map((err, j) => (
-                                    <li key={j} className="text-sm text-red-600">{err}</li>
+                                    <li key={j} className="text-sm text-red-600 dark:text-red-400">{err}</li>
                                   ))}
                                 </ul>
                               )}
@@ -244,7 +248,7 @@ export function BulkImport() {
           {status?.progress !== undefined && (
             <div className="space-y-2">
               <Progress value={status.progress} />
-              <p className="text-sm text-gray-500">{status.progress}% complete</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{status.progress}% complete</p>
             </div>
           )}
 
@@ -268,7 +272,11 @@ export function BulkImport() {
           </div>
 
           {status && (
-            <Alert className={status.success ? 'bg-green-50' : 'bg-red-50'}>
+            <Alert className={`${
+              status.success 
+                ? 'bg-green-50 dark:bg-green-900/30 text-green-900 dark:text-green-100 border-green-200 dark:border-green-800' 
+                : 'bg-red-50 dark:bg-red-900/30 text-red-900 dark:text-red-100 border-red-200 dark:border-red-800'
+            }`}>
               <div className="flex justify-between items-start">
                 <AlertTitle>{status.success ? 'Success' : 'Error'}</AlertTitle>
                 <div className="flex gap-2">
@@ -289,7 +297,7 @@ export function BulkImport() {
                     <p className="font-semibold">Errors:</p>
                     <ul className="list-disc list-inside">
                       {status.errors.map((error, index) => (
-                        <li key={index}>
+                        <li key={index} className="text-red-700 dark:text-red-300">
                           {error.title}: {error.error}
                         </li>
                       ))}
@@ -304,7 +312,7 @@ export function BulkImport() {
         <TabsContent value="mode">
           <div className="space-y-4">
             <div>
-              <h3 className="text-lg font-medium mb-2">Import Mode</h3>
+              <h3 className="text-lg font-medium mb-2 text-gray-900 dark:text-gray-100">Import Mode</h3>
               <div className="space-y-4">
                 <div className="flex items-start space-x-2">
                   <input
@@ -316,8 +324,8 @@ export function BulkImport() {
                     className="mt-1"
                   />
                   <div>
-                    <label htmlFor="transaction" className="font-medium">Transaction Mode</label>
-                    <p className="text-sm text-gray-500">
+                    <label htmlFor="transaction" className="font-medium text-gray-900 dark:text-gray-100">Transaction Mode</label>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       All-or-nothing import. If any solution fails, the entire import is rolled back.
                       Best for maintaining data consistency.
                     </p>
@@ -333,8 +341,8 @@ export function BulkImport() {
                     className="mt-1"
                   />
                   <div>
-                    <label htmlFor="partial" className="font-medium">Partial Mode</label>
-                    <p className="text-sm text-gray-500">
+                    <label htmlFor="partial" className="font-medium text-gray-900 dark:text-gray-100">Partial Mode</label>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       Continues importing even if some solutions fail. Successfully imported solutions are kept.
                       Best for large imports where some failures are acceptable.
                     </p>
