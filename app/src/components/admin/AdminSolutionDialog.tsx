@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
 interface Solution {
   id: string;
@@ -50,7 +51,6 @@ export function AdminSolutionDialog({ open, onOpenChange, solution, onSave }: Ad
 
   useEffect(() => {
     if (solution) {
-      // Only include fields we want to update
       const {
         title,
         description,
@@ -99,9 +99,8 @@ export function AdminSolutionDialog({ open, onOpenChange, solution, onSave }: Ad
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      // If editing, include the ID
       const dataToSave = solution?.id ? { ...formData, id: solution.id } : formData;
-      console.log('Saving solution data:', dataToSave); // Log the data being saved
+      console.log('Saving solution data:', dataToSave);
       await onSave(dataToSave);
       onOpenChange(false);
     } catch (error) {
@@ -113,29 +112,32 @@ export function AdminSolutionDialog({ open, onOpenChange, solution, onSave }: Ad
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl bg-white dark:bg-gray-800">
         <DialogHeader>
-          <DialogTitle>{solution ? 'Edit Solution' : 'Add Solution'}</DialogTitle>
+          <DialogTitle className="text-gray-900 dark:text-gray-100">
+            {solution ? 'Edit Solution' : 'Add Solution'}
+          </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Title</label>
+              <label className="text-sm font-medium text-gray-900 dark:text-gray-100">Title</label>
               <Input
                 value={formData.title}
                 onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                className="bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Status</label>
+              <label className="text-sm font-medium text-gray-900 dark:text-gray-100">Status</label>
               <Select
                 value={formData.status}
                 onValueChange={(value: "ACTIVE" | "PENDING" | "INACTIVE") => 
                   setFormData(prev => ({ ...prev, status: value }))
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -147,59 +149,65 @@ export function AdminSolutionDialog({ open, onOpenChange, solution, onSave }: Ad
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Provider</label>
+              <label className="text-sm font-medium text-gray-900 dark:text-gray-100">Provider</label>
               <Input
                 value={formData.provider}
                 onChange={(e) => setFormData(prev => ({ ...prev, provider: e.target.value }))}
+                className="bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Category</label>
+              <label className="text-sm font-medium text-gray-900 dark:text-gray-100">Category</label>
               <Input
                 value={formData.category}
                 onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                className="bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Launch URL</label>
+              <label className="text-sm font-medium text-gray-900 dark:text-gray-100">Launch URL</label>
               <Input
                 type="url"
                 value={formData.launchUrl}
                 onChange={(e) => setFormData(prev => ({ ...prev, launchUrl: e.target.value }))}
+                className="bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Source Code URL</label>
+              <label className="text-sm font-medium text-gray-900 dark:text-gray-100">Source Code URL</label>
               <Input
                 type="url"
                 value={formData.sourceCodeUrl}
                 onChange={(e) => setFormData(prev => ({ ...prev, sourceCodeUrl: e.target.value }))}
+                className="bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Image URL</label>
+              <label className="text-sm font-medium text-gray-900 dark:text-gray-100">Image URL</label>
               <Input
                 value={formData.imageUrl}
                 onChange={(e) => setFormData(prev => ({ ...prev, imageUrl: e.target.value }))}
                 placeholder="/api/external-images/solutions/example.png"
+                className="bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Token Cost</label>
+              <label className="text-sm font-medium text-gray-900 dark:text-gray-100">Token Cost</label>
               <Input
                 type="number"
                 value={formData.tokenCost}
                 onChange={(e) => setFormData(prev => ({ ...prev, tokenCost: Number(e.target.value) }))}
+                className="bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Rating</label>
+              <label className="text-sm font-medium text-gray-900 dark:text-gray-100">Rating</label>
               <Input
                 type="number"
                 min="0"
@@ -207,21 +215,33 @@ export function AdminSolutionDialog({ open, onOpenChange, solution, onSave }: Ad
                 step="0.1"
                 value={formData.rating}
                 onChange={(e) => setFormData(prev => ({ ...prev, rating: Number(e.target.value) }))}
+                className="bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Description</label>
+            <label className="text-sm font-medium text-gray-900 dark:text-gray-100">Description</label>
             <textarea
-              className="w-full min-h-[100px] p-2 border rounded-md"
+              className={cn(
+                "w-full min-h-[200px] p-2 border rounded-md resize-y",
+                "bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100",
+                "border-gray-200 dark:border-gray-600",
+                "focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+              )}
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              placeholder="Enter a detailed description of the solution..."
             />
           </div>
 
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => onOpenChange(false)}
+              className="bg-white dark:bg-gray-700"
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>
