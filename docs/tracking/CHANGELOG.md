@@ -3,6 +3,10 @@
 ## [Unreleased]
 
 ### Added
+- Bulk solution import functionality with JSON validation
+- New BulkImport component for admin interface
+- Import API endpoints for solution data
+- Test data files for import validation
 - Bulk status management for solutions in admin interface
 - Status filtering in solutions admin page
 - New API endpoint for bulk solution updates
