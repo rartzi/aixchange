@@ -11,7 +11,7 @@ export function SubmitSolutionForm() {
   const [formData, setFormData] = useState<Partial<SolutionFormData>>({
     title: '',
     description: '',
-    category: '',
+    category: 'Other', // Default to 'Other' instead of empty string
     provider: '',
     launchUrl: '',
     sourceCodeUrl: '',
@@ -24,7 +24,6 @@ export function SubmitSolutionForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentTag, setCurrentTag] = useState('');
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [customCategory, setCustomCategory] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const validateForm = () => {
@@ -77,7 +76,7 @@ export function SubmitSolutionForm() {
       setFormData({
         title: '',
         description: '',
-        category: '',
+        category: 'Other', // Reset to 'Other'
         provider: '',
         launchUrl: '',
         tokenCost: 0,
@@ -85,7 +84,6 @@ export function SubmitSolutionForm() {
         status: 'Pending',
         tags: [],
       });
-      setCustomCategory('');
       setPreviewImage(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -171,37 +169,18 @@ export function SubmitSolutionForm() {
             <select
               value={formData.category}
               onChange={(e) => {
-                const value = e.target.value;
-                if (value === 'custom') {
-                  setFormData(prev => ({ ...prev, category: '' }));
-                } else {
-                  setFormData(prev => ({ ...prev, category: value }));
-                  setCustomCategory('');
-                }
+                const value = e.target.value as typeof predefinedCategories[number];
+                setFormData(prev => ({ ...prev, category: value }));
               }}
               className={`flex-1 p-2 border rounded-md ${errors.category ? 'border-red-500' : ''}`}
             >
-              <option value="">Select a category</option>
               {predefinedCategories.map(category => (
                 <option key={category} value={category}>
                   {category}
                 </option>
               ))}
-              <option value="custom">Add Custom Category</option>
             </select>
           </div>
-          {formData.category === '' && (
-            <input
-              type="text"
-              value={customCategory}
-              onChange={(e) => {
-                setCustomCategory(e.target.value);
-                setFormData(prev => ({ ...prev, category: e.target.value }));
-              }}
-              placeholder="Enter custom category"
-              className="mt-2 w-full p-2 border rounded-md"
-            />
-          )}
           {errors.category && <p className="text-red-500 text-sm mt-1">{errors.category}</p>}
         </div>
 

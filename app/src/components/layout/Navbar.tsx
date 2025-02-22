@@ -33,6 +33,51 @@ export function Navbar() {
         >
           (AI)Xccelerate
         </Link>
+        {/* Admin Navigation */}
+        {session?.user?.role === 'ADMIN' && (
+          <div className="relative group">
+            <Link
+              href="/admin/users"
+              className="text-lg font-medium text-primary hover:text-primary/90 transition-colors flex items-center gap-1"
+            >
+              Admin
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                className="w-5 h-5"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </Link>
+            <div className="absolute top-full left-0 mt-1 w-48 bg-background border border-border rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+              <div className="py-1">
+                <Link
+                  href="/admin/users"
+                  className="block px-4 py-2 text-sm text-foreground hover:bg-muted"
+                >
+                  User Management
+                </Link>
+                <Link
+                  href="/admin/solutions/import"
+                  className="block px-4 py-2 text-sm text-foreground hover:bg-muted"
+                >
+                  Import Solutions
+                </Link>
+                <Link
+                  href="/admin/solutions/test-import"
+                  className="block px-4 py-2 text-sm text-foreground hover:bg-muted"
+                >
+                  Test Import
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
         <button
           onClick={toggleTheme}
           className="p-2 rounded-full hover:bg-muted transition-colors"
