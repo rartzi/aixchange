@@ -391,6 +391,78 @@ export default function SolutionsAdminPage() {
               <span className="text-sm text-gray-600 dark:text-gray-400">
                 {selectedSolutions.size} solutions selected
               </span>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    const selectedSolutionsData = filteredSolutions
+                      .filter(s => selectedSolutions.has(s.id))
+                      .map(s => ({
+                        ...s,
+                        createdAt: new Date(s.createdAt).toISOString(),
+                        updatedAt: new Date(s.updatedAt).toISOString()
+                      }));
+                    
+                    const exportData = {
+                      solutions: selectedSolutionsData
+                    };
+                    
+                    const jsonStr = JSON.stringify(exportData, null, 2);
+                    
+                    // Create and trigger download
+                    const blob = new Blob([jsonStr], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'solutions-export.json';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                    toast({
+                      title: "Success",
+                      description: `${selectedSolutions.size} solutions exported to JSON file`,
+                    });
+                  }}
+                  className="bg-white dark:bg-gray-800"
+                >
+                  Download JSON
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    const selectedSolutionsData = filteredSolutions
+                      .filter(s => selectedSolutions.has(s.id))
+                      .map(s => ({
+                        ...s,
+                        createdAt: new Date(s.createdAt).toISOString(),
+                        updatedAt: new Date(s.updatedAt).toISOString()
+                      }));
+                    
+                    const exportData = {
+                      solutions: selectedSolutionsData
+                    };
+                    
+                    const jsonStr = JSON.stringify(exportData, null, 2);
+                    navigator.clipboard.writeText(jsonStr).then(() => {
+                      toast({
+                        title: "Success",
+                        description: `${selectedSolutions.size} solutions copied to clipboard as JSON`,
+                      });
+                    }).catch(err => {
+                      toast({
+                        title: "Error",
+                        description: "Failed to copy to clipboard",
+                        variant: "destructive",
+                      });
+                    });
+                  }}
+                  className="bg-white dark:bg-gray-800"
+                >
+                  Copy to Clipboard
+                </Button>
+              </div>
               <Select
                 onValueChange={(value: "ACTIVE" | "PENDING" | "INACTIVE") => handleBulkStatusUpdate(value)}
               >
