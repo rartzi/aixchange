@@ -72,18 +72,12 @@ export default async function SolutionsPage() {
                 Discover and explore innovative AI solutions from our community
               </p>
             </div>
-            <div className="flex gap-4">
+            <div>
               <Link
                 href="/solutions/create"
                 className="px-6 py-3 rounded-lg bg-white text-primary hover:bg-white/90 transition-colors font-medium"
               >
                 Submit Solution
-              </Link>
-              <Link
-                href="/admin/solutions/bulk-submission"
-                className="px-6 py-3 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors"
-              >
-                Bulk Submission
               </Link>
             </div>
           </div>
