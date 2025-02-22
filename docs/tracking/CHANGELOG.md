@@ -14,6 +14,7 @@
 - Enhanced UI components with better dark mode support
 - Updated status badges with improved visibility
 - Improved edit dialog with better dark mode support and input styling
+- Moved bulk submission to admin-only interface
 
 ### Fixed
 - Dark mode contrast issues in admin pages
@@ -21,6 +22,9 @@
 - Table component dark mode styling
 - Edit dialog text contrast in dark mode
 - Input field visibility in dark mode
+
+### Removed
+- Bulk submission link from main solutions page
 
 ## [1.0.0] - 2024-02-21
 
