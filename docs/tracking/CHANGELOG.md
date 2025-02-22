@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 ### Added
+- User management system for administrators
+  - View all users with detailed information
+  - Manage user roles (Admin, Moderator, User)
+  - Track user activity and statistics
+  - Audit logging for role changes
+  - Role-based access control
 - Cursor-based pagination for solutions page
   - Efficient data retrieval for large datasets
   - Optimized performance with infinite scroll
