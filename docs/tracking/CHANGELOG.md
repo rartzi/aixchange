@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Added
+- Bulk solution delete functionality in admin interface
 - Bulk solution import functionality with JSON validation
 - New BulkImport component for admin interface
 - Import API endpoints for solution data

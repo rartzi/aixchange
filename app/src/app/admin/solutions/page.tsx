@@ -212,6 +212,53 @@ export default function SolutionsAdminPage() {
     }
   };
 
+  const handleBulkDelete = async () => {
+    if (!selectedSolutions.size) {
+      toast({
+        title: "Error",
+        description: "No solutions selected",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to delete ${selectedSolutions.size} solutions? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/admin/solutions/bulk-delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          solutionIds: Array.from(selectedSolutions),
+        }),
+      });
+
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to delete solutions");
+      }
+
+      toast({
+        title: "Success",
+        description: result.message || `Successfully deleted ${selectedSolutions.size} solutions`,
+      });
+
+      setSelectedSolutions(new Set());
+      fetchSolutions();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to delete solutions",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleEdit = (solution: Solution) => {
     setEditingSolution(solution);
     setDialogOpen(true);
@@ -356,6 +403,13 @@ export default function SolutionsAdminPage() {
                   <SelectItem value="INACTIVE">Set Inactive</SelectItem>
                 </SelectContent>
               </Select>
+              <Button
+                variant="destructive"
+                onClick={handleBulkDelete}
+                className="ml-2"
+              >
+                Delete Selected
+              </Button>
             </div>
           )}
           
