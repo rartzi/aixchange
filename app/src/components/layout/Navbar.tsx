@@ -63,16 +63,10 @@ export function Navbar() {
                   User Management
                 </Link>
                 <Link
-                  href="/admin/solutions/import"
+                  href="/admin/solutions"
                   className="block px-4 py-2 text-sm text-foreground hover:bg-muted"
                 >
-                  Import Solutions
-                </Link>
-                <Link
-                  href="/admin/solutions/test-import"
-                  className="block px-4 py-2 text-sm text-foreground hover:bg-muted"
-                >
-                  Test Import
+                  Solutions Management
                 </Link>
               </div>
             </div>

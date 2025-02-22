@@ -1,361 +1,173 @@
-# System Architecture
+# Architecture Overview
 
-## Overview
-This document outlines the technical architecture and implementation plan for (AI)Xplore, including system design, deployment strategies, and technical decisions.
+## System Components
 
-## 1. System Components
+### Frontend Architecture
+- Next.js 14 with App Router
+- React Server Components
+- Client-side Components for interactive features
+- TailwindCSS for styling
+- Shadcn/ui for component library
 
-### 1.1 Core Architecture
-- **Frontend Layer**
-  - Next.js 14 with App Router
-  - TailwindCSS for styling
-  - React Server Components
-  - Client-side interactivity
+### Backend Architecture
+- Next.js API Routes
+- Prisma ORM
+- PostgreSQL Database
+- NextAuth.js for authentication
 
-- **Backend Layer**
-  - Node.js/Express API
-  - GraphQL endpoints
-  - WebSocket support
-  - Rate limiting
+## Key Features
 
-- **Data Layer**
-  - PostgreSQL for core data
-  - Redis for caching
-  - Elasticsearch for search
+### Authentication & Authorization
+- Role-based access control (User, Admin, Moderator)
+- Protected API routes and pages
+- Session management with NextAuth.js
 
-- **Media Layer**
-  - External images storage
-  - Read-only volume mounting
-  - CDN integration for production
-  - Configurable image paths
-  - See [Image Guidelines](./IMAGE_GUIDELINES.md) for details
+### Admin Interface
+- Centralized management dashboard
+- Bulk operations support for efficient management
+  - Bulk status updates for solutions
+  - Status filtering and management
+- Dark mode support with proper contrast
+- Responsive design for all screen sizes
 
-- **Authentication**
-  - NextAuth.js with JWT strategy
-  - Session duration: 30 days
-  - Session refresh: 24 hours
-  - Audit logging for all auth events
-  - Role-based access control (RBAC)
-  - User types:
-    - Admin (admin@aixchange.ai)
-    - Anonymous (system account)
-  - Security features:
-    - Password hashing (bcrypt)
-    - CSRF protection
-    - Return-to-page functionality
+### Solution Management
+- CRUD operations for solutions
+- Bulk operations support
+- Status management (Active, Pending, Inactive)
+- Image handling and storage
+- Voting system
+- Review system
 
-### 1.2 Microservices Architecture
-- **Solution Management Service**
-  - Solution CRUD operations
-  - Version control integration
-  - Resource management
-  - Deployment orchestration
-  - Image management and validation
-  - Cursor-based pagination for efficient data retrieval
-  - Infinite scroll support with optimized loading
+### User Management
+- User role management
+- Account status control
+- Activity tracking
 
-- **Analytics Service**
-  - Usage tracking
-  - Performance monitoring
-  - User behavior analysis
-  - Reporting engine
+## API Structure
 
-- **Event Management Service**
-  - Hackathon organization
-  - Event scheduling
-  - Submission handling
-  - Voting system
+### Admin API Endpoints
+- `/api/admin/solutions`
+  - GET: List all solutions
+  - POST: Create new solution
+- `/api/admin/solutions/[id]`
+  - GET: Get solution details
+  - PATCH: Update solution
+  - DELETE: Delete solution
+- `/api/admin/solutions/bulk-update`
+  - POST: Update multiple solutions
+- `/api/admin/users`
+  - GET: List all users
+  - POST: Create new user
+- `/api/admin/users/[id]`
+  - GET: Get user details
+  - PATCH: Update user
+  - DELETE: Delete user
 
-- **Rating & Review Service**
-  - Multi-dimensional ratings
-  - Review management
-  - Feedback aggregation
-  - Trend analysis
+### Public API Endpoints
+- `/api/solutions`
+  - GET: List public solutions
+  - POST: Submit new solution
+- `/api/solutions/[id]`
+  - GET: Get solution details
+  - PATCH: Update solution (owner only)
+  - DELETE: Delete solution (owner only)
 
-## 2. Infrastructure Design
+## Database Schema
 
-### 2.1 Deployment Architecture
-- **Container Orchestration**
-  - Kubernetes-based deployment
-  - Docker containerization
-  - Service mesh integration
-  - Auto-scaling capabilities
-  - External volume management for images
-
-- **Cloud Infrastructure**
-  - Provider-agnostic design
-  - Multi-region support
-  - Load balancing
-  - CDN integration
-  - Shared storage for images
-
-### 2.2 Security Architecture
-- **Authentication & Authorization**
-  - Zero-trust security model
-  - Role-based access control
-  - API authentication
-  - Session management
-  - **Development Note**: Authentication temporarily disabled
-    - Development-only configuration
-    - Not for production use
-    - Re-enable security before deployment
-
-- **Data Security**
-  - Encryption at rest
-  - Secure communication
-  - Audit logging
-  - Compliance monitoring
-  - Read-only access to external media
-
-### 2.3 Monitoring & Observability
-- **Monitoring Stack**
-  - Prometheus metrics
-  - Grafana dashboards
-  - ELK logging stack
-  - Alert management
-
-- **Performance Monitoring**
-  - Real-time metrics
-  - Performance tracking
-  - Resource utilization
-  - Error tracking
-  - Image serving metrics
-
-## 3. Development Environment
-
-### 3.1 Local Development
-```bash
-# Repository setup
-git clone https://github.com/org/(ai)xplore.git
-cd (ai)xplore
-
-# Environment configuration
-cp .env.example .env
-# Configure environment variables
-
-# Create external images directory
-mkdir -p external-images/solutions external-images/profiles
-
-# Development servers
-npm run dev
+### Solution
+```prisma
+model Solution {
+  id            String         @id @default(cuid())
+  title         String
+  description   String
+  status        SolutionStatus @default(PENDING)
+  authorId      String
+  category      String
+  provider      String
+  launchUrl     String
+  sourceCodeUrl String?
+  imageUrl      String?
+  tokenCost     Int           @default(0)
+  rating        Float         @default(0)
+  upvotes       Int           @default(0)
+  downvotes     Int           @default(0)
+  totalVotes    Int           @default(0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  author        User          @relation(fields: [authorId], references: [id])
+  reviews       Review[]
+}
 ```
 
-### 3.2 Docker Development
-```yaml
-version: '3'
-services:
-  frontend:
-    build: ./frontend
-    ports:
-      - "3000:3000"
-    environment:
-      - NODE_ENV=development
-    volumes:
-      - ./external-images:/external-images:ro
-
-  backend:
-    build: ./backend
-    ports:
-      - "4000:4000"
-    environment:
-      - NODE_ENV=development
-
-  db:
-    image: postgres:14
-    environment:
-      - POSTGRES_USER=dev
-      - POSTGRES_PASSWORD=dev
-      - POSTGRES_DB=(ai)xplore_dev
+### User
+```prisma
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  role          UserRole  @default(USER)
+  solutions     Solution[]
+  reviews       Review[]
+}
 ```
 
-## 4. Testing Architecture
+## Frontend Component Structure
 
-### 4.1 Testing Strategy
-- **Unit Testing**
-  - Component testing
-  - Service testing
-  - Utility testing
+### Admin Components
+- Layout components
+  - AdminLayout: Base layout for admin pages
+  - AdminNav: Navigation component
+- Feature components
+  - Solutions management
+    - SolutionsGrid: Main solutions table
+    - AdminSolutionDialog: Edit/create dialog
+    - BulkSolutionSubmission: Bulk import component
+  - User management
+    - UsersTable: User management table
+    - UserDialog: Edit/create dialog
 
-- **Integration Testing**
-  - API testing
-  - Service integration
-  - Database integration
-  - Image serving validation
+### UI Components
+- Base components (from shadcn/ui)
+  - Button
+  - Input
+  - Select
+  - Dialog
+  - Table
+  - Checkbox
+- Custom components
+  - ImageSelector
+  - StatusBadge
+  - FilterSidebar
 
-- **End-to-End Testing**
-  - User flow testing
-  - Performance testing
-  - Security testing
-  - Media access testing
+## Styling Architecture
+- TailwindCSS for utility-first styling
+- Dark mode support
+  - Proper contrast ratios
+  - Consistent color palette
+  - Accessible text colors
+- Component-specific styles
+- Global styles in globals.css
 
-### 4.2 Quality Assurance
-- Minimum 80% code coverage
-- Automated testing pipeline
-- Performance benchmarks
-- Security scanning
-- Image validation checks
+## Security Considerations
+- Role-based access control
+- API route protection
+- Input validation
+- XSS prevention
+- CSRF protection
+- Rate limiting
 
-## 5. Deployment Strategy
-
-### 5.1 CI/CD Pipeline
-1. Code push triggers build
-2. Automated testing
-3. Security scanning
-4. Staging deployment
-5. Integration testing
-6. Production deployment
-7. Health checks
-8. Monitoring setup
-9. Image storage verification
-
-### 5.2 Environment Management
-```bash
-# Production configuration
-NODE_ENV=production
-DATABASE_URL=postgresql://user:pass@host:5432/db
-REDIS_URL=redis://host:6379
-JWT_SECRET=your-secret-key
-EXTERNAL_IMAGES_PATH=/external-images
-NEXT_PUBLIC_EXTERNAL_IMAGES_URL=http://localhost:3000/external-images
-```
-
-## 6. Scalability & Performance
-
-### 6.1 Scaling Strategy
-- Horizontal scaling
-- Database replication
-- Cache distribution
-- Load balancing
-- CDN for images
-
-### 6.2 Performance Optimization
-- Code optimization
-- Cache strategies
-- Database indexing
-- CDN utilization
+## Performance Optimizations
+- Server components for static content
+- Client components for interactive features
 - Image optimization
-- Cursor-based pagination
-  - Efficient data retrieval for large datasets
-  - Consistent performance regardless of offset
-  - Optimized for real-time data updates
-  - Seamless infinite scroll implementation
+- Lazy loading
+- Pagination
+- Caching strategies
 
-## 7. Disaster Recovery
-
-### 7.1 Backup Strategy
-- Regular database backups
-- Configuration backups
-- Code repository mirrors
-- Recovery procedures
-- Image storage backups
-
-### 7.2 High Availability
-- Multi-region deployment
-- Failover mechanisms
-- Data replication
-- Service redundancy
-- Redundant image storage
-
-## 8. Schema Design Patterns
-
-### 8.1 Dual Field Approach
-- **Direct Fields + Metadata Pattern**
-  - Core fields directly on models (id, created/updated timestamps)
-  - Extended fields in metadata JSON column
-  - Enables schema flexibility while maintaining type safety
-  - Example from Solution model:
-    ```prisma
-    model Solution {
-      id          String    @id
-      title       String
-      description String
-      imageUrl    String?   // External image reference
-      // Core fields as direct columns
-      createdAt   DateTime  @default(now())
-      updatedAt   DateTime  @updatedAt
-      // Extended fields in metadata
-      metadata    Json?
-    }
-    ```
-
-### 8.2 API Layer Transformation
-- **Request Processing**
-  - Incoming data validated against Zod schemas
-  - Core fields mapped directly
-  - Extended fields consolidated into metadata
-  
-- **Response Processing**
-  - Metadata fields extracted and flattened
-  - Transformed into consistent API response shape
-  - Example transformation:
-    ```typescript
-    // Internal DB structure
-    {
-      id: "123",
-      title: "Solution",
-      imageUrl: "/external-images/solutions/image.jpg",
-      metadata: {
-        category: "AI",
-        provider: "OpenAI"
-      }
-    }
-    // API response
-    {
-      id: "123",
-      title: "Solution",
-      imageUrl: "/external-images/solutions/image.jpg",
-      category: "AI",
-      provider: "OpenAI"
-    }
-    ```
-
-### 8.3 Benefits and Trade-offs
-- **Benefits**
-  - Schema flexibility without migrations
-  - Type safety for core fields
-  - Easy addition of new fields
-  - Efficient querying of core fields
-  
-- **Trade-offs**
-  - Complexity in API layer
-  - Potential performance impact on metadata queries
-  - Need for careful metadata field documentation
-  - Additional validation complexity
-
-## Technical Decisions Log
-
-### Authentication
-- **Decision**: Use NextAuth.js with JWT and database session tracking
-- **Rationale**: Provides secure authentication with audit capabilities
-- **Current Status**: Fully implemented with role-based access
-- **Features**:
-  - JWT-based sessions with 30-day duration
-  - Database audit logging for all auth events
-  - Role-based access control (Admin/User)
-  - Return-to-page functionality
-- **Impact**: Secure, trackable user authentication with proper session management
-
-### Database
-- **Decision**: PostgreSQL + Redis
-- **Rationale**: Strong ACID compliance, good caching
-- **Alternatives Considered**: MongoDB, MySQL
-- **Impact**: Reliable data storage, efficient caching
-
-### Frontend Framework
-- **Decision**: Next.js 14
-- **Rationale**: Strong SSR, good DX, React integration
-- **Alternatives Considered**: Remix, SvelteKit
-- **Impact**: Improved performance, better SEO
-
-### Media Storage
-- **Decision**: External images with read-only mounting
-- **Rationale**: Efficient image serving without container bloat
-- **Alternatives Considered**: S3, embedded storage
-- **Impact**: Better resource utilization, simplified image management
-
-## References
-- [Development Guide](./DEVELOPMENT.md)
-- [Product Documentation](./PRODUCT.md)
-- [Governance Documentation](./GOVERNANCE.md)
-- [Vision Document](./VISION.md)
-- [Image Guidelines](./IMAGE_GUIDELINES.md)
+## Future Considerations
+- Enhanced bulk operations
+- Advanced filtering
+- Export functionality
+- Analytics dashboard
+- Activity logging
+- Audit trail

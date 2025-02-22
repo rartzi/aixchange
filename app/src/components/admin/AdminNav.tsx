@@ -11,8 +11,8 @@ export default function AdminNav() {
   };
 
   return (
-    <nav className="bg-white shadow mb-4">
-      <div className="max-w-7xl mx-auto px-4">
+    <nav className="bg-white shadow mb-4 w-full">
+      <div className="w-full px-4">
         <div className="flex space-x-4 py-2">
           {/* Users Management */}
           <Link 
@@ -24,16 +24,10 @@ export default function AdminNav() {
 
           {/* Solutions Management */}
           <Link 
-            href="/admin/solutions/import"
-            className={`px-3 py-2 rounded-md text-sm font-medium ${isActive('/admin/solutions/import')}`}
+            href="/admin/solutions"
+            className={`px-3 py-2 rounded-md text-sm font-medium ${isActive('/admin/solutions')}`}
           >
-            Import Solutions
-          </Link>
-          <Link 
-            href="/admin/solutions/test-import"
-            className={`px-3 py-2 rounded-md text-sm font-medium ${isActive('/admin/solutions/test-import')}`}
-          >
-            Test Import
+            Solutions
           </Link>
         </div>
       </div>
