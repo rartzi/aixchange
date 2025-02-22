@@ -45,6 +45,7 @@ interface Solution {
   rating: number;
   tags: string[];
   imageUrl?: string;
+  isPublished: boolean;
   author: {
     name: string;
     email: string;

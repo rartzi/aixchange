@@ -51,6 +51,30 @@ export function SubmitSolutionForm() {
     setIsSubmitting(true);
     
     try {
+      // If no image URL is provided, generate one using DALL-E
+      let imageUrl;
+      if (!formData.imageUrl) {
+        try {
+          const generateResponse = await fetch('/api/generate-image', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              description: formData.description,
+              title: formData.title,
+            }),
+          });
+
+          if (generateResponse.ok) {
+            const data = await generateResponse.json();
+            imageUrl = data.imageUrl;
+          }
+        } catch (error) {
+          console.error('Error generating image:', error);
+        }
+      }
+
       const formDataToSend = new FormData();
       Object.entries(formData).forEach(([key, value]) => {
         if (key === 'image' && value instanceof File) {
@@ -59,6 +83,11 @@ export function SubmitSolutionForm() {
           formDataToSend.append(key, JSON.stringify(value));
         }
       });
+
+      // Add the generated imageUrl if we have one
+      if (imageUrl) {
+        formDataToSend.append('imageUrl', imageUrl);
+      }
 
       const response = await fetch('/api/solutions', {
         method: 'POST',
