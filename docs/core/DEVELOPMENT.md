@@ -204,6 +204,11 @@ pnpm test -- path/to/test
 - Review system
 - Audit logging
 - Tag-based categorization
+- Bulk management capabilities:
+  - Import multiple solutions via JSON
+  - Delete multiple solutions
+  - Progress tracking for large operations
+  - Validation and error handling
 
 ### API Endpoints
 ```bash
@@ -221,6 +226,32 @@ PUT /api/solutions/{id}
 
 # Delete solution
 DELETE /api/solutions/{id}
+
+# Bulk operations (Admin only)
+POST /api/admin/solutions/import
+POST /api/admin/solutions/bulk-delete
+
+# Import format example:
+{
+  "solutions": [
+    {
+      "title": "Solution Title",
+      "description": "Description",
+      "categories": ["AI", "Automation"],
+      "tags": ["openai", "gpt"],
+      "implementation": "Implementation details",
+      "usage": "Usage instructions",
+      "requirements": "Requirements",
+      "version": "1.0.0",
+      "author": "Author Name"
+    }
+  ]
+}
+
+# Bulk delete format:
+{
+  "solutionIds": ["id1", "id2", "id3"]
+}
 ```
 
 ## Working with Metadata Fields

@@ -55,6 +55,10 @@
   - DELETE: Delete solution
 - `/api/admin/solutions/bulk-update`
   - POST: Update multiple solutions
+- `/api/admin/solutions/import`
+  - POST: Bulk import solutions with validation
+- `/api/admin/solutions/bulk-delete`
+  - POST: Delete multiple solutions with audit logging
 - `/api/admin/users`
   - GET: List all users
   - POST: Create new user
@@ -121,7 +125,15 @@ model User {
   - Solutions management
     - SolutionsGrid: Main solutions table
     - AdminSolutionDialog: Edit/create dialog
-    - BulkSolutionSubmission: Bulk import component
+    - BulkImport: Bulk solution import with validation
+      - Progress tracking
+      - Error handling
+      - Dark mode support
+      - Multiple solution type support
+    - BulkDelete: Bulk solution deletion
+      - Selection management
+      - Confirmation dialogs
+      - Audit logging integration
   - User management
     - UsersTable: User management table
     - UserDialog: Edit/create dialog

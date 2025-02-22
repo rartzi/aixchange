@@ -63,17 +63,48 @@ model Solution {
 ### Admin Routes
 
 #### POST /api/admin/solutions/import
-- Endpoint for importing solutions
-- Admin-only access
-- Request body validation using Zod
-- File upload support
+- Bulk solution import endpoint
+- Admin-only access with authentication checks
+- JSON data validation using Zod schema
+- Support for multiple solution types (marketplace/playground)
+- Progress tracking for large imports
 - Response format:
   ```typescript
   {
     success: boolean;
     message: string;
     data?: {
-      solution: Solution;
+      solutions: Solution[];
+      importedCount: number;
+      failedCount: number;
+    };
+    error?: {
+      code: string;
+      message: string;
+      details?: Array<{
+        index: number;
+        error: string;
+      }>;
+    };
+  }
+  ```
+
+#### POST /api/admin/solutions/bulk-delete
+- Bulk solution deletion endpoint
+- Admin-only access with authentication checks
+- Request body:
+  ```typescript
+  {
+    solutionIds: string[];
+  }
+  ```
+- Response format:
+  ```typescript
+  {
+    success: boolean;
+    message: string;
+    data?: {
+      deletedCount: number;
     };
     error?: {
       code: string;
@@ -81,6 +112,8 @@ model Solution {
     };
   }
   ```
+- Includes audit logging
+- Handles dependent resource cleanup
 
 ## Data Loading Strategies
 
@@ -99,11 +132,23 @@ model Solution {
 ## Components
 
 ### Admin Components
-- SolutionImport
-  - File upload handling
-  - Validation feedback
+- BulkImport
+  - JSON file upload handling
+  - Progress tracking for large imports
+  - Validation feedback with error details
+  - Success/error notifications with dark mode support
+  - Support for multiple solution types (marketplace/playground)
+  - Audit logging integration
+  - Test data templates for development
+
+- SolutionManagement
+  - Bulk deletion interface
+  - Selection management
+  - Confirmation dialogs
   - Error handling
   - Success notifications
+  - Dark mode support
+  - Audit logging integration
 
 ### UI Components
 - Button variants
