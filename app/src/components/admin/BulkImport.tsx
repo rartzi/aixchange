@@ -1,0 +1,350 @@
+'use client';
+
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Progress } from '@/components/ui/progress';
+import { solutionImportSchema, type SolutionImport } from '@/lib/schemas/solutionImport';
+import { useSession } from 'next-auth/react';
+import { useToast } from '@/components/ui/use-toast';
+import { ChevronDown, ChevronUp, X } from 'lucide-react';
+
+type ImportMode = 'transaction' | 'partial';
+type PreviewData = {
+  solutions: Array<{
+    title: string;
+    status: 'valid' | 'invalid';
+    errors?: string[];
+  }>;
+  totalSolutions: number;
+  validSolutions: number;
+  totalResources: number;
+};
+
+type ImportStatus = {
+  success: boolean;
+  imported?: number;
+  errors?: Array<{ title: string; error: string }>;
+  message?: string;
+  progress?: number;
+};
+
+export function BulkImport() {
+  const { data: session } = useSession();
+  const { toast } = useToast();
+  const [file, setFile] = useState<File | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [status, setStatus] = useState<ImportStatus | null>(null);
+  const [mode, setMode] = useState<ImportMode>('transaction');
+  const [preview, setPreview] = useState<PreviewData | null>(null);
+  const [importData, setImportData] = useState<SolutionImport | null>(null);
+  const [errorsExpanded, setErrorsExpanded] = useState(true);
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = event.target.files?.[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+      setStatus(null);
+      setPreview(null);
+      setImportData(null);
+      await validateAndPreview(selectedFile);
+    }
+  };
+
+  const validateAndPreview = async (file: File) => {
+    try {
+      const content = await file.text();
+      const jsonData = JSON.parse(content);
+
+      // Add current user as default author
+      const dataWithAuthor = {
+        ...jsonData,
+        defaultAuthorId: session?.user?.id
+      };
+
+      console.log('Validating data:', dataWithAuthor);
+
+      // Validate against schema
+      const validationResult = solutionImportSchema.safeParse(dataWithAuthor);
+
+      if (!validationResult.success) {
+        console.log('Validation errors:', validationResult.error.errors);
+        
+        const errors = validationResult.error.errors.map(err => ({
+          path: err.path.join('.'),
+          message: err.message
+        }));
+
+        setPreview({
+          solutions: jsonData.solutions?.map((sol: any) => ({
+            title: sol.title || 'Unnamed Solution',
+            status: 'invalid',
+            errors: errors
+              .filter(err => err.path.includes(sol.title))
+              .map(err => err.message)
+          })) || [],
+          totalSolutions: jsonData.solutions?.length || 0,
+          validSolutions: 0,
+          totalResources: jsonData.solutions?.reduce((acc: number, sol: any) => 
+            acc + (sol.resources?.length || 0), 0) || 0
+        });
+        return;
+      }
+
+      setImportData(validationResult.data);
+      setPreview({
+        solutions: validationResult.data.solutions.map(sol => ({
+          title: sol.title,
+          status: 'valid'
+        })),
+        totalSolutions: validationResult.data.solutions.length,
+        validSolutions: validationResult.data.solutions.length,
+        totalResources: validationResult.data.solutions.reduce((acc, sol) => 
+          acc + (sol.resources?.length || 0), 0)
+      });
+    } catch (error) {
+      console.error('Parse error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to parse JSON file",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleImport = async () => {
+    if (!file || !importData || !session?.user?.id) return;
+
+    setIsLoading(true);
+    setStatus({ success: false, progress: 0 });
+    setErrorsExpanded(true);
+
+    try {
+      const endpoint = mode === 'transaction' 
+        ? '/api/admin/solutions/import'
+        : '/api/admin/solutions/bulk-submission';
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(importData),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Import failed');
+      }
+
+      setStatus({
+        ...result,
+        progress: 100
+      });
+
+      toast({
+        title: "Success",
+        description: result.message
+      });
+    } catch (error) {
+      setStatus({
+        success: false,
+        message: error instanceof Error ? error.message : 'Import failed',
+        progress: 0
+      });
+
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : 'Import failed',
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const clearStatus = () => {
+    setStatus(null);
+    setFile(null);
+    setPreview(null);
+    setImportData(null);
+    // Clear the file input
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
+  };
+
+  return (
+    <Card className="p-6">
+      <Tabs defaultValue="import" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="import">Import Solutions</TabsTrigger>
+          <TabsTrigger value="mode">Import Mode</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="import" className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Select JSON File
+            </label>
+            <input
+              type="file"
+              accept=".json"
+              onChange={handleFileChange}
+              className="block w-full text-sm text-gray-500
+                file:mr-4 file:py-2 file:px-4
+                file:rounded-md file:border-0
+                file:text-sm file:font-semibold
+                file:bg-blue-50 file:text-blue-700
+                hover:file:bg-blue-100"
+            />
+            <p className="mt-2 text-sm text-gray-500">
+              Current Mode: {mode === 'transaction' ? 'Transaction (All-or-nothing)' : 'Partial (Continue on error)'}
+            </p>
+          </div>
+
+          {preview && (
+            <Alert className={preview.validSolutions === preview.totalSolutions ? 'bg-green-50' : 'bg-yellow-50'}>
+              <AlertTitle>Import Preview</AlertTitle>
+              <AlertDescription>
+                <div className="space-y-2">
+                  <p>Total Solutions: {preview.totalSolutions}</p>
+                  <p>Valid Solutions: {preview.validSolutions}</p>
+                  <p>Total Resources: {preview.totalResources}</p>
+                  {preview.validSolutions !== preview.totalSolutions && (
+                    <div className="mt-2">
+                      <p className="font-semibold">Invalid Solutions:</p>
+                      <ul className="list-disc list-inside">
+                        {preview.solutions
+                          .filter(s => s.status === 'invalid')
+                          .map((s, i) => (
+                            <li key={i}>
+                              {s.title}
+                              {s.errors && (
+                                <ul className="ml-4 list-disc">
+                                  {s.errors.map((err, j) => (
+                                    <li key={j} className="text-sm text-red-600">{err}</li>
+                                  ))}
+                                </ul>
+                              )}
+                            </li>
+                          ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {status?.progress !== undefined && (
+            <div className="space-y-2">
+              <Progress value={status.progress} />
+              <p className="text-sm text-gray-500">{status.progress}% complete</p>
+            </div>
+          )}
+
+          <div className="flex gap-2">
+            <Button
+              onClick={handleImport}
+              disabled={!importData || isLoading}
+              className="flex-1"
+            >
+              {isLoading ? 'Importing...' : 'Import Solutions'}
+            </Button>
+            {status && (
+              <Button
+                variant="outline"
+                onClick={clearStatus}
+                className="px-3"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+
+          {status && (
+            <Alert className={status.success ? 'bg-green-50' : 'bg-red-50'}>
+              <div className="flex justify-between items-start">
+                <AlertTitle>{status.success ? 'Success' : 'Error'}</AlertTitle>
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setErrorsExpanded(!errorsExpanded)}
+                    className="h-6 px-2"
+                  >
+                    {errorsExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </div>
+              <AlertDescription>
+                <p>{status.message}</p>
+                {status.errors && status.errors.length > 0 && errorsExpanded && (
+                  <div className="mt-2">
+                    <p className="font-semibold">Errors:</p>
+                    <ul className="list-disc list-inside">
+                      {status.errors.map((error, index) => (
+                        <li key={index}>
+                          {error.title}: {error.error}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </AlertDescription>
+            </Alert>
+          )}
+        </TabsContent>
+
+        <TabsContent value="mode">
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-lg font-medium mb-2">Import Mode</h3>
+              <div className="space-y-4">
+                <div className="flex items-start space-x-2">
+                  <input
+                    type="radio"
+                    id="transaction"
+                    value="transaction"
+                    checked={mode === 'transaction'}
+                    onChange={(e) => setMode(e.target.value as ImportMode)}
+                    className="mt-1"
+                  />
+                  <div>
+                    <label htmlFor="transaction" className="font-medium">Transaction Mode</label>
+                    <p className="text-sm text-gray-500">
+                      All-or-nothing import. If any solution fails, the entire import is rolled back.
+                      Best for maintaining data consistency.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-2">
+                  <input
+                    type="radio"
+                    id="partial"
+                    value="partial"
+                    checked={mode === 'partial'}
+                    onChange={(e) => setMode(e.target.value as ImportMode)}
+                    className="mt-1"
+                  />
+                  <div>
+                    <label htmlFor="partial" className="font-medium">Partial Mode</label>
+                    <p className="text-sm text-gray-500">
+                      Continues importing even if some solutions fail. Successfully imported solutions are kept.
+                      Best for large imports where some failures are acceptable.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
+    </Card>
+  );
+}

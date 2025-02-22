@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import { BulkSolutionSubmission } from "@/components/admin/BulkSolutionSubmission";
-import { SolutionImport } from "@/components/admin/SolutionImport";
+import { BulkImport } from "@/components/admin/BulkImport";
 import { AdminSolutionDialog } from "@/components/admin/AdminSolutionDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -108,8 +107,6 @@ export default function SolutionsAdminPage() {
         ? `/api/admin/solutions/${solutionData.id}`
         : '/api/admin/solutions';
       
-      console.log('Sending data:', solutionData);
-      
       const response = await fetch(url, {
         method: isEditing ? 'PATCH' : 'POST',
         headers: {
@@ -121,7 +118,6 @@ export default function SolutionsAdminPage() {
       const result = await response.json();
       
       if (!response.ok) {
-        console.error('Server error:', result);
         throw new Error(result.error || `Failed to ${isEditing ? 'update' : 'create'} solution`);
       }
 
@@ -132,7 +128,6 @@ export default function SolutionsAdminPage() {
 
       fetchSolutions();
     } catch (error) {
-      console.error('Error details:', error);
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to save solution",
@@ -291,16 +286,7 @@ export default function SolutionsAdminPage() {
         {/* Bulk Import Section */}
         <div className="space-y-4">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Bulk Import</h2>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="p-4 border rounded-lg bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-gray-100">Import Solutions</h3>
-              <SolutionImport />
-            </div>
-            <div className="p-4 border rounded-lg bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-gray-100">Bulk Submit Solutions</h3>
-              <BulkSolutionSubmission />
-            </div>
-          </div>
+          <BulkImport />
         </div>
 
         {/* Solutions Table */}

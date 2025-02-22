@@ -13,14 +13,14 @@ const solutionSchema = z.object({
   description: z.string().min(1),
   version: z.string().default("1.0.0"),
   isPublished: z.boolean().default(true),
-  category: z.string().default("Other"),
+  category: z.string(),  // Allow any category string
   provider: z.string().default("Unknown"),
   launchUrl: z.string().url().default("https://example.com"),
   sourceCodeUrl: z.string().url().optional(),
   tokenCost: z.number().min(0).default(0),
   tags: z.array(z.string()),
   resources: z.array(resourceSchema).optional(),
-  imageUrl: z.string().url().optional(),
+  imageUrl: z.string().startsWith('/api/external-images/solutions/').optional(),
   metadata: z.record(z.any()).optional(),
 });
 
