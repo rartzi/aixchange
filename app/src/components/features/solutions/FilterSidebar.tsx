@@ -33,7 +33,6 @@ export function FilterSidebar({
 }: FilterSidebarProps) {
   const [tagSearch, setTagSearch] = useState('');
 
-  // Helper function to ensure type safety when calling onFilterChange
   const handleFilterChange = (key: keyof FilterState, value: any) => {
     onFilterChange(key, value);
   };
@@ -181,11 +180,12 @@ export function FilterSidebar({
                         size="sm"
                         onClick={() => toggleTag(tag)}
                         className={`
-                          flex items-center gap-1
+                          flex items-center gap-1 font-medium
                           ${filters.selectedTags.includes(tag)
-                            ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                            : 'bg-primary/10 hover:bg-primary/20'
+                            ? 'bg-primary text-primary-foreground hover:bg-primary/90 dark:hover:bg-primary/80'
+                            : 'bg-accent/90 text-accent-foreground hover:bg-accent dark:bg-accent/60 dark:text-accent-foreground/90 dark:hover:bg-accent/70'
                           }
+                          transition-colors duration-200
                         `}
                       >
                         {tag}
@@ -212,7 +212,7 @@ export function FilterSidebar({
                           variant="secondary"
                           size="sm"
                           onClick={() => toggleTag(tag)}
-                          className="flex items-center gap-1 bg-primary text-primary-foreground hover:bg-primary/90"
+                          className="flex items-center gap-1 font-medium bg-primary text-primary-foreground hover:bg-primary/90 dark:hover:bg-primary/80 transition-colors duration-200"
                         >
                           {tag}
                           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
