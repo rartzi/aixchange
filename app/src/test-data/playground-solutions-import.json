@@ -1,0 +1,39 @@
+{
+  "solutions": [
+    {
+      "title": "Flowise Builder",
+      "description": "Visual flow builder for creating AI-powered workflows",
+      "version": "1.0.0",
+      "category": "Automation",
+      "provider": "AstraZeneca",
+      "launchUrl": "https://flowise-builder.example.com",
+      "tokenCost": 0,
+      "tags": ["Flow Builder", "AI", "Development"],
+      "imageUrl": "/api/external-images/solutions/flowise-builder.png",
+      "isPublished": true,
+      "metadata": {
+        "rating": 4.7,
+        "reviews": 35,
+        "type": "playground"
+      }
+    },
+    {
+      "title": "N8N Workflow Engine",
+      "description": "Powerful workflow automation engine for AI integrations",
+      "version": "1.0.0",
+      "category": "Automation",
+      "provider": "AstraZeneca",
+      "launchUrl": "http://localhost:5678/",
+      "tokenCost": 0,
+      "tags": ["Workflow", "Automation", "Integration"],
+      "imageUrl": "/api/external-images/solutions/n8n-workflow-engine.png",
+      "isPublished": true,
+      "metadata": {
+        "rating": 4.6,
+        "reviews": 31,
+        "type": "playground"
+      }
+    }
+  ],
+  "defaultAuthorId": "admin-user"
+}
