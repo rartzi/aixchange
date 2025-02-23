@@ -69,6 +69,12 @@ export function Navbar() {
                   >
                     Solutions Management
                   </Link>
+                  <Link
+                    href="/admin/events"
+                    className="block px-4 py-2 text-sm text-gray-800 dark:text-gray-100 hover:bg-primary/10 dark:hover:bg-primary/20"
+                  >
+                    Events Management
+                  </Link>
                 </div>
               </div>
             </div>

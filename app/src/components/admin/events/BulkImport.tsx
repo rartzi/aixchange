@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Progress } from "@/components/ui/progress";
-import { eventImportSchema, type EventImport } from "@/lib/schemas/eventImport";
-import { useSession } from "next-auth/react";
-import { useToast } from "@/components/ui/use-toast";
-import { ChevronDown, ChevronUp, X } from "lucide-react";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Progress } from '@/components/ui/progress';
+import { eventImportSchema, type EventImport } from '@/lib/schemas/eventImport';
+import { useSession } from 'next-auth/react';
+import { useToast } from '@/components/ui/use-toast';
+import { ChevronDown, ChevronUp, X } from 'lucide-react';
 
-type ImportMode = "transaction" | "partial";
+type ImportMode = 'transaction' | 'partial';
 type PreviewData = {
   events: Array<{
     title: string;
-    status: "valid" | "invalid";
+    status: 'valid' | 'invalid';
     errors?: string[];
   }>;
   totalEvents: number;
@@ -31,7 +31,7 @@ type ImportStatus = {
 };
 
 interface BulkImportProps {
-  onImportSuccess?: () => void;
+  onImportSuccess: () => void;
 }
 
 export function BulkImport({ onImportSuccess }: BulkImportProps) {
@@ -40,7 +40,7 @@ export function BulkImport({ onImportSuccess }: BulkImportProps) {
   const [file, setFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<ImportStatus | null>(null);
-  const [mode, setMode] = useState<ImportMode>("transaction");
+  const [mode, setMode] = useState<ImportMode>('transaction');
   const [preview, setPreview] = useState<PreviewData | null>(null);
   const [importData, setImportData] = useState<EventImport | null>(null);
   const [errorsExpanded, setErrorsExpanded] = useState(true);
@@ -64,27 +64,26 @@ export function BulkImport({ onImportSuccess }: BulkImportProps) {
       // Add current user as default author
       const dataWithAuthor = {
         ...jsonData,
-        defaultAuthorId: session?.user?.id,
+        defaultAuthorId: session?.user?.id
       };
 
       // Validate against schema
       const validationResult = eventImportSchema.safeParse(dataWithAuthor);
 
       if (!validationResult.success) {
-        const errors = validationResult.error.errors.map((err) => ({
-          path: err.path.join("."),
-          message: err.message,
+        const errors = validationResult.error.errors.map(err => ({
+          path: err.path.join('.'),
+          message: err.message
         }));
 
         setPreview({
-          events:
-            jsonData.events?.map((evt: any) => ({
-              title: evt.title || "Unnamed Event",
-              status: "invalid",
-              errors: errors
-                .filter((err) => err.path.includes(evt.title))
-                .map((err) => err.message),
-            })) || [],
+          events: jsonData.events?.map((evt: any) => ({
+            title: evt.title || 'Unnamed Event',
+            status: 'invalid',
+            errors: errors
+              .filter(err => err.path.includes(evt.title))
+              .map(err => err.message)
+          })) || [],
           totalEvents: jsonData.events?.length || 0,
           validEvents: 0,
         });
@@ -93,19 +92,19 @@ export function BulkImport({ onImportSuccess }: BulkImportProps) {
 
       setImportData(validationResult.data);
       setPreview({
-        events: validationResult.data.events.map((evt) => ({
+        events: validationResult.data.events.map(evt => ({
           title: evt.title,
-          status: "valid",
+          status: 'valid'
         })),
         totalEvents: validationResult.data.events.length,
         validEvents: validationResult.data.events.length,
       });
     } catch (error) {
-      console.error("Parse error:", error);
+      console.error('Parse error:', error);
       toast({
         title: "Error",
         description: "Failed to parse JSON file",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
@@ -118,15 +117,14 @@ export function BulkImport({ onImportSuccess }: BulkImportProps) {
     setErrorsExpanded(true);
 
     try {
-      const endpoint =
-        mode === "transaction"
-          ? "/api/admin/events/import"
-          : "/api/admin/events/bulk-submission";
+      const endpoint = mode === 'transaction' 
+        ? '/api/admin/events/import'
+        : '/api/admin/events/bulk-submission';
 
       const response = await fetch(endpoint, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(importData),
       });
@@ -134,32 +132,31 @@ export function BulkImport({ onImportSuccess }: BulkImportProps) {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || "Import failed");
+        throw new Error(result.error || 'Import failed');
       }
 
       setStatus({
         ...result,
-        progress: 100,
+        progress: 100
       });
 
       toast({
         title: "Success",
-        description: result.message,
+        description: result.message
       });
 
-      // Call the success callback to refresh the events list
-      onImportSuccess?.();
+      onImportSuccess();
     } catch (error) {
       setStatus({
         success: false,
-        message: error instanceof Error ? error.message : "Import failed",
-        progress: 0,
+        message: error instanceof Error ? error.message : 'Import failed',
+        progress: 0
       });
 
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Import failed",
-        variant: "destructive",
+        description: error instanceof Error ? error.message : 'Import failed',
+        variant: "destructive"
       });
     } finally {
       setIsLoading(false);
@@ -172,11 +169,9 @@ export function BulkImport({ onImportSuccess }: BulkImportProps) {
     setPreview(null);
     setImportData(null);
     // Clear the file input
-    const fileInput = document.querySelector(
-      'input[type="file"]'
-    ) as HTMLInputElement;
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
     if (fileInput) {
-      fileInput.value = "";
+      fileInput.value = '';
     }
   };
 
@@ -205,21 +200,16 @@ export function BulkImport({ onImportSuccess }: BulkImportProps) {
                 hover:file:bg-blue-100 dark:hover:file:bg-blue-800"
             />
             <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-              Current Mode:{" "}
-              {mode === "transaction"
-                ? "Transaction (All-or-nothing)"
-                : "Partial (Continue on error)"}
+              Current Mode: {mode === 'transaction' ? 'Transaction (All-or-nothing)' : 'Partial (Continue on error)'}
             </p>
           </div>
 
           {preview && (
-            <Alert
-              className={`${
-                preview.validEvents === preview.totalEvents
-                  ? "bg-green-50 dark:bg-green-900/30 text-green-900 dark:text-green-100"
-                  : "bg-yellow-50 dark:bg-yellow-900/30 text-yellow-900 dark:text-yellow-100"
-              }`}
-            >
+            <Alert className={`${
+              preview.validEvents === preview.totalEvents 
+                ? 'bg-green-50 dark:bg-green-900/30 text-green-900 dark:text-green-100' 
+                : 'bg-yellow-50 dark:bg-yellow-900/30 text-yellow-900 dark:text-yellow-100'
+            }`}>
               <AlertTitle>Import Preview</AlertTitle>
               <AlertDescription>
                 <div className="space-y-2">
@@ -230,19 +220,14 @@ export function BulkImport({ onImportSuccess }: BulkImportProps) {
                       <p className="font-semibold">Invalid Events:</p>
                       <ul className="list-disc list-inside">
                         {preview.events
-                          .filter((e) => e.status === "invalid")
-                          .map((e, i) => (
+                          .filter(s => s.status === 'invalid')
+                          .map((s, i) => (
                             <li key={i}>
-                              {e.title}
-                              {e.errors && (
+                              {s.title}
+                              {s.errors && (
                                 <ul className="ml-4 list-disc">
-                                  {e.errors.map((err, j) => (
-                                    <li
-                                      key={j}
-                                      className="text-sm text-red-600 dark:text-red-400"
-                                    >
-                                      {err}
-                                    </li>
+                                  {s.errors.map((err, j) => (
+                                    <li key={j} className="text-sm text-red-600 dark:text-red-400">{err}</li>
                                   ))}
                                 </ul>
                               )}
@@ -259,9 +244,7 @@ export function BulkImport({ onImportSuccess }: BulkImportProps) {
           {status?.progress !== undefined && (
             <div className="space-y-2">
               <Progress value={status.progress} />
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                {status.progress}% complete
-              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{status.progress}% complete</p>
             </div>
           )}
 
@@ -271,7 +254,7 @@ export function BulkImport({ onImportSuccess }: BulkImportProps) {
               disabled={!importData || isLoading}
               className="flex-1"
             >
-              {isLoading ? "Importing..." : "Import Events"}
+              {isLoading ? 'Importing...' : 'Import Events'}
             </Button>
             {status && (
               <Button
@@ -285,15 +268,13 @@ export function BulkImport({ onImportSuccess }: BulkImportProps) {
           </div>
 
           {status && (
-            <Alert
-              className={`${
-                status.success
-                  ? "bg-green-50 dark:bg-green-900/30 text-green-900 dark:text-green-100 border-green-200 dark:border-green-800"
-                  : "bg-red-50 dark:bg-red-900/30 text-red-900 dark:text-red-100 border-red-200 dark:border-red-800"
-              }`}
-            >
+            <Alert className={`${
+              status.success 
+                ? 'bg-green-50 dark:bg-green-900/30 text-green-900 dark:text-green-100 border-green-200 dark:border-green-800' 
+                : 'bg-red-50 dark:bg-red-900/30 text-red-900 dark:text-red-100 border-red-200 dark:border-red-800'
+            }`}>
               <div className="flex justify-between items-start">
-                <AlertTitle>{status.success ? "Success" : "Error"}</AlertTitle>
+                <AlertTitle>{status.success ? 'Success' : 'Error'}</AlertTitle>
                 <div className="flex gap-2">
                   <Button
                     variant="ghost"
@@ -301,11 +282,7 @@ export function BulkImport({ onImportSuccess }: BulkImportProps) {
                     onClick={() => setErrorsExpanded(!errorsExpanded)}
                     className="h-6 px-2"
                   >
-                    {errorsExpanded ? (
-                      <ChevronUp className="h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4" />
-                    )}
+                    {errorsExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                   </Button>
                 </div>
               </div>
@@ -316,10 +293,7 @@ export function BulkImport({ onImportSuccess }: BulkImportProps) {
                     <p className="font-semibold">Errors:</p>
                     <ul className="list-disc list-inside">
                       {status.errors.map((error, index) => (
-                        <li
-                          key={index}
-                          className="text-red-700 dark:text-red-300"
-                        >
+                        <li key={index} className="text-red-700 dark:text-red-300">
                           {error.title}: {error.error}
                         </li>
                       ))}
@@ -334,29 +308,22 @@ export function BulkImport({ onImportSuccess }: BulkImportProps) {
         <TabsContent value="mode">
           <div className="space-y-4">
             <div>
-              <h3 className="text-lg font-medium mb-2 text-gray-900 dark:text-gray-100">
-                Import Mode
-              </h3>
+              <h3 className="text-lg font-medium mb-2 text-gray-900 dark:text-gray-100">Import Mode</h3>
               <div className="space-y-4">
                 <div className="flex items-start space-x-2">
                   <input
                     type="radio"
                     id="transaction"
                     value="transaction"
-                    checked={mode === "transaction"}
+                    checked={mode === 'transaction'}
                     onChange={(e) => setMode(e.target.value as ImportMode)}
                     className="mt-1"
                   />
                   <div>
-                    <label
-                      htmlFor="transaction"
-                      className="font-medium text-gray-900 dark:text-gray-100"
-                    >
-                      Transaction Mode
-                    </label>
+                    <label htmlFor="transaction" className="font-medium text-gray-900 dark:text-gray-100">Transaction Mode</label>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      All-or-nothing import. If any event fails, the entire import
-                      is rolled back. Best for maintaining data consistency.
+                      All-or-nothing import. If any event fails, the entire import is rolled back.
+                      Best for maintaining data consistency.
                     </p>
                   </div>
                 </div>
@@ -365,21 +332,15 @@ export function BulkImport({ onImportSuccess }: BulkImportProps) {
                     type="radio"
                     id="partial"
                     value="partial"
-                    checked={mode === "partial"}
+                    checked={mode === 'partial'}
                     onChange={(e) => setMode(e.target.value as ImportMode)}
                     className="mt-1"
                   />
                   <div>
-                    <label
-                      htmlFor="partial"
-                      className="font-medium text-gray-900 dark:text-gray-100"
-                    >
-                      Partial Mode
-                    </label>
+                    <label htmlFor="partial" className="font-medium text-gray-900 dark:text-gray-100">Partial Mode</label>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Continues importing even if some events fail. Successfully
-                      imported events are kept. Best for large imports where some
-                      failures are acceptable.
+                      Continues importing even if some events fail. Successfully imported events are kept.
+                      Best for large imports where some failures are acceptable.
                     </p>
                   </div>
                 </div>

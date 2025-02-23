@@ -86,7 +86,8 @@ export default function EventsAdminPage() {
       const response = await fetch("/api/admin/events");
       if (!response.ok) throw new Error("Failed to fetch events");
       const data = await response.json();
-      setEvents(data);
+      // Extract events array from the response
+      setEvents(data.events || []);
     } catch (error) {
       toast({
         title: "Error",

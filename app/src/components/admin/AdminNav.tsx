@@ -29,6 +29,14 @@ export default function AdminNav() {
           >
             Solutions
           </Link>
+
+          {/* Events Management */}
+          <Link 
+            href="/admin/events"
+            className={`px-3 py-2 rounded-md text-sm font-medium ${isActive('/admin/events')}`}
+          >
+            Events
+          </Link>
         </div>
       </div>
     </nav>

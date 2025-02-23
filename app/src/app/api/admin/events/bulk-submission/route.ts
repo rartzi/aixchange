@@ -27,7 +27,7 @@ export async function POST(request: Request) {
       errors: [] as Array<{ title: string; error: string }>,
     };
 
-    // Process each event
+    // Process each event independently
     for (const eventData of validatedData.events) {
       try {
         // Generate image if not provided
@@ -54,18 +54,14 @@ export async function POST(request: Request) {
           title: eventData.title,
           error: error instanceof Error ? error.message : "Unknown error",
         });
+        // Continue with next event even if this one failed
       }
     }
 
-    // Update success status if there were any errors
-    if (results.errors.length > 0) {
-      results.success = false;
-    }
-
-    // Log the import action
+    // Log the bulk submission action
     await prisma.auditLog.create({
       data: {
-        action: "IMPORT_EVENTS",
+        action: "BULK_SUBMIT_EVENTS",
         entityType: "EVENT",
         entityId: "BULK",
         userId: session.user.id,
@@ -86,7 +82,7 @@ export async function POST(request: Request) {
       }`,
     });
   } catch (error) {
-    console.error("Error in bulk import:", error);
+    console.error("Error in bulk submission:", error);
     if (error instanceof Error) {
       return NextResponse.json(
         { error: error.message },

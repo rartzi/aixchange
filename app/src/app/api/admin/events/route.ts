@@ -21,6 +21,11 @@ const eventSchema = z.object({
   isPromoted: z.boolean().default(false),
 });
 
+// Additional fields for updates
+const eventUpdateSchema = eventSchema.extend({
+  createdById: z.string().optional(), // Allow changing createdById during updates
+});
+
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -37,11 +42,11 @@ export async function POST(request: Request) {
     const json = await request.json();
     const validatedData = eventSchema.parse(json);
 
-    // Create event
+    // Create event with current user as creator
     const event = await prisma.event.create({
       data: {
         ...validatedData,
-        createdById: session.user.id,
+        createdById: session.user.id, // Always use current user for new events
       },
     });
 
@@ -62,6 +67,66 @@ export async function POST(request: Request) {
     return NextResponse.json(event, { status: 201 });
   } catch (error) {
     console.error("Error creating event:", error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Validation error", details: error.errors },
+        { status: 400 }
+      );
+    }
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    
+    // Check authentication and authorization
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    
+    if (session.user.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const json = await request.json();
+    const { id, ...updateData } = json;
+
+    if (!id) {
+      return NextResponse.json({ error: "Event ID is required" }, { status: 400 });
+    }
+
+    // Validate update data with schema that allows createdById
+    const validatedData = eventUpdateSchema.parse(updateData);
+
+    // Update event
+    const event = await prisma.event.update({
+      where: { id },
+      data: validatedData,
+    });
+
+    // Log the action
+    await prisma.auditLog.create({
+      data: {
+        action: "UPDATE_EVENT",
+        entityType: "EVENT",
+        entityId: event.id,
+        userId: session.user.id,
+        metadata: {
+          eventType: event.type,
+          title: event.title,
+          updatedFields: Object.keys(validatedData),
+        },
+      },
+    });
+
+    return NextResponse.json(event);
+  } catch (error) {
+    console.error("Error updating event:", error);
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: "Validation error", details: error.errors },
