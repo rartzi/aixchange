@@ -29,10 +29,10 @@ export function Navbar() {
             (AI)Xperiment
           </Link>
           <Link
-            href="/community"
+            href="/aixcelerate"
             className="text-lg font-medium text-gray-800 dark:text-gray-100 hover:text-primary dark:hover:text-blue-300 transition-colors"
           >
-            (AI)Xccelerate
+            (AI)Xcelerate
           </Link>
           {/* Admin Navigation */}
           {session?.user?.role === 'ADMIN' && (
