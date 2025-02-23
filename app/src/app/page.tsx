@@ -63,6 +63,12 @@ export default function Home() {
               Browse Solutions
             </Link>
             <Link
+              href="/events"
+              className="btn-primary text-lg"
+            >
+              Explore Events
+            </Link>
+            <Link
               href={`/register?callbackUrl=${encodeURIComponent(pathname)}`}
               className="btn-secondary text-lg"
             >

@@ -40,7 +40,7 @@ export function ProfileMenu({ session }: ProfileMenuProps) {
             {session.user?.name?.[0] || session.user?.email?.[0] || "?"}
           </div>
         )}
-        <span className="text-lg font-medium text-gray-100 hidden md:block">
+        <span className="text-sm font-medium text-gray-100 hidden md:block">
           {session.user?.name || session.user?.email}
         </span>
         <svg
@@ -64,7 +64,7 @@ export function ProfileMenu({ session }: ProfileMenuProps) {
               setIsOpen(false);
               signOut({ callbackUrl: "/" });
             }}
-            className="block w-full text-left px-4 py-2 text-lg text-red-500 hover:bg-gray-700 transition-colors"
+            className="block w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-700 transition-colors"
           >
             Sign Out
           </button>

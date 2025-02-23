@@ -119,14 +119,14 @@ export function AdminSolutionDialog({ open, onOpenChange, solution, onSave }: Ad
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl bg-white dark:bg-gray-800">
         <DialogHeader>
-          <DialogTitle className="text-gray-900 dark:text-gray-100">
+          <DialogTitle className="text-gray-900 dark:text-gray-100 text-sm">
             {solution ? 'Edit Solution' : 'Add Solution'}
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-900 dark:text-gray-100">Title</label>
+              <label className="text-xs font-medium text-gray-900 dark:text-gray-100">Title</label>
               <Input
                 value={formData.title}
                 onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
@@ -136,20 +136,20 @@ export function AdminSolutionDialog({ open, onOpenChange, solution, onSave }: Ad
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-900 dark:text-gray-100">Status</label>
+                <label className="text-xs font-medium text-gray-900 dark:text-gray-100">Status</label>
                 <Select
                   value={formData.status}
                   onValueChange={(value: "ACTIVE" | "PENDING" | "INACTIVE") =>
                     setFormData(prev => ({ ...prev, status: value }))
                   }
                 >
-                  <SelectTrigger className="bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                  <SelectTrigger className="bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ACTIVE">Active</SelectItem>
-                    <SelectItem value="PENDING">Pending</SelectItem>
-                    <SelectItem value="INACTIVE">Inactive</SelectItem>
+                  <SelectContent className="text-sm">
+                    <SelectItem value="ACTIVE" className="text-sm">Active</SelectItem>
+                    <SelectItem value="PENDING" className="text-sm">Pending</SelectItem>
+                    <SelectItem value="INACTIVE" className="text-sm">Inactive</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

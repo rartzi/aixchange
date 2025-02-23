@@ -41,7 +41,7 @@ export function Navbar() {
             <div className="relative group">
               <Link
                 href="/admin/users"
-                className="text-lg font-medium bg-gradient-to-r from-primary/30 to-primary/20 px-4 py-2 rounded-md text-blue-300 hover:from-primary/40 hover:to-primary/30 transition-all flex items-center gap-1"
+                className="text-sm font-medium bg-gradient-to-r from-primary/30 to-primary/20 px-4 py-2 rounded-md text-blue-300 hover:from-primary/40 hover:to-primary/30 transition-all flex items-center gap-1"
               >
                 Admin
                 <svg
@@ -61,19 +61,19 @@ export function Navbar() {
                 <div className="py-1">
                   <Link
                     href="/admin/users"
-                    className="block px-4 py-2 text-lg text-gray-100 hover:bg-primary/20"
+                    className="block px-4 py-2 text-sm text-gray-100 hover:bg-primary/20"
                   >
                     User Management
                   </Link>
                   <Link
                     href="/admin/solutions"
-                    className="block px-4 py-2 text-lg text-gray-100 hover:bg-primary/20"
+                    className="block px-4 py-2 text-sm text-gray-100 hover:bg-primary/20"
                   >
                     Solutions Management
                   </Link>
                   <Link
                     href="/admin/events"
-                    className="block px-4 py-2 text-lg text-gray-100 hover:bg-primary/20"
+                    className="block px-4 py-2 text-sm text-gray-100 hover:bg-primary/20"
                   >
                     Events Management
                   </Link>
@@ -126,13 +126,13 @@ export function Navbar() {
             <>
               <Link
                 href="/login"
-                className="px-4 py-2 text-lg font-medium bg-primary text-white hover:bg-primary/90 rounded-md transition-colors"
+                className="px-4 py-2 text-sm font-medium bg-primary text-white hover:bg-primary/90 rounded-md transition-colors"
               >
                 Login
               </Link>
               <Link
                 href="/register"
-                className="px-4 py-2 text-lg font-medium bg-gray-700 text-gray-100 hover:bg-gray-600 rounded-md transition-colors"
+                className="px-4 py-2 text-sm font-medium bg-gray-700 text-gray-100 hover:bg-gray-600 rounded-md transition-colors"
               >
                 Register
               </Link>
