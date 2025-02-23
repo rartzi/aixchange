@@ -20,6 +20,16 @@ The event system enables community engagement through organized challenges and c
 - Event-specific solution submissions
 - Event leaderboards and statistics
 
+#### Event Discovery and Filtering
+- Client-side filtering with server-side data fetching
+- URL-based search parameters for shareable filters
+- Debounced search input for performance
+- Real-time filter updates using Next.js App Router
+- Filter categories:
+  - Search text (title and description)
+  - Event status (UPCOMING, ACTIVE, VOTING, COMPLETED)
+  - Event type (HACKATHON, CHALLENGE, COMPETITION, WORKSHOP)
+
 #### Event Types
 - Hackathons
 - Challenges
@@ -30,6 +40,8 @@ The event system enables community engagement through organized challenges and c
 - Solutions can be submitted independently or as part of events
 - Event solutions can be promoted to the global marketplace
 - Maintains separation between event and general solutions
+- Solution submission validation based on event status
+- Automatic status transitions based on event dates
 
 ### 3. User Management
 - Authentication (NextAuth.js)
@@ -89,7 +101,11 @@ model EventParticipant {
 - `/api/solutions/import` - Bulk solution import
 
 #### Event APIs
-- `/api/events` - Event CRUD operations
+- `/api/events` - Event CRUD operations and filtered listing
+  - Query parameters:
+    - search: Search in title and description
+    - status: Filter by event status
+    - type: Filter by event type
 - `/api/events/[id]/join` - Event participation
 - `/api/events/[id]/solutions` - Event-specific solutions
 
@@ -118,6 +134,9 @@ model EventParticipant {
       /api               # API routes
     /components
       /events           # Event components
+        /EventsGrid     # Event listing with filters
+        /EventsFilters  # Search and filter controls
+        /EventCard      # Event display component
       /solutions        # Solution components
       /admin           # Admin components
       /ui              # Shared UI components
@@ -169,6 +188,8 @@ model EventParticipant {
 - Static page generation
 - Image optimization
 - Code splitting
+- Debounced search inputs
+- Client-side filtering with server data
 
 ## Monitoring and Logging
 
@@ -190,7 +211,11 @@ model EventParticipant {
 - Load balancing
 
 ### Feature Extensions
-- Enhanced event features
+- Enhanced event features:
+  - Advanced leaderboard system
+  - Event templates
+  - Real-time event updates
+  - Event analytics dashboard
 - Advanced solution analytics
 - Community features
 - Integration capabilities
