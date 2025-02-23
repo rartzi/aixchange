@@ -99,6 +99,10 @@ model EventParticipant {
 - `/api/solutions` - Solution CRUD operations
 - `/api/solutions/vote` - Solution voting
 - `/api/solutions/import` - Bulk solution import
+  - Example format: [import-solutions-example.json](../../app/src/test-data/import-solutions-example.json)
+  - Supports multiple solutions in a single import
+  - Validates all required fields and metadata
+  - Handles image URLs through external storage
 
 #### Event APIs
 - `/api/events` - Event CRUD operations and filtered listing
@@ -108,6 +112,11 @@ model EventParticipant {
     - type: Filter by event type
 - `/api/events/[id]/join` - Event participation
 - `/api/events/[id]/solutions` - Event-specific solutions
+- `/api/events/import` - Bulk event import
+  - Example format: [import-events-example.json](../../app/src/test-data/import-events-example.json)
+  - Supports multiple events in a single import
+  - Validates dates, status, and required fields
+  - Handles event images and banners
 
 #### Admin APIs
 - `/api/admin/solutions` - Solution moderation
