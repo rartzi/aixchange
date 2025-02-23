@@ -68,6 +68,7 @@ export const solutionSchema = z.object({
     .max(5, 'Maximum 5 tags allowed'),
   imageUrl: z.string().optional(),
   metadata: metadataSchema.optional(),
+  eventId: z.string().cuid().optional(),
 });
 
 export type SolutionMetadata = z.infer<typeof metadataSchema>;

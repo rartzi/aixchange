@@ -1,185 +1,213 @@
-# Architecture Overview
+# AIXchange Architecture
 
-## System Components
+## System Overview
+AIXchange is a platform for sharing and discovering AI solutions, with integrated event and community features. The system is built using Next.js, Prisma, and PostgreSQL.
 
-### Frontend Architecture
-- Next.js 14 with App Router
-- React Server Components
-- Client-side Components for interactive features
-- TailwindCSS for styling
-- Shadcn/ui for component library
+## Core Components
 
-### Backend Architecture
-- Next.js API Routes
-- Prisma ORM
-- PostgreSQL Database
-- NextAuth.js for authentication
+### 1. Solution Management
+- Solution submission and review
+- Solution marketplace
+- Solution categorization and tagging
+- Solution voting and feedback
 
-## Key Features
+### 2. Event System
+The event system enables community engagement through organized challenges and competitions:
 
-### Authentication & Authorization
-- Role-based access control (User, Admin, Moderator)
-- Protected API routes and pages
-- Session management with NextAuth.js
+#### Event Management
+- Event creation and lifecycle management
+- Event participation tracking
+- Event-specific solution submissions
+- Event leaderboards and statistics
 
-### Admin Interface
-- Centralized management dashboard
-- Bulk operations support for efficient management
-  - Bulk status updates for solutions
-  - Status filtering and management
-- Dark mode support with proper contrast
-- Responsive design for all screen sizes
+#### Event Types
+- Hackathons
+- Challenges
+- Competitions
+- Workshops
 
-### Solution Management
-- CRUD operations for solutions
-- Bulk operations support
-- Status management (Active, Pending, Inactive)
-- Image handling and storage
-- Voting system
-- Review system
+#### Event-Solution Integration
+- Solutions can be submitted independently or as part of events
+- Event solutions can be promoted to the global marketplace
+- Maintains separation between event and general solutions
 
-### User Management
-- User role management
-- Account status control
-- Activity tracking
+### 3. User Management
+- Authentication (NextAuth.js)
+- Role-based authorization
+- User profiles and activity tracking
+- User participation in events
 
-## API Structure
+### 4. Admin Features
+- Solution moderation
+- Event management
+- User management
+- System statistics and monitoring
 
-### Admin API Endpoints
-- `/api/admin/solutions`
-  - GET: List all solutions
-  - POST: Create new solution
-- `/api/admin/solutions/[id]`
-  - GET: Get solution details
-  - PATCH: Update solution
-  - DELETE: Delete solution
-- `/api/admin/solutions/bulk-update`
-  - POST: Update multiple solutions
-- `/api/admin/solutions/import`
-  - POST: Bulk import solutions with validation
-- `/api/admin/solutions/bulk-delete`
-  - POST: Delete multiple solutions with audit logging
-- `/api/admin/users`
-  - GET: List all users
-  - POST: Create new user
-- `/api/admin/users/[id]`
-  - GET: Get user details
-  - PATCH: Update user
-  - DELETE: Delete user
+## Data Model
 
-### Public API Endpoints
-- `/api/solutions`
-  - GET: List public solutions
-  - POST: Submit new solution
-- `/api/solutions/[id]`
-  - GET: Get solution details
-  - PATCH: Update solution (owner only)
-  - DELETE: Delete solution (owner only)
-
-## Database Schema
-
-### Solution
+### Core Entities
 ```prisma
 model Solution {
-  id            String         @id @default(cuid())
+  id            String   @id @default(cuid())
   title         String
   description   String
-  status        SolutionStatus @default(PENDING)
-  authorId      String
-  category      String
-  provider      String
-  launchUrl     String
-  sourceCodeUrl String?
-  imageUrl      String?
-  tokenCost     Int           @default(0)
-  rating        Float         @default(0)
-  upvotes       Int           @default(0)
-  downvotes     Int           @default(0)
-  totalVotes    Int           @default(0)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  author        User          @relation(fields: [authorId], references: [id])
-  reviews       Review[]
+  // ... other fields
+  eventId       String?  // Optional link to event
+  event         Event?   @relation(fields: [eventId], references: [id])
+}
+
+model Event {
+  id              String    @id @default(cuid())
+  title           String
+  description     String
+  shortDescription String
+  startDate       DateTime
+  endDate         DateTime
+  status          EventStatus
+  type            EventType
+  // ... other fields
+  solutions       Solution[]
+  participants    EventParticipant[]
+}
+
+model EventParticipant {
+  id              String    @id @default(cuid())
+  userId          String
+  eventId         String
+  role            ParticipantRole
+  // ... other fields
 }
 ```
 
-### User
-```prisma
-model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  name          String?
-  role          UserRole  @default(USER)
-  solutions     Solution[]
-  reviews       Review[]
-}
+## API Architecture
+
+### RESTful Endpoints
+
+#### Solution APIs
+- `/api/solutions` - Solution CRUD operations
+- `/api/solutions/vote` - Solution voting
+- `/api/solutions/import` - Bulk solution import
+
+#### Event APIs
+- `/api/events` - Event CRUD operations
+- `/api/events/[id]/join` - Event participation
+- `/api/events/[id]/solutions` - Event-specific solutions
+
+#### Admin APIs
+- `/api/admin/solutions` - Solution moderation
+- `/api/admin/events` - Event management
+- `/api/admin/users` - User management
+
+### API Design Principles
+1. RESTful resource naming
+2. Consistent error handling
+3. Input validation using Zod
+4. Authentication and authorization middleware
+5. Rate limiting and security measures
+
+## Frontend Architecture
+
+### Page Structure
+```
+/app
+  /src
+    /app
+      /events              # Event pages
+      /solutions           # Solution pages
+      /admin              # Admin pages
+      /api               # API routes
+    /components
+      /events           # Event components
+      /solutions        # Solution components
+      /admin           # Admin components
+      /ui              # Shared UI components
 ```
 
-## Frontend Component Structure
+### Component Organization
+1. Page Components
+   - Handle data fetching
+   - Manage page-level state
+   - Compose feature components
 
-### Admin Components
-- Layout components
-  - AdminLayout: Base layout for admin pages
-  - AdminNav: Navigation component
-- Feature components
-  - Solutions management
-    - SolutionsGrid: Main solutions table
-    - AdminSolutionDialog: Edit/create dialog
-    - BulkImport: Bulk solution import with validation
-      - Progress tracking
-      - Error handling
-      - Dark mode support
-      - Multiple solution type support
-    - BulkDelete: Bulk solution deletion
-      - Selection management
-      - Confirmation dialogs
-      - Audit logging integration
-  - User management
-    - UsersTable: User management table
-    - UserDialog: Edit/create dialog
+2. Feature Components
+   - Implement specific functionality
+   - Handle user interactions
+   - Manage component-level state
 
-### UI Components
-- Base components (from shadcn/ui)
-  - Button
-  - Input
-  - Select
-  - Dialog
-  - Table
-  - Checkbox
-- Custom components
-  - ImageSelector
-  - StatusBadge
-  - FilterSidebar
-
-## Styling Architecture
-- TailwindCSS for utility-first styling
-- Dark mode support
-  - Proper contrast ratios
-  - Consistent color palette
-  - Accessible text colors
-- Component-specific styles
-- Global styles in globals.css
+3. UI Components
+   - Reusable design system components
+   - Consistent styling and behavior
+   - Accessibility compliance
 
 ## Security Considerations
-- Role-based access control
-- API route protection
-- Input validation
-- XSS prevention
-- CSRF protection
-- Rate limiting
 
-## Performance Optimizations
-- Server components for static content
-- Client components for interactive features
+### Authentication
+- NextAuth.js for authentication
+- Multiple auth providers (Email, Google, GitHub)
+- Session management and security
+
+### Authorization
+- Role-based access control
+- Resource-level permissions
+- Event-specific access control
+
+### Data Protection
+- Input validation and sanitization
+- SQL injection prevention
+- XSS protection
+- CSRF protection
+
+## Performance Optimization
+
+### Database
+- Efficient indexing
+- Query optimization
+- Connection pooling
+
+### Frontend
+- Server-side rendering
+- Static page generation
 - Image optimization
-- Lazy loading
-- Pagination
-- Caching strategies
+- Code splitting
+
+## Monitoring and Logging
+
+### System Monitoring
+- Error tracking
+- Performance metrics
+- User activity monitoring
+
+### Audit Logging
+- Solution actions
+- Event participation
+- Administrative actions
 
 ## Future Considerations
-- Enhanced bulk operations
-- Advanced filtering
-- Export functionality
-- Analytics dashboard
-- Activity logging
-- Audit trail
+
+### Scalability
+- Horizontal scaling capabilities
+- Caching strategies
+- Load balancing
+
+### Feature Extensions
+- Enhanced event features
+- Advanced solution analytics
+- Community features
+- Integration capabilities
+
+## Development Guidelines
+
+### Code Organization
+- Feature-based directory structure
+- Clear separation of concerns
+- Consistent naming conventions
+
+### Testing Strategy
+- Unit tests for components
+- Integration tests for APIs
+- End-to-end testing for critical flows
+
+### Documentation
+- API documentation
+- Component documentation
+- Setup and deployment guides

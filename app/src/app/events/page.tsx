@@ -1,10 +1,23 @@
-import { PlaceholderPage } from "@/components/layout/PlaceholderPage";
+import { Metadata } from 'next'
+import EventsGrid from '@/components/events/EventsGrid'
+import EventsHeader from '@/components/events/EventsHeader'
+import EventsFilters from '@/components/events/EventsFilters'
 
-export default function EventsPage() {
+export const metadata: Metadata = {
+  title: 'Events | AIXchange',
+  description: 'Discover and participate in AI-focused events, hackathons, and challenges.',
+}
+
+export default async function EventsPage() {
   return (
-    <PlaceholderPage
-      title="Events"
-      description="Stay tuned for upcoming AI events, workshops, and meetups. Connect with fellow AI enthusiasts, share knowledge, and explore the latest trends in artificial intelligence."
-    />
-  );
+    <main className="container mx-auto px-4 py-8">
+      <EventsHeader />
+      <div className="mt-8">
+        <EventsFilters />
+      </div>
+      <div className="mt-8">
+        <EventsGrid />
+      </div>
+    </main>
+  )
 }
