@@ -5,7 +5,15 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, Trophy, Star, TrendingUp } from "lucide-react";
+import { Users, Trophy, Star, TrendingUp, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface WinningSolution {
   id: string;
@@ -32,6 +40,8 @@ interface PastEvent {
   winners: WinningSolution[];
   endDate: string;
 }
+
+const EVENT_TYPES = ["ALL", "HACKATHON", "CHALLENGE", "COMPETITION", "WORKSHOP"] as const;
 
 const PastEventCard = ({ event }: { event: PastEvent }) => {
   return (
@@ -80,7 +90,7 @@ const PastEventCard = ({ event }: { event: PastEvent }) => {
             <Trophy className="h-5 w-5 mr-2 text-yellow-500" />
             Winning Solutions
           </h4>
-          {event.winners.map((winner, index) => (
+          {event.winners.map((winner) => (
             <Card key={winner.id} className="p-4">
               <div className="flex items-start space-x-4">
                 <div className="relative h-12 w-12 rounded-lg overflow-hidden flex-shrink-0">
@@ -127,6 +137,9 @@ const PastEventCard = ({ event }: { event: PastEvent }) => {
 
 export function PastEvents() {
   const [events, setEvents] = useState<PastEvent[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedType, setSelectedType] = useState<typeof EVENT_TYPES[number]>("ALL");
+  const [filteredEvents, setFilteredEvents] = useState<PastEvent[]>([]);
 
   useEffect(() => {
     // TODO: Replace with actual API call
@@ -194,11 +207,62 @@ export function PastEvents() {
     ]);
   }, []);
 
+  // Filter events based on search query and selected type
+  useEffect(() => {
+    let filtered = events;
+
+    // Filter by search query
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        event =>
+          event.title.toLowerCase().includes(query) ||
+          event.description.toLowerCase().includes(query)
+      );
+    }
+
+    // Filter by type
+    if (selectedType !== "ALL") {
+      filtered = filtered.filter(event => event.type === selectedType);
+    }
+
+    setFilteredEvents(filtered);
+  }, [events, searchQuery, selectedType]);
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {events.map((event) => (
-        <PastEventCard key={event.id} event={event} />
-      ))}
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search events..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        <Select
+          value={selectedType}
+          onValueChange={(value) => setSelectedType(value as typeof EVENT_TYPES[number])}
+        >
+          <SelectTrigger className="w-full sm:w-[200px]">
+            <SelectValue placeholder="Select type" />
+          </SelectTrigger>
+          <SelectContent>
+            {EVENT_TYPES.map((type) => (
+              <SelectItem key={type} value={type}>
+                {type}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredEvents.map((event) => (
+          <PastEventCard key={event.id} event={event} />
+        ))}
+      </div>
     </div>
   );
 }
