@@ -1,0 +1,50 @@
+{
+  "solutions": [
+    {
+      "title": "AI Image Generator",
+      "description": "A powerful AI image generation solution using stable diffusion",
+      "shortDescription": "Generate stunning images with AI",
+      "version": "1.0.0",
+      "category": "GENERATIVE_AI",
+      "tags": ["image-generation", "stable-diffusion", "ai-art"],
+      "provider": "OpenAI",
+      "launchUrl": "https://example.com/ai-image-generator",
+      "sourceCodeUrl": "https://github.com/example/ai-image-generator",
+      "imageUrl": "/api/external-images/solutions/biomarkerbavigator.jpg",
+      "tokenCost": 100,
+      "status": "ACTIVE",
+      "metadata": {
+        "rating": 4.5,
+        "reviews": 0,
+        "resourceConfig": {
+          "cpu": "2 cores",
+          "memory": "4GB",
+          "storage": "10GB"
+        }
+      }
+    },
+    {
+      "title": "ChatBot Builder",
+      "description": "Create custom chatbots with natural language processing",
+      "shortDescription": "Build intelligent chatbots easily",
+      "version": "2.1.0",
+      "category": "NATURAL_LANGUAGE",
+      "tags": ["chatbot", "nlp", "customer-service"],
+      "provider": "Microsoft",
+      "launchUrl": "https://example.com/chatbot-builder",
+      "sourceCodeUrl": "https://github.com/example/chatbot-builder",
+      "imageUrl": "/api/external-images/solutions/population-models.png",
+      "tokenCost": 50,
+      "status": "ACTIVE",
+      "metadata": {
+        "rating": 4.8,
+        "reviews": 0,
+        "resourceConfig": {
+          "cpu": "4 cores",
+          "memory": "8GB",
+          "storage": "20GB"
+        }
+      }
+    }
+  ]
+}
