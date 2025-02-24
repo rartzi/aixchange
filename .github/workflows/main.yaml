@@ -1,45 +1,169 @@
 name: Deploy to Production
-
 on:
   push:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      deployment_type:
+        description: 'Deployment type (greenfield, preserve, preserve-seed)'
+        required: true
+        default: 'preserve'
+        type: choice
+        options:
+          - greenfield
+          - preserve
+          - preserve-seed
 
 jobs:
   deploy:
     runs-on: azu-oncology-rd-self-hosted-linux
-
     steps:
-      - name: Deploy with Appleboy SSH
+      - name: Pre-deployment checks
         uses: appleboy/ssh-action@v1.2.1
         with:
           host: portal.aixplore.odsp.astrazeneca.net
           username: ec2-user
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            # Check if Docker is running
+            if ! docker info > /dev/null 2>&1; then
+              echo "Error: Docker is not running on the server"
+              exit 1
+            fi
+            
+            # Create data directory if it doesn't exist
             if [ ! -d "/data" ]; then
               sudo mkdir -p /data
               sudo chown ec2-user:ec2-user /data
             fi
             
+            # Create backup directory if it doesn't exist
+            sudo mkdir -p /data/backups
+            sudo chown ec2-user:ec2-user /data/backups
+
+      - name: Create backup before deployment
+        uses: appleboy/ssh-action@v1.2.1
+        continue-on-error: true
+        with:
+          host: portal.aixplore.odsp.astrazeneca.net
+          username: ec2-user
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            # Only create backup if containers are running and it's not a greenfield deployment
+            if [ "${{ github.event.inputs.deployment_type }}" != "greenfield" ] && docker ps | grep -q "aixplore-portal-app"; then
+              cd /data/aixplore/app/deploy
+              BACKUP_FILE="pre_deploy_backup_$(date +%Y%m%d_%H%M%S).dump"
+              echo "Creating backup: $BACKUP_FILE"
+              ./deploy.sh backup
+              echo "Backup completed"
+            else
+              echo "Skipping backup as no existing deployment detected or greenfield deployment selected"
+            fi
+
+      - name: Clone repository and prepare environment
+        uses: appleboy/ssh-action@v1.2.1
+        with:
+          host: portal.aixplore.odsp.astrazeneca.net
+          username: ec2-user
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
             cd /data
             
-            sudo rm -rf aixplore
+            # Create tmp directory for new clone
+            mkdir -p /data/aixplore_deploy_tmp
+            cd /data/aixplore_deploy_tmp
+            
+            # Clone repository
             echo "Cloning fresh repository..."
-            sudo git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} aixplore
-            sudo chown -R ec2-user:ec2-user aixplore
+            git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} .
             
-            cd aixplore
+            # Create or update .env file
+            echo "Setting up environment file..."
+            echo "${{ secrets.ENV_FILE }}" > .env
             
-            if [ ! -f "../.env" ]; then
-              echo "Creating .env file..."
-              sudo mkdir -p env
-              echo "${{ secrets.ENV_FILE }}" | sudo tee ../.env > /dev/null
-              sudo chown -R ec2-user:ec2-user env
-            fi
-            
+            # Prepare deployment files
             cd app/deploy
             chmod +x deploy.sh
+            chmod +x start.sh
             
-            ./deploy.sh greenfield --prod
+            # Move to final location after successful preparation
+            echo "Moving files to final location..."
+            cd /data
+            
+            # If deployment is not greenfield, stop current containers first
+            if [ "${{ github.event.inputs.deployment_type }}" != "greenfield" ] && [ -d "/data/aixplore" ]; then
+              cd /data/aixplore/app/deploy
+              ./deploy.sh cleanup || true
+            fi
+            
+            # Remove old directory and move new one
+            sudo rm -rf /data/aixplore
+            mv /data/aixplore_deploy_tmp /data/aixplore
+            sudo chown -R ec2-user:ec2-user /data/aixplore
+
+      - name: Deploy application
+        id: deploy
+        uses: appleboy/ssh-action@v1.2.1
+        with:
+          host: portal.aixplore.odsp.astrazeneca.net
+          username: ec2-user
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /data/aixplore/app/deploy
+            
+            # Determine deployment type
+            DEPLOY_TYPE="${{ github.event.inputs.deployment_type }}"
+            if [ -z "$DEPLOY_TYPE" ]; then
+              DEPLOY_TYPE="preserve"
+            fi
+            
+            echo "Starting deployment with type: $DEPLOY_TYPE"
+            
+            # Run deployment
+            ./deploy.sh $DEPLOY_TYPE --prod
+            
+            # Check if deployment was successful
+            CONTAINER_NAME="aixplore-portal-app-1"
+            MAX_WAIT=60
+            ATTEMPT=1
+            
+            echo "Verifying deployment..."
+            while [ $ATTEMPT -le $MAX_WAIT ]; do
+              if docker logs $CONTAINER_NAME 2>&1 | grep -q "Ready in"; then
+                echo "Application is running successfully"
+                exit 0
+              fi
+              
+              echo "Waiting for application to start... ($ATTEMPT/$MAX_WAIT)"
+              sleep 2
+              ATTEMPT=$((ATTEMPT + 1))
+            done
+            
+            echo "ERROR: Application failed to start properly"
+            docker logs $CONTAINER_NAME
+            exit 1
+
+      - name: Verify application is running
+        uses: appleboy/ssh-action@v1.2.1
+        with:
+          host: portal.aixplore.odsp.astrazeneca.net
+          username: ec2-user
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            # Check application health endpoint
+            echo "Checking application health endpoint..."
+            STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/api/health || echo "failed")
+            
+            if [ "$STATUS_CODE" = "200" ]; then
+              echo "✅ Application health check passed"
+            else
+              echo "❌ Application health check failed with status: $STATUS_CODE"
+              echo "Deployment may not be fully functional"
+              
+              # Show container logs for debugging
+              docker logs aixplore-portal-app-1 --tail 100
+              
+              # Don't fail the workflow, as the application might still be starting up
+              # Instead, just report the issue in the logs
+            fi
