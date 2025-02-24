@@ -25,4 +25,4 @@ jobs:
 
       - name: Deploy
         run: |
-          ssh -v -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ec2-user@portal.aixplore.odsp.astrazeneca.net uname
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ec2-user@portal.aixplore.odsp.astrazeneca.net uname
