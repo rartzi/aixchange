@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { solutionSchema, type SolutionFormData } from '@/lib/schemas/solution';
+import { solutionSchema, predefinedCategories, type SolutionFormData } from '@/lib/schemas/solution';
 import Image from 'next/image';
 import { ZodError } from 'zod';
 
@@ -18,7 +18,7 @@ interface AdminSolutionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   solution?: any | null;
-  onSave: (solution: any) => Promise<void>;
+  onSave: (solution: any) => Promise<any>;
 }
 
 export function AdminSolutionDialog({ open, onOpenChange, solution, onSave }: AdminSolutionDialogProps) {
@@ -40,9 +40,8 @@ export function AdminSolutionDialog({ open, onOpenChange, solution, onSave }: Ad
     sourceCodeUrl: '',
     tokenCost: 0,
     rating: 0,
-    status: 'Active',
+    status: 'Pending',
     tags: [],
-    isPublished: true,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -87,8 +86,63 @@ export function AdminSolutionDialog({ open, onOpenChange, solution, onSave }: Ad
 
   const validateForm = () => {
     try {
-      const { image, ...dataToValidate } = formData;
-      solutionSchema.parse(dataToValidate);
+      if (!formData.title?.trim()) {
+        setErrors({ title: 'Title is required' });
+        return false;
+      }
+
+      if (!formData.description?.trim()) {
+        setErrors({ description: 'Description is required' });
+        return false;
+      }
+
+      if (!formData.category) {
+        setErrors({ category: 'Category is required' });
+        return false;
+      }
+
+      if (!formData.provider?.trim()) {
+        setErrors({ provider: 'Provider is required' });
+        return false;
+      }
+
+      if (!formData.launchUrl?.trim()) {
+        setErrors({ launchUrl: 'Launch URL is required' });
+        return false;
+      }
+
+      // Prepare data in the format expected by the schema
+      const dataToValidate = {
+        title: formData.title.trim(),
+        description: formData.description.trim(),
+        category: formData.category,
+        provider: formData.provider.trim(),
+        launchUrl: formData.launchUrl.trim(),
+        sourceCodeUrl: formData.sourceCodeUrl?.trim() || undefined,
+        tokenCost: Number(formData.tokenCost || 0),
+        rating: Number(formData.rating || 0),
+        status: formData.status as 'Active' | 'Pending' | 'Inactive',
+        tags: (formData.tags || []).map(tag => tag.trim()).filter(Boolean),
+        imageUrl: formData.imageUrl,
+        isPublished: formData.isPublished ?? true,
+      };
+
+      try {
+        // Validate against schema
+        solutionSchema.parse(dataToValidate);
+        setErrors({});
+        return true;
+      } catch (error) {
+        if (error instanceof ZodError) {
+          const newErrors: Record<string, string> = {};
+          error.errors.forEach((err) => {
+            const path = err.path.join('.');
+            newErrors[path] = err.message;
+          });
+          setErrors(newErrors);
+        }
+        return false;
+      }
       setErrors({});
       return true;
     } catch (error) {
@@ -168,42 +222,58 @@ export function AdminSolutionDialog({ open, onOpenChange, solution, onSave }: Ad
         }
       }
 
-      // Add author name and ID to form data
+      // Prepare form data with validated values
       const formDataToSend = new FormData();
-      formDataToSend.append('authorName', authorName);
+
+      // Add core fields with type checking
+      if (formData.title) formDataToSend.append('title', formData.title);
+      if (formData.description) formDataToSend.append('description', formData.description);
+      if (formData.category) formDataToSend.append('category', formData.category);
+      if (formData.provider) formDataToSend.append('provider', formData.provider);
+      if (formData.launchUrl) formDataToSend.append('launchUrl', formData.launchUrl);
+      formDataToSend.append('tokenCost', String(Number(formData.tokenCost || 0)));
+      formDataToSend.append('rating', String(Number(formData.rating || 0)));
+      if (formData.status) formDataToSend.append('status', formData.status);
+      formDataToSend.append('tags', JSON.stringify(formData.tags || []));
+      formDataToSend.append('isPublished', String(formData.isPublished ?? true));
+      
+      // Add optional fields
+      if (formData.sourceCodeUrl) {
+        formDataToSend.append('sourceCodeUrl', formData.sourceCodeUrl);
+      }
+
+      // Add ID if editing
       if (solution?.id) {
         formDataToSend.append('id', solution.id);
       }
 
-      // First append non-file fields
-      Object.entries(formData).forEach(([key, value]) => {
-        if (key === 'image' && value instanceof File) {
-          formDataToSend.append(key, value);
-        } else if (key === 'imageUrl') {
-          // Don't append imageUrl yet - we'll do it after
-          return;
-        } else if (key === 'id') {
-          // Skip id as we already added it
-          return;
-        } else {
-          formDataToSend.append(key, JSON.stringify(value));
-        }
-      });
-      
-      // Now append imageUrl if we have one
+      // Add author name
+      if (authorName) {
+        formDataToSend.append('authorName', authorName);
+      }
+
+      // Add image if present
+      if (formData.image instanceof File) {
+        formDataToSend.append('image', formData.image);
+      }
+
+      // Add imageUrl if we have one
       if (imageUrl) {
         formDataToSend.append('imageUrl', imageUrl);
       } else if (formData.imageUrl) {
         formDataToSend.append('imageUrl', formData.imageUrl);
       }
 
-      await onSave(formDataToSend);
-      onOpenChange(false);
+      const result = await onSave(formDataToSend);
 
-      setStatusMessage({
-        type: 'success',
-        message: 'Solution saved successfully'
-      });
+      // Only close dialog and show success message if save was successful
+      if (result) {
+        setStatusMessage({
+          type: 'success',
+          message: 'Solution saved successfully'
+        });
+        onOpenChange(false);
+      }
 
       // Reset form after successful submission if not editing
       if (!solution) {
@@ -345,14 +415,23 @@ export function AdminSolutionDialog({ open, onOpenChange, solution, onSave }: Ad
               Classification
             </label>
             <div className="flex gap-2">
-              <input
-                id="category"
-                type="text"
+              <select
                 value={formData.category}
-                onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-                className={`w-full p-2 border rounded-md bg-background text-foreground ${errors.category ? 'border-red-500' : ''}`}
-                placeholder="Enter category"
-              />
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (predefinedCategories.includes(value as any)) {
+                    setFormData(prev => ({ ...prev, category: value as typeof predefinedCategories[number] }));
+                  }
+                }}
+                className={`flex-1 p-2 border rounded-md bg-background text-foreground ${errors.category ? 'border-red-500' : ''}`}
+              >
+                <option value="">Select a category</option>
+                {predefinedCategories.map(category => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
             </div>
             {errors.category && <p className="text-red-500 text-sm mt-1">{errors.category}</p>}
           </div>
