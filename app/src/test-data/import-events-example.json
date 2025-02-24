@@ -1,0 +1,45 @@
+{
+  "events": [
+    {
+      "title": "AI Hackathon 2025",
+      "description": "Join our 48-hour AI innovation challenge where developers compete to create cutting-edge AI solutions. Work with the latest AI technologies, collaborate with experts, and win amazing prizes!",
+      "shortDescription": "48-hour AI innovation challenge",
+      "startDate": "2025-06-01T09:00:00Z",
+      "endDate": "2025-06-03T09:00:00Z",
+      "status": "UPCOMING",
+      "type": "HACKATHON",
+      "imageUrl": "/api/external-images/events/event-5fd8b1b8.png",
+      "bannerUrl": "/api/external-images/events/event-banner-5fd8b1b8.png",
+      "isPublic": true,
+      "isPromoted": true,
+      "maxParticipants": 200,
+      "rules": "1. Teams of 1-4 people\n2. Original work only\n3. Must use provided APIs\n4. Submit before deadline",
+      "prizes": {
+        "first": "$5000",
+        "second": "$3000",
+        "third": "$1000"
+      }
+    },
+    {
+      "title": "Machine Learning Challenge",
+      "description": "A two-month machine learning competition focused on solving real-world healthcare problems using AI. Participants will work with anonymized medical data to develop predictive models.",
+      "shortDescription": "Healthcare ML competition",
+      "startDate": "2025-07-01T00:00:00Z",
+      "endDate": "2025-08-31T23:59:59Z",
+      "status": "UPCOMING",
+      "type": "CHALLENGE",
+      "imageUrl": "/api/external-images/events/event-7ac3d4e2.png",
+      "bannerUrl": "/api/external-images/events/event-banner-7ac3d4e2.png",
+      "isPublic": true,
+      "isPromoted": true,
+      "maxParticipants": 500,
+      "rules": "1. Individual participation only\n2. Must follow data privacy guidelines\n3. Weekly submissions required\n4. Code must be well documented",
+      "prizes": {
+        "first": "$10000",
+        "second": "$5000",
+        "third": "$2500",
+        "special": "Best Healthcare Impact: $3000"
+      }
+    }
+  ]
+}

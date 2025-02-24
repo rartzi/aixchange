@@ -5,6 +5,74 @@ AiXchange is a platform for sharing and discovering AI solutions, fostering coll
 
 ## Features
 
+### AiXcelerate Platform
+
+#### Community Engagement Features
+- EngagementMetrics component:
+  - Real-time community activity tracking
+  - User participation statistics
+  - Growth metrics visualization
+  - Engagement trend analysis
+- CommunityHub integration:
+  - Central community interaction point
+  - Event participation tracking
+  - User engagement tools
+  - Community activity feed
+- CommunityStats display:
+  - Visual representation of community growth
+  - Key performance indicators
+  - Historical trend analysis
+  - Real-time updates
+
+#### Event Showcase
+- EventsCarousel component:
+  - Featured events highlight
+  - Auto-scrolling functionality
+  - Interactive event preview cards
+  - Direct event access
+- Hero section:
+  - Dynamic main messaging
+  - Call-to-action elements
+  - Platform value proposition
+  - Community highlights
+
+### Events Management
+
+#### Event Discovery and Participation
+- Advanced search and filtering system:
+  - Real-time search functionality
+  - Filter by event status (Upcoming, Active, Voting, Completed)
+  - Filter by event type (Hackathon, Challenge, Competition, Workshop)
+  - URL-based filtering for shareable searches
+- Event participation system:
+  - Join upcoming and active events
+  - Submit solutions to events
+  - View event leaderboards and statistics
+  - Participate in event discussions
+
+#### Event Administration
+- Event creation and management:
+  - Create and publish events
+  - Set event dates and requirements
+  - Manage participant registrations
+  - Monitor event progress
+- Solution management per event:
+  - Review and approve solutions
+  - Manage solution submissions
+  - Track participation metrics
+  - Generate event reports
+
+#### Event Features
+- Event status tracking:
+  - Automatic status updates based on dates
+  - Prevention of past event participation
+  - Active event monitoring
+- Leaderboard system:
+  - Per-event rankings
+  - Market-specific leaderboards
+  - Global ranking system
+  - Point/reward system
+
 ### Solution Management
 
 #### Bulk Solution Management (Admin)
@@ -123,6 +191,13 @@ AiXchange is a platform for sharing and discovering AI solutions, fostering coll
   - Image metadata handling
   - CDN integration
   - Multi-region image serving
+- Event system enhancements:
+  - Advanced leaderboard features
+  - Event templates system
+  - Event analytics dashboard
+  - Social sharing integration
+  - Event notification system
+  - Live updates for active events
 
 ## Image Management Guidelines
 For detailed information about image management, including:

@@ -1,0 +1,47 @@
+{
+  "solutions": [
+    {
+      "title": "BiomarkerNavigator",
+      "description": "The Biomarkers Navigator One stop shop for biomarker analysis. Center of knowledge which facilitates the sharing of clinical Biomarker insights throughout the organization.",
+      "version": "1.0.0",
+      "category": "AppliedDataScience",
+      "provider": "Ioannis Kagiampakis",
+      "launchUrl": "https://bionav.scp.astrazeneca.net/",
+      "tokenCost": 16,
+      "tags": ["EDS", "AI", "Biomarkers"],
+      "imageUrl": "/api/external-images/solutions/biomarkerbavigator.jpg",
+      "isPublished": true,
+      "metadata": {
+        "rating": 5,
+        "reviews": 0,
+        "resourceConfig": {
+          "cpu": "2 cores",
+          "memory": "4GB",
+          "storage": "10GB"
+        }
+      }
+    },
+    {
+      "title": "Population Models",
+      "description": "This application provides real-time data-driven insights to identify trial designs likely to outperform standard of care (SoC).",
+      "version": "1.0.0",
+      "category": "AppliedDataScience",
+      "provider": "Leonidas Souliotis",
+      "launchUrl": "https://prd.domino.astrazeneca.net/modelproducts/6711094f3343160ad98f5b04",
+      "tokenCost": 16,
+      "tags": ["LASER", "AI", "Population Models"],
+      "imageUrl": "/api/external-images/solutions/population-models.png",
+      "isPublished": true,
+      "metadata": {
+        "rating": 5,
+        "reviews": 0,
+        "resourceConfig": {
+          "cpu": "4 cores",
+          "memory": "8GB",
+          "storage": "20GB"
+        }
+      }
+    }
+  ],
+  "defaultAuthorId": "cm7h78kzn0000jp20wp53y0tr"
+}

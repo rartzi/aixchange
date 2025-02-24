@@ -37,7 +37,7 @@ async function getInitialSolutions() {
       id: solution.id,
       title: solution.title,
       description: solution.description,
-      category: solution.category as typeof predefinedCategories[number],
+      category: solution.category,
       provider: solution.provider,
       launchUrl: solution.launchUrl,
       tokenCost: solution.tokenCost,

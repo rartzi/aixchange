@@ -27,7 +27,7 @@ export function ProfileMenu({ session }: ProfileMenuProps) {
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted transition-colors"
+        className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-700 transition-colors"
       >
         {session.user?.image ? (
           <img
@@ -40,14 +40,14 @@ export function ProfileMenu({ session }: ProfileMenuProps) {
             {session.user?.name?.[0] || session.user?.email?.[0] || "?"}
           </div>
         )}
-        <span className="text-sm font-medium hidden md:block">
+        <span className="text-sm font-medium text-gray-100 hidden md:block">
           {session.user?.name || session.user?.email}
         </span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 20 20"
           fill="currentColor"
-          className={`w-5 h-5 transition-transform ${isOpen ? "rotate-180" : ""}`}
+          className={`w-5 h-5 text-gray-100 transition-transform ${isOpen ? "rotate-180" : ""}`}
         >
           <path
             fillRule="evenodd"
@@ -58,13 +58,13 @@ export function ProfileMenu({ session }: ProfileMenuProps) {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 py-2 bg-card rounded-lg shadow-lg border border-border">
+        <div className="absolute right-0 mt-2 w-48 py-2 bg-gray-800 rounded-lg shadow-lg border border-border">
           <button
             onClick={() => {
               setIsOpen(false);
               signOut({ callbackUrl: "/" });
             }}
-            className="block w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-muted transition-colors"
+            className="block w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-700 transition-colors"
           >
             Sign Out
           </button>

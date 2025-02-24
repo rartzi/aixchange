@@ -36,7 +36,78 @@ model Solution {
 }
 ```
 
+### Event Model
+```prisma
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  startDate   DateTime
+  endDate     DateTime
+  rules       String
+  prizes      Json
+  status      String
+  categories  String[]
+  tags        String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  metadata    Json
+}
+```
+
 ## API Routes
+
+### Event Routes
+
+#### GET /api/events
+- List all events with filtering options
+- Public access with pagination
+- Optional category and status filters
+
+#### POST /api/admin/events
+- Create new event
+- Admin-only access
+- Request body:
+  ```typescript
+  {
+    title: string;
+    description: string;
+    startDate: Date;
+    endDate: Date;
+    rules: string;
+    prizes: {
+      [key: string]: any;
+    };
+    categories: string[];
+    tags: string[];
+  }
+  ```
+
+#### POST /api/admin/events/bulk-submission
+- Bulk event import endpoint
+- Admin-only access
+- JSON data validation
+- Progress tracking
+- Response format:
+  ```typescript
+  {
+    success: boolean;
+    message: string;
+    data?: {
+      events: Event[];
+      importedCount: number;
+      failedCount: number;
+    };
+    error?: {
+      code: string;
+      message: string;
+      details?: Array<{
+        index: number;
+        error: string;
+      }>;
+    };
+  }
+  ```
 
 #### POST /api/generate-image
 - DALL-E image generation endpoint
@@ -115,29 +186,47 @@ model Solution {
 - Includes audit logging
 - Handles dependent resource cleanup
 
-## Data Loading Strategies
-
-### Solutions Loading
-- Full data loading approach
-  - Load all solutions in single request
-  - Client-side filtering and sorting
-  - Improved filter response time
-  - Better user experience with immediate feedback
-- Considerations:
-  - Suitable for moderate dataset sizes
-  - Initial load time vs interaction speed trade-off
-  - Client-side memory usage
-  - Future scalability with virtual scrolling option
-
 ## Components
 
+### AiXcelerate Components
+- EngagementMetrics
+  - Display community engagement statistics
+  - Real-time metrics updates
+  - Responsive design
+- EventsCarousel
+  - Featured events display
+  - Auto-scrolling capability
+  - Event preview cards
+- Hero
+  - Main messaging section
+  - Call-to-action buttons
+  - Dynamic content areas
+- CommunityStats
+  - Community growth metrics
+  - Visual data representation
+  - Real-time updates
+- CommunityHub
+  - Community interaction features
+  - Event participation tracking
+  - User engagement tools
+
 ### Admin Components
+- AdminEventDialog
+  - Event creation/editing interface
+  - Form validation
+  - Date range selection
+  - Prize configuration
+  - Category management
+- AdminNav
+  - Navigation between admin sections
+  - Access control integration
+  - Active state management
 - BulkImport
   - JSON file upload handling
   - Progress tracking for large imports
   - Validation feedback with error details
   - Success/error notifications with dark mode support
-  - Support for multiple solution types (marketplace/playground)
+  - Support for multiple solution types
   - Audit logging integration
   - Test data templates for development
 

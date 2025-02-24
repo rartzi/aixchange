@@ -10,36 +10,38 @@ export function Navbar() {
   const { data: session, status } = useSession();
 
   return (
-    <nav className="relative bg-gradient-to-r from-gray-50/80 via-white/90 to-gray-50/80 dark:from-gray-900/90 dark:via-gray-800/95 dark:to-gray-900/90 backdrop-blur-sm border-b border-border shadow-sm">
-      <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-        <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-primary via-blue-600 to-primary bg-clip-text text-transparent">
-          (AI)Xplore
-        </Link>
+    <nav className="relative bg-gradient-to-r from-gray-900/90 via-gray-800/95 to-gray-900/90 backdrop-blur-sm border-b border-border shadow-sm">
+      <div className="container mx-auto px-4 py-4 flex justify-between items-end">
         <div className="flex items-center gap-6">
+          <Link href="/" className="text-lg font-bold bg-gradient-to-r from-primary via-blue-600 to-primary bg-clip-text text-transparent">
+            (AI)Xplore
+          </Link>
           <Link
             href="/solutions"
-            className="text-lg font-medium text-gray-800 dark:text-gray-100 hover:text-primary dark:hover:text-blue-300 transition-colors"
+            className="text-lg font-medium text-gray-100 hover:text-blue-300 transition-colors"
           >
             (AI)Xchange
           </Link>
           <Link
             href="/experiment"
-            className="text-lg font-medium text-gray-800 dark:text-gray-100 hover:text-primary dark:hover:text-blue-300 transition-colors"
+            className="text-lg font-medium text-gray-100 hover:text-blue-300 transition-colors"
           >
             (AI)Xperiment
           </Link>
           <Link
-            href="/community"
-            className="text-lg font-medium text-gray-800 dark:text-gray-100 hover:text-primary dark:hover:text-blue-300 transition-colors"
+            href="/aixcelerate"
+            className="text-lg font-medium text-gray-100 hover:text-blue-300 transition-colors"
           >
-            (AI)Xccelerate
+            (AI)Xcelerate
           </Link>
+        </div>
+        <div className="flex items-end gap-6">
           {/* Admin Navigation */}
           {session?.user?.role === 'ADMIN' && (
             <div className="relative group">
               <Link
                 href="/admin/users"
-                className="text-lg font-medium bg-gradient-to-r from-primary/20 to-primary/10 dark:from-primary/30 dark:to-primary/20 px-4 py-2 rounded-md text-primary dark:text-blue-300 hover:from-primary/30 hover:to-primary/20 dark:hover:from-primary/40 dark:hover:to-primary/30 transition-all flex items-center gap-1"
+                className="text-sm font-medium bg-gradient-to-r from-primary/30 to-primary/20 px-4 py-2 rounded-md text-blue-300 hover:from-primary/40 hover:to-primary/30 transition-all flex items-center gap-1"
               >
                 Admin
                 <svg
@@ -55,19 +57,25 @@ export function Navbar() {
                   />
                 </svg>
               </Link>
-              <div className="absolute top-full left-0 mt-1 w-48 bg-white dark:bg-gray-800 border border-border rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+              <div className="absolute top-full left-0 mt-1 w-48 bg-gray-800 border border-border rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
                 <div className="py-1">
                   <Link
                     href="/admin/users"
-                    className="block px-4 py-2 text-sm text-gray-800 dark:text-gray-100 hover:bg-primary/10 dark:hover:bg-primary/20"
+                    className="block px-4 py-2 text-sm text-gray-100 hover:bg-primary/20"
                   >
                     User Management
                   </Link>
                   <Link
                     href="/admin/solutions"
-                    className="block px-4 py-2 text-sm text-gray-800 dark:text-gray-100 hover:bg-primary/10 dark:hover:bg-primary/20"
+                    className="block px-4 py-2 text-sm text-gray-100 hover:bg-primary/20"
                   >
                     Solutions Management
+                  </Link>
+                  <Link
+                    href="/admin/events"
+                    className="block px-4 py-2 text-sm text-gray-100 hover:bg-primary/20"
+                  >
+                    Events Management
                   </Link>
                 </div>
               </div>
@@ -75,7 +83,7 @@ export function Navbar() {
           )}
           <button
             onClick={toggleTheme}
-            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-end"
             aria-label="Toggle theme"
           >
             {theme === "dark" ? (
@@ -84,7 +92,7 @@ export function Navbar() {
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                className="w-5 h-5 text-gray-800 dark:text-gray-100"
+                className="w-5 h-5 text-gray-100"
               >
                 <path
                   strokeLinecap="round"
@@ -99,7 +107,7 @@ export function Navbar() {
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                className="w-5 h-5 text-gray-800 dark:text-gray-100"
+                className="w-5 h-5 text-gray-100"
               >
                 <path
                   strokeLinecap="round"
@@ -111,20 +119,20 @@ export function Navbar() {
             )}
           </button>
           {status === "loading" ? (
-            <div className="w-20 h-10 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-lg" />
+            <div className="w-20 h-10 bg-gray-700 animate-pulse rounded-lg" />
           ) : session ? (
             <ProfileMenu session={session} />
           ) : (
             <>
               <Link
                 href="/login"
-                className="px-4 py-2 text-lg font-medium bg-primary text-white hover:bg-primary/90 rounded-md transition-colors"
+                className="px-4 py-2 text-sm font-medium bg-primary text-white hover:bg-primary/90 rounded-md transition-colors"
               >
                 Login
               </Link>
               <Link
                 href="/register"
-                className="px-4 py-2 text-lg font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors"
+                className="px-4 py-2 text-sm font-medium bg-gray-700 text-gray-100 hover:bg-gray-600 rounded-md transition-colors"
               >
                 Register
               </Link>

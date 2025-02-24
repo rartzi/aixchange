@@ -43,7 +43,9 @@ export const solutionSchema = z.object({
   description: z.string()
     .min(10, 'Description must be at least 10 characters')
     .max(1000, 'Description must be less than 1000 characters'),
-  category: z.enum(predefinedCategories),
+  category: z.string()
+    .min(2, 'Category must be at least 2 characters')
+    .max(100, 'Category must be less than 100 characters'),
   provider: z.string()
     .min(2, 'Provider name is required')
     .max(100, 'Provider name must be less than 100 characters'),
@@ -62,13 +64,24 @@ export const solutionSchema = z.object({
     .max(5, 'Rating must be 5 or less')
     .default(0),
   status: z.enum(statusOptions)
-    .default('Pending'),
+    .default('Active'),
   tags: z.array(z.string())
     .min(1, 'Add at least one tag')
     .max(5, 'Maximum 5 tags allowed'),
   imageUrl: z.string().optional(),
   metadata: metadataSchema.optional(),
+  eventId: z.string().cuid().optional(),
+  isPublished: z.boolean().default(true),
+});
+
+// Bulk import schema
+export const solutionImportSchema = z.object({
+  solutions: z.array(solutionSchema)
+    .min(1, "At least one solution is required")
+    .max(100, "Maximum 100 solutions allowed per import"),
+  defaultAuthorId: z.string().optional(),
 });
 
 export type SolutionMetadata = z.infer<typeof metadataSchema>;
 export type SolutionFormData = z.infer<typeof solutionSchema>;
+export type SolutionImportData = z.infer<typeof solutionImportSchema>;

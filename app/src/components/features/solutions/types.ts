@@ -30,7 +30,7 @@ export interface Solution {
   upvotes?: number;
   downvotes?: number;
   createdAt: string;
-  category: typeof predefinedCategories[number];
+  category: string;
   provider: string;
   launchUrl: string;
   tokenCost: number;

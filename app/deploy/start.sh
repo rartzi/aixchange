@@ -20,6 +20,10 @@ fi
 
 echo "Database is ready..."
 
+# Run database migrations as nextjs user
+echo "Running database migrations..."
+npx prisma migrate deploy
+
 echo "Starting application..."
 if [ "$NODE_ENV" = "production" ]; then
   exec node server.js

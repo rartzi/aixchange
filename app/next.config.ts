@@ -10,6 +10,11 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   output: 'standalone',
+  experimental: {
+    serverActions: {
+      allowedOrigins: ['localhost:3000'],
+    },
+  },
   images: {
     unoptimized: true, // Disable image optimization for external images
     domains: ['localhost'],
@@ -21,7 +26,7 @@ const nextConfig: NextConfig = {
         pathname: '/external-images/**',
       },
     ],
-  },
+  }
 };
 
 export default nextConfig;
