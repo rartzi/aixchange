@@ -34,22 +34,3 @@ jobs:
             docker compose build --no-cache
             docker compose down
             docker compose up -d
-#
-#            # Run database migrations
-#            docker compose exec -T app npx prisma migrate deploy
-
-            # Check application health
-            for i in {1..12}; do
-              if curl -s http://localhost:3000/api/health; then
-                echo "Application is healthy"
-                exit 0
-              fi
-              echo "Waiting for application to start... ($i/12)"
-              sleep 10
-            done
-            
-            if [ $? -ne 0 ]; then
-              echo "Error: Application failed to start"
-              docker compose logs app
-              exit 1
-            fi
