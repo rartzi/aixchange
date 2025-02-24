@@ -8,17 +8,9 @@ on:
 
 jobs:
   deploy:
-    runs-on: azu-oncology-rd-self-hosted-linux
+    runs-on: odsp-aws-small
 
     steps:
-      - name: Test Direct SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ec2-user@portal.aixplore.odsp.astrazeneca.net uname
-          rm ~/.ssh/deploy_key
-
       - name: Test Appleboy SSH Action
         uses: appleboy/ssh-action@v1.2.1
         with:
