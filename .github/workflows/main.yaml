@@ -8,147 +8,17 @@ on:
 
 jobs:
   deploy:
-    runs-on: odsp-aws-small
+    runs-on: azu-oncology-rd-self-hosted-linux
 
     steps:
-      - name: Debug SSH Key
-        run: |
-          echo "=== Check SSH Key Format ==="
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > /tmp/test_key
-          chmod 600 /tmp/test_key
-          echo "First line of key:"
-          head -n 1 /tmp/test_key
-          echo "Key permissions:"
-          ls -la /tmp/test_key
-          echo "Try to generate public key:"
-          ssh-keygen -y -f /tmp/test_key || echo "Failed to generate public key"
-          rm /tmp/test_key
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Test SSH Keyscan
+      - name: Create SSH key and deploy
         run: |
-          echo "=== SSH Keyscan Test ==="
-          echo "Running keyscan with all algorithms:"
-          ssh-keyscan -v -t rsa,ecdsa,ed25519 ${{ secrets.SSH_HOST }}
-          echo "Getting fingerprints:"
-          ssh-keyscan ${{ secrets.SSH_HOST }} | ssh-keygen -lf -
-
-      - name: Test Direct SSH Connection
-        run: |
-          echo "=== Direct SSH Test ==="
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          
-          echo "Testing SSH with verbose output:"
-          ssh -v -o StrictHostKeyChecking=no -i ~/.ssh/deploy_key ec2-user@${{ secrets.SSH_HOST }} whoami || echo "Direct SSH failed"
-          
+          # Direct SSH deployment
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ec2-user@${{ secrets.SSH_HOST }} whoami
           rm ~/.ssh/deploy_key
-
-      - name: Test SSH with Config
-        run: |
-          echo "=== SSH Config Test ==="
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          
-          echo "Creating SSH config:"
-          cat > ~/.ssh/config << EOF
-          Host testhost
-            HostName ${{ secrets.SSH_HOST }}
-            User ec2-user
-            IdentityFile ~/.ssh/deploy_key
-            StrictHostKeyChecking no
-            UserKnownHostsFile /dev/null
-            LogLevel DEBUG3
-          EOF
-          
-          echo "Testing SSH via config with debug:"
-          ssh -v testhost whoami || echo "SSH with config failed"
-          
-          rm ~/.ssh/deploy_key
-          rm ~/.ssh/config
-
-      - name: Test Appleboy Action
-        uses: appleboy/ssh-action@v1.2.1
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: "ec2-user"
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
-          command_timeout: 200m
-          debug: true
-          script: |
-            whoami
-            pwd
-
-      - name: Check Docker on Remote
-        if: always() # Выполнять даже если предыдущие шаги упали
-        run: |
-          echo "=== Check Docker on Remote ==="
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/deploy_key ec2-user@${{ secrets.SSH_HOST }} '
-            echo "Docker version:"
-            docker --version || echo "Docker not found"
-            echo "Docker compose version:"
-            docker compose version || echo "Docker compose not found"
-            echo "Docker permissions:"
-            groups | grep docker || echo "User not in docker group"
-          ' || echo "Failed to check Docker"
-          rm ~/.ssh/deploy_key
-
-      - name: Check Remote Directories
-        if: always()
-        run: |
-          echo "=== Check Remote Directories ==="
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/deploy_key ec2-user@${{ secrets.SSH_HOST }} '
-            echo "Check /data directory:"
-            ls -la /data || echo "/data not found"
-            echo "Check permissions:"
-            whoami
-            id
-          ' || echo "Failed to check directories"
-          rm ~/.ssh/deploy_key
-
-      - name: Final Deploy
-        if: success()
-        uses: appleboy/ssh-action@v1.2.1
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: "ec2-user"
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
-          command_timeout: 200m
-          script: |
-            # Clean up previous deployment if exists
-            rm -rf /data/aixplore
-            
-            # Create directory if not exists
-            mkdir -p /data
-
-            # Clone repository with token
-            cd /data/
-            git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} aixplore
-            cd aixplore
-
-            # Check if .env exists and is valid
-            if [ ! -f /data/aixplore/env/.env ]; then
-              echo "Creating .env from secrets"
-              mkdir -p env
-              echo "${{ secrets.ENV_FILE }}" > env/.env
-            fi
-
-            # Build and restart containers
-            docker compose pull || exit 1
-            docker compose build --no-cache || exit 1
-            docker compose down || true # Don't fail if no containers running
-            docker compose up -d || exit 1
-
-            # Check if containers are running
-            if ! docker compose ps | grep -q "Up"; then
-              echo "Error: Containers failed to start"
-              docker compose logs
-              exit 1
-            fi
