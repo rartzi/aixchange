@@ -16,13 +16,13 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ec2-user@${{ secrets.SSH_HOST }} uname
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ec2-user@portal.aixplore.odsp.astrazeneca.net uname
           rm ~/.ssh/deploy_key
 
       - name: Test Appleboy SSH Action
         uses: appleboy/ssh-action@v1.2.1
         with:
-          host: ${{ secrets.SSH_HOST }}
+          host: portal.aixplore.odsp.astrazeneca.net
           username: ec2-user
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
