@@ -18,7 +18,6 @@ jobs:
           username: ec2-user
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # Проверяем и создаем директорию если нужно
             if [ ! -d "/data" ]; then
               sudo mkdir -p /data
               sudo chown ec2-user:ec2-user /data
@@ -26,7 +25,6 @@ jobs:
             
             cd /data
             
-            # Удаляем старую версию и клонируем новую
             sudo rm -rf aixplore
             echo "Cloning fresh repository..."
             sudo git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} aixplore
@@ -34,7 +32,6 @@ jobs:
             
             cd aixplore
             
-            # Создаем .env если не существует
             if [ ! -f "env/.env" ]; then
               echo "Creating .env file..."
               sudo mkdir -p env
@@ -42,9 +39,7 @@ jobs:
               sudo chown -R ec2-user:ec2-user env
             fi
             
-            # Выполняем деплой через скрипт
             cd app/deploy
             chmod +x deploy.sh
             
-            # Используем preserve команду для сохранения данных
-            ./deploy.sh preserve
+            ./deploy.sh greenfield --prod
