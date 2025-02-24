@@ -27,11 +27,11 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1'
-          memory: 1G
+          cpus: '2'           # Increased for demo
+          memory: 2G          # Increased for demo
         reservations:
-          cpus: '0.5'
-          memory: 512M
+          cpus: '1'           # Increased for demo
+          memory: 1G          # Increased for demo
     logging:
       driver: "json-file"
       options:
@@ -58,11 +58,11 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1'
-          memory: 1G
+          cpus: '2'           # Increased for demo
+          memory: 2G          # Increased for demo
         reservations:
-          cpus: '0.5'
-          memory: 512M
+          cpus: '1'           # Increased for demo
+          memory: 1G          # Increased for demo
     logging:
       driver: "json-file"
       options:
