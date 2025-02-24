@@ -8,8 +8,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
-    environment: production
+    runs-on: azu-oncology-rd-self-hosted-linux
 
     steps:
       - name: Deploy to EC2
