@@ -11,18 +11,19 @@ jobs:
     runs-on: azu-oncology-rd-self-hosted-linux
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Debug SSH
+      - name: Test Direct SSH
         run: |
-          echo "=== Debug SSH setup ==="
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keygen -l -f ~/.ssh/deploy_key
-          echo "=== End Debug ==="
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ec2-user@${{ secrets.SSH_HOST }} uname
+          rm ~/.ssh/deploy_key
 
-      - name: Deploy
-        run: |
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ec2-user@portal.aixplore.odsp.astrazeneca.net uname
+      - name: Test Appleboy SSH Action
+        uses: appleboy/ssh-action@v1.2.1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ec2-user
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            uname -a
