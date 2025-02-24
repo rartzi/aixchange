@@ -26,14 +26,6 @@ jobs:
             
             cd /data
             
-            # Проверяем существует ли директория с проектом
-            if [ -d "aixplore" ]; then
-              echo "Directory exists, stopping containers..."
-              cd aixplore
-              sudo docker compose down || true
-              cd ..
-            fi
-            
             # Удаляем старую версию и клонируем новую
             sudo rm -rf aixplore
             echo "Cloning fresh repository..."
@@ -50,25 +42,9 @@ jobs:
               sudo chown -R ec2-user:ec2-user env
             fi
             
-            # Проверяем и создаем директорию для внешних изображений
-            if [ ! -d "external-images" ]; then
-              sudo mkdir -p external-images
-              sudo chown ec2-user:ec2-user external-images
-            fi
+            # Выполняем деплой через скрипт
+            cd app/deploy
+            chmod +x deploy.sh
             
-            echo "Building and starting containers..."
-            # Запускаем контейнеры
-            sudo docker-compose pull || exit 1
-            sudo docker-compose build --no-cache || exit 1
-            sudo docker-compose up -d || exit 1
-            
-            # Проверяем что контейнеры запущены
-            echo "Checking containers status..."
-            sleep 10 # Даем время на запуск
-            if ! sudo docker compose ps | grep -q "Up"; then
-              echo "Error: Containers failed to start"
-              sudo docker compose logs
-              exit 1
-            fi
-            
-            echo "Deployment successful!"
+            # Используем preserve команду для сохранения данных
+            ./deploy.sh preserve
