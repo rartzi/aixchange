@@ -11,46 +11,51 @@ jobs:
     runs-on: azu-oncology-rd-self-hosted-linux
 
     steps:
-      - name: get host ssh fingerprint
-        id: fingerprint
-        run: echo "::set-output name=fingerprint::$(ssh-keyscan -H ${{ secrets.SSH_HOST }} | ssh-keygen -lf - | awk '{print $2}')"
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          cat >> ~/.ssh/config << EOF
+          Host aixplore
+            HostName ${{ secrets.SSH_HOST }}
+            User ec2-user
+            IdentityFile ~/.ssh/deploy_key
+            StrictHostKeyChecking no
+            UserKnownHostsFile /dev/null
+          EOF
 
-#      - name: Deploy to EC2
-#        uses: appleboy/ssh-action@v1.2.1
-#        with:
-#          host: ${{ secrets.SSH_HOST }}
-#          username: "ec2-user"
-#          key: ${{ secrets.SSH_PRIVATE_KEY }}
-#          fingerprint: "YGzIIs5UPnSTncfGxMehgz/IzoFhXq0YYDaUDkgWyhs"
-#
-#          script: |
-#            # Clean up previous deployment if exists
-#            rm -rf /data/aixplore
-#
-#            # Create directory if not exists
-#            mkdir -p /data
-#
-#            # Clone repository with token
-#            cd /data/
-#            git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} aixplore
-#            cd aixplore
-#
-#            # Check if .env exists and is valid
-#            if [ ! -f /data/aixplore/env/.env ]; then
-#              echo "Creating .env from secrets"
-#              mkdir -p env
-#              echo "${{ secrets.ENV_FILE }}" > env/.env
-#            fi
-#
-#            # Build and restart containers
-#            docker compose pull || exit 1
-#            docker compose build --no-cache || exit 1
-#            docker compose down || true # Don't fail if no containers running
-#            docker compose up -d || exit 1
-#
-#            # Check if containers are running
-#            if ! docker compose ps | grep -q "Up"; then
-#              echo "Error: Containers failed to start"
-#              docker compose logs
-#              exit 1
-#            fi
+      - name: Deploy to EC2
+        run: |
+          ssh aixplore '
+            # Clean up previous deployment if exists
+            rm -rf /data/aixplore
+          
+            # Create directory if not exists
+            mkdir -p /data
+
+            # Clone repository with token
+            cd /data/
+            git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} aixplore
+            cd aixplore
+
+            # Check if .env exists and is valid
+            if [ ! -f /data/aixplore/env/.env ]; then
+              echo "Creating .env from secrets"
+              mkdir -p env
+              echo "${{ secrets.ENV_FILE }}" > env/.env
+            fi
+
+            # Build and restart containers
+            docker compose pull || exit 1
+            docker compose build --no-cache || exit 1
+            docker compose down || true # Don't fail if no containers running
+            docker compose up -d || exit 1
+
+            # Check if containers are running
+            if ! docker compose ps | grep -q "Up"; then
+              echo "Error: Containers failed to start"
+              docker compose logs
+              exit 1
+            fi
+          '
