@@ -11,26 +11,33 @@ jobs:
     runs-on: azu-oncology-rd-self-hosted-linux
 
     steps:
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@v1.2.1
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          username: "ec2-user"
-          script: |
-            # Navigate to application directory
-            cd /data/
-            git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
-            cd ${{ github.repository.name }}
-
-            # Check if .env exists and is valid
-            if [ ! -f /data/${{ github.repository.name }}/env/.env ]; then
-              echo "Error: .env file not found"
-              exit 1
-            fi
-
-            # Build and restart containers
-            docker compose pull
-            docker compose build --no-cache
-            docker compose down
-            docker compose up -d
+      - name: Debug SSH key
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > key.pem
+          chmod 600 key.pem
+          ssh -v -i key.pem ec2-user@portal.aixplore.odsp.astrazeneca.net whoami
+          rm key.pem
+#
+#      - name: Deploy to EC2
+#        uses: appleboy/ssh-action@v1.2.1
+#        with:
+#          host: portal.aixplore.odsp.astrazeneca.net
+#          key: ${{ secrets.SSH_PRIVATE_KEY }}
+#          username: "ec2-user"
+#          script: whoami
+#            # Navigate to application directory
+#            cd /data/
+#            git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+#            cd ${{ github.repository.name }}
+#
+#            # Check if .env exists and is valid
+#            if [ ! -f /data/${{ github.repository.name }}/env/.env ]; then
+#              echo "Error: .env file not found"
+#              exit 1
+#            fi
+#
+#            # Build and restart containers
+#            docker compose pull
+#            docker compose build --no-cache
+#            docker compose down
+#            docker compose up -d
