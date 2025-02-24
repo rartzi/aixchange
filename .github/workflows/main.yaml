@@ -8,7 +8,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: azu-oncology-rd-self-hosted-linux
+    runs-on: odsp-aws-small
 
     steps:
       - name: Debug SSH Key
