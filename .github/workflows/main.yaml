@@ -1,0 +1,55 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.2.1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            # Navigate to application directory
+            cd /data/
+            git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+            cd ${{ github.repository.name }}
+
+            # Check if .env exists and is valid
+            if [ ! -f /data/${{ github.repository.name }}/env/.env ]; then
+              echo "Error: .env file not found"
+              exit 1
+            fi
+
+            # Build and restart containers
+            docker compose pull
+            docker compose build --no-cache
+            docker compose down
+            docker compose up -d
+#
+#            # Run database migrations
+#            docker compose exec -T app npx prisma migrate deploy
+
+            # Check application health
+            for i in {1..12}; do
+              if curl -s http://localhost:3000/api/health; then
+                echo "Application is healthy"
+                exit 0
+              fi
+              echo "Waiting for application to start... ($i/12)"
+              sleep 10
+            done
+            
+            if [ $? -ne 0 ]; then
+              echo "Error: Application failed to start"
+              docker compose logs app
+              exit 1
+            fi
