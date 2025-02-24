@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { solutionImportSchema } from "@/lib/schemas/solutionImport";
-import { Prisma } from "@prisma/client";
+import { Prisma, SolutionStatus } from "@prisma/client";
 
 export async function POST(request: Request) {
   try {
@@ -38,82 +38,71 @@ export async function POST(request: Request) {
     const errors: Array<{ title: string; error: string }> = [];
     let imported = 0;
 
-    // Transaction to ensure all-or-nothing import
-    await prisma.$transaction(async (tx) => {
-      for (const solution of solutions) {
-        try {
-          // Extract resources and prepare solution data
-          const { resources, ...solutionData } = solution;
-
-          // Create solution first
-          const createdSolution = await tx.solution.create({
-            data: {
-              ...solutionData,
-              authorId: session.user.id,
-              status: "PENDING"
-            }
-          });
-
-          // Create resources separately if they exist
-          if (resources && resources.length > 0) {
-            await tx.resource.createMany({
-              data: resources.map(resource => ({
-                ...resource,
-                solutionId: createdSolution.id,
-                createdAt: new Date(),
-                updatedAt: new Date()
-              }))
-            });
+    // Process each solution independently
+    for (const solution of solutions) {
+      try {
+        // Create solution
+        await prisma.solution.create({
+          data: {
+            ...solution,
+            authorId: session.user.id,
+            status: SolutionStatus.ACTIVE,
+            metadata: solution.metadata ? JSON.parse(JSON.stringify(solution.metadata)) : {}
           }
+        });
 
-          imported++;
-        } catch (error) {
-          console.error("Import error details:", error);
-          
-          let errorMessage = "Failed to import solution";
-          if (error instanceof Prisma.PrismaClientKnownRequestError) {
-            // Convert database errors to user-friendly messages
-            switch (error.code) {
-              case 'P2002':
-                errorMessage = "A solution with this name already exists";
-                break;
-              case 'P2003':
-                errorMessage = "Invalid reference in solution data";
-                break;
-              default:
-                errorMessage = "Database error occurred while importing";
-            }
-          } else if (error instanceof Error) {
-            errorMessage = error.message;
+        imported++;
+      } catch (error) {
+        console.error("Import error details:", error);
+        
+        let errorMessage = "Failed to import solution";
+        if (error instanceof Prisma.PrismaClientKnownRequestError) {
+          switch (error.code) {
+            case 'P2002':
+              errorMessage = "A solution with this name already exists";
+              break;
+            case 'P2003':
+              errorMessage = "Invalid reference in solution data";
+              break;
+            default:
+              errorMessage = "Database error occurred while importing";
           }
-
-          errors.push({
-            title: solution.title || "Unknown solution",
-            error: errorMessage
-          });
-          throw error;
+        } else if (error instanceof Error) {
+          errorMessage = error.message;
         }
-      }
 
-      // Create audit log entry
-      await tx.auditLog.create({
-        data: {
-          action: "BULK_IMPORT",
-          entityType: "SOLUTION",
-          entityId: "BULK",
-          userId: session.user.id,
-          metadata: {
-            importedCount: imported,
-            totalCount: solutions.length,
-          },
+        errors.push({
+          title: solution.title || "Unknown solution",
+          error: errorMessage
+        });
+        // Continue with next solution
+        continue;
+      }
+    }
+
+    // Create audit log entry
+    await prisma.auditLog.create({
+      data: {
+        action: "BULK_IMPORT",
+        entityType: "SOLUTION",
+        entityId: "BULK",
+        userId: session.user.id,
+        metadata: {
+          importedCount: imported,
+          totalCount: solutions.length,
+          errorCount: errors.length
         },
-      });
+      },
     });
 
+    // Return success even if some solutions failed
     return NextResponse.json({
       success: true,
       imported,
-      message: `Successfully imported ${imported} solutions`,
+      errors,
+      message: errors.length > 0
+        ? `Imported ${imported} solutions with ${errors.length} errors`
+        : `Successfully imported ${imported} solutions`,
     });
   } catch (error) {
     console.error("Error in import:", error);

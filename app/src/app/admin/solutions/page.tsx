@@ -100,19 +100,16 @@ export default function SolutionsAdminPage() {
     }
   };
 
-  const handleSaveSolution = async (solutionData: Partial<Solution>) => {
+  const handleSaveSolution = async (formData: FormData) => {
     try {
-      const isEditing = !!solutionData.id;
-      const url = isEditing 
-        ? `/api/admin/solutions/${solutionData.id}`
+      const isEditing = formData.get('id');
+      const url = isEditing
+        ? `/api/admin/solutions/${formData.get('id')}`
         : '/api/admin/solutions';
       
       const response = await fetch(url, {
         method: isEditing ? 'PATCH' : 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(solutionData),
+        body: formData,
       });
 
       const result = await response.json();
@@ -499,6 +496,7 @@ export default function SolutionsAdminPage() {
                   <TableHead className="text-gray-900 dark:text-gray-100">Image</TableHead>
                   <TableHead className="text-gray-900 dark:text-gray-100">Author</TableHead>
                   <TableHead className="text-gray-900 dark:text-gray-100">Status</TableHead>
+                  <TableHead className="text-gray-900 dark:text-gray-100">Published</TableHead>
                   <TableHead className="text-gray-900 dark:text-gray-100">Category</TableHead>
                   <TableHead className="text-gray-900 dark:text-gray-100">Created</TableHead>
                   <TableHead className="text-gray-900 dark:text-gray-100">Updated</TableHead>
@@ -543,13 +541,22 @@ export default function SolutionsAdminPage() {
                     </TableCell>
                     <TableCell>
                       <span className={`px-2 py-1 rounded-full text-xs ${
-                        solution.status === "ACTIVE" 
+                        solution.status === "ACTIVE"
                           ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
                           : solution.status === "PENDING"
                           ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100"
                           : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100"
                       }`}>
                         {solution.status}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <span className={`px-2 py-1 rounded-full text-xs ${
+                        solution.isPublished
+                          ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
+                          : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100"
+                      }`}>
+                        {solution.isPublished ? 'Published' : 'Draft'}
                       </span>
                     </TableCell>
                     <TableCell className="text-gray-900 dark:text-gray-100">{solution.category}</TableCell>

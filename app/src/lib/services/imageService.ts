@@ -8,6 +8,50 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+export async function generateSolutionImage(prompt: string): Promise<string> {
+  try {
+    // Generate image with DALL-E
+    const response = await openai.images.generate({
+      model: "dall-e-3",
+      prompt: `Create a professional, modern thumbnail image for an AI solution: ${prompt}. The image should be suitable for a tech marketplace website.`,
+      n: 1,
+      size: "1024x1024",
+    });
+
+    const imageUrl = response.data[0].url;
+    if (!imageUrl) {
+      throw new Error('No image URL returned from DALL-E');
+    }
+
+    // Download the image
+    const imageResponse = await fetch(imageUrl);
+    if (!imageResponse.ok) {
+      throw new Error('Failed to download image from DALL-E');
+    }
+    const imageBuffer = await imageResponse.buffer();
+
+    // Create a hash of the prompt to use as part of the filename
+    const hash = createHash('md5').update(prompt).digest('hex').slice(0, 8);
+    const filename = `solution-${hash}.png`;
+
+    // Ensure the external-images and solutions directories exist
+    const baseDir = path.join(process.cwd(), 'external-images');
+    const solutionsDir = path.join(baseDir, 'solutions');
+    await fs.mkdir(baseDir, { recursive: true });
+    await fs.mkdir(solutionsDir, { recursive: true });
+
+    // Save the image
+    const imagePath = path.join(solutionsDir, filename);
+    await fs.writeFile(imagePath, imageBuffer);
+
+    // Return the relative path that will work with our external-images API
+    return `/api/external-images/solutions/${filename}`;
+  } catch (error) {
+    console.error('Error generating solution image:', error);
+    throw new Error('Failed to generate solution image: ' + (error instanceof Error ? error.message : 'Unknown error'));
+  }
+}
+
 export async function generateEventImage(prompt: string): Promise<string> {
   try {
     // Generate image with DALL-E

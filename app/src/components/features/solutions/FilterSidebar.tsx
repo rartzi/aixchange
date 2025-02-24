@@ -112,18 +112,13 @@ export function FilterSidebar({
               {/* Category */}
               <div className="space-y-2">
                 <label className="text-sm font-medium">Category</label>
-                <select
+                <input
+                  type="text"
+                  placeholder="Filter by category..."
                   value={filters.category}
                   onChange={(e) => handleFilterChange('category', e.target.value)}
                   className="w-full px-3 py-2 rounded-md bg-background border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-                >
-                  <option value="">All Categories</option>
-                  {predefinedCategories.map((category) => (
-                    <option key={category} value={category}>
-                      {category}
-                    </option>
-                  ))}
-                </select>
+                />
               </div>
 
               {/* Provider */}

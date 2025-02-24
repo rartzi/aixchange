@@ -1,11 +1,14 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { solutionSchema } from "@/lib/schemas/solution";
+import { ZodError } from "zod";
+import { SolutionStatus } from "@prisma/client";
 
 // PATCH /api/admin/solutions/[id]
 export async function PATCH(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
@@ -15,44 +18,90 @@ export async function PATCH(
     }
 
     const { id } = params;
-    const data = await request.json();
-    console.log('Update data:', data); // Log the update data
-
-    if (data.status && !["ACTIVE", "PENDING", "INACTIVE"].includes(data.status)) {
-      return NextResponse.json(
-        { error: "Invalid status value" },
-        { status: 400 }
-      );
+    const formData = await request.formData();
+    const data: Record<string, any> = {};
+    
+    // First get the imageUrl separately
+    const imageUrl = formData.get('imageUrl')?.toString();
+    
+    // Then process other fields
+    for (const [key, value] of formData.entries()) {
+      if (key === 'imageUrl') {
+        continue; // Skip, we already got it
+      }
+      try {
+        data[key] = JSON.parse(value as string);
+      } catch {
+        data[key] = value;
+      }
     }
 
-    try {
-      const solution = await prisma.solution.update({
-        where: { id },
-        data,
-        include: {
-          author: {
-            select: {
-              name: true,
-              email: true,
-            },
-          },
-          _count: {
-            select: {
-              reviews: true,
-            },
+    // Add imageUrl back if we have one
+    if (imageUrl) {
+      data.imageUrl = imageUrl;
+    }
+
+    const validatedData = solutionSchema.parse(data);
+
+    const solution = await prisma.solution.update({
+      where: { id },
+      data: {
+        title: validatedData.title,
+        description: validatedData.description,
+        category: validatedData.category,
+        provider: validatedData.provider,
+        launchUrl: validatedData.launchUrl,
+        sourceCodeUrl: validatedData.sourceCodeUrl,
+        tokenCost: validatedData.tokenCost,
+        rating: validatedData.rating,
+        status: validatedData.status === 'Active' ? SolutionStatus.ACTIVE 
+               : validatedData.status === 'Pending' ? SolutionStatus.PENDING 
+               : SolutionStatus.INACTIVE,
+        tags: validatedData.tags,
+        imageUrl: validatedData.imageUrl,
+        metadata: validatedData.metadata as any,
+        isPublished: data.isPublished
+      },
+      include: {
+        author: {
+          select: {
+            name: true,
+            email: true,
           },
         },
-      });
-      return NextResponse.json(solution);
-    } catch (prismaError) {
-      console.error('Prisma error:', prismaError); // Log Prisma error
+        _count: {
+          select: {
+            reviews: true,
+          },
+        },
+      },
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        action: 'UPDATE',
+        entityType: 'Solution',
+        entityId: solution.id,
+        userId: session.user.id,
+        metadata: {
+          title: solution.title,
+          category: solution.category,
+          provider: solution.provider,
+        },
+      },
+    });
+
+    return NextResponse.json(solution);
+  } catch (error) {
+    console.error("Error updating solution:", error);
+    
+    if (error instanceof ZodError) {
       return NextResponse.json(
-        { error: prismaError instanceof Error ? prismaError.message : "Failed to update solution" },
+        { error: "Validation error", details: error.errors },
         { status: 400 }
       );
     }
-  } catch (error) {
-    console.error("Error updating solution:", error);
+
     return NextResponse.json(
       { error: "Failed to update solution" },
       { status: 500 }
@@ -88,6 +137,15 @@ export async function DELETE(
         where: { id },
       }),
     ]);
+
+    await prisma.auditLog.create({
+      data: {
+        action: 'DELETE',
+        entityType: 'Solution',
+        entityId: id,
+        userId: session.user.id,
+      },
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

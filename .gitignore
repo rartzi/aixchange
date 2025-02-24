@@ -73,3 +73,4 @@ docker-compose.override.yml
 
 # Generated Content
 app/external-images/
+app/deploy/external-images/
