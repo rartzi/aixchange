@@ -32,10 +32,10 @@ jobs:
             
             cd aixplore
             
-            if [ ! -f "env/.env" ]; then
+            if [ ! -f "../.env" ]; then
               echo "Creating .env file..."
               sudo mkdir -p env
-              echo "${{ secrets.ENV_FILE }}" | sudo tee env/.env > /dev/null
+              echo "${{ secrets.ENV_FILE }}" | sudo tee ../.env > /dev/null
               sudo chown -R ec2-user:ec2-user env
             fi
             
