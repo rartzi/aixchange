@@ -16,6 +16,7 @@ jobs:
         with:
           host: ${{ secrets.SSH_HOST }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          username: ec2-user
           script: |
             # Navigate to application directory
             cd /data/
