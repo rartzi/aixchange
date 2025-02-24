@@ -5,6 +5,37 @@ AiXchange is a platform for sharing and discovering AI solutions, fostering coll
 
 ## Features
 
+### AiXcelerate Platform
+
+#### Community Engagement Features
+- EngagementMetrics component:
+  - Real-time community activity tracking
+  - User participation statistics
+  - Growth metrics visualization
+  - Engagement trend analysis
+- CommunityHub integration:
+  - Central community interaction point
+  - Event participation tracking
+  - User engagement tools
+  - Community activity feed
+- CommunityStats display:
+  - Visual representation of community growth
+  - Key performance indicators
+  - Historical trend analysis
+  - Real-time updates
+
+#### Event Showcase
+- EventsCarousel component:
+  - Featured events highlight
+  - Auto-scrolling functionality
+  - Interactive event preview cards
+  - Direct event access
+- Hero section:
+  - Dynamic main messaging
+  - Call-to-action elements
+  - Platform value proposition
+  - Community highlights
+
 ### Events Management
 
 #### Event Discovery and Participation

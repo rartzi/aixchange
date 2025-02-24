@@ -5,13 +5,38 @@ AIXchange is a platform for sharing and discovering AI solutions, with integrate
 
 ## Core Components
 
-### 1. Solution Management
+### 1. Community Engagement (AiXcelerate)
+The AiXcelerate platform provides community engagement features:
+
+#### Community Components
+- EngagementMetrics
+  - Real-time metrics tracking
+  - Data aggregation and display
+  - Performance optimization for live updates
+- CommunityHub
+  - Central community interaction point
+  - Integration with events system
+  - Real-time activity feeds
+- CommunityStats
+  - Statistical data processing
+  - Caching strategy for performance
+  - Dynamic updates mechanism
+- EventsCarousel
+  - Featured events showcase
+  - Auto-rotation system
+  - Dynamic content loading
+- Hero Section
+  - Dynamic content management
+  - Responsive layout system
+  - Call-to-action integration
+
+### 2. Solution Management
 - Solution submission and review
 - Solution marketplace
 - Solution categorization and tagging
 - Solution voting and feedback
 
-### 2. Event System
+### 3. Event System
 The event system enables community engagement through organized challenges and competitions:
 
 #### Event Management
@@ -43,13 +68,13 @@ The event system enables community engagement through organized challenges and c
 - Solution submission validation based on event status
 - Automatic status transitions based on event dates
 
-### 3. User Management
+### 4. User Management
 - Authentication (NextAuth.js)
 - Role-based authorization
 - User profiles and activity tracking
 - User participation in events
 
-### 4. Admin Features
+### 5. Admin Features
 - Solution moderation
 - Event management
 - User management
@@ -89,6 +114,14 @@ model EventParticipant {
   role            ParticipantRole
   // ... other fields
 }
+
+model CommunityMetrics {
+  id              String    @id @default(cuid())
+  metricType      String
+  value           Int
+  timestamp       DateTime
+  // ... other fields
+}
 ```
 
 ## API Architecture
@@ -118,6 +151,11 @@ model EventParticipant {
   - Validates dates, status, and required fields
   - Handles event images and banners
 
+#### Community APIs
+- `/api/community/metrics` - Community statistics
+- `/api/community/activity` - Activity feeds
+- `/api/community/engagement` - Engagement tracking
+
 #### Admin APIs
 - `/api/admin/solutions` - Solution moderation
 - `/api/admin/events` - Event management
@@ -140,15 +178,22 @@ model EventParticipant {
       /events              # Event pages
       /solutions           # Solution pages
       /admin              # Admin pages
-      /api               # API routes
+      /api                # API routes
+      /aixcelerate        # Community engagement pages
     /components
-      /events           # Event components
-        /EventsGrid     # Event listing with filters
-        /EventsFilters  # Search and filter controls
-        /EventCard      # Event display component
-      /solutions        # Solution components
-      /admin           # Admin components
-      /ui              # Shared UI components
+      /events            # Event components
+        /EventsGrid      # Event listing with filters
+        /EventsFilters   # Search and filter controls
+        /EventCard       # Event display component
+      /solutions         # Solution components
+      /admin            # Admin components
+      /aixcelerate      # Community components
+        /EngagementMetrics
+        /EventsCarousel
+        /Hero
+        /CommunityStats
+        /CommunityHub
+      /ui               # Shared UI components
 ```
 
 ### Component Organization
@@ -211,6 +256,7 @@ model EventParticipant {
 - Solution actions
 - Event participation
 - Administrative actions
+- Community engagement metrics
 
 ## Future Considerations
 
