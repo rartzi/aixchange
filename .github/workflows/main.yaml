@@ -14,11 +14,50 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Create SSH key and deploy
+      - name: Debug SSH
         run: |
+          echo "=== Debug SSH setup ==="
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          # Direct SSH deployment
-          ssh -vvv -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ec2-user@${{ secrets.SSH_HOST }} whoami
-          rm ~/.ssh/deploy_key
+          ssh-keygen -l -f ~/.ssh/deploy_key
+          echo "=== End Debug ==="
+
+      - name: Deploy
+        run: |
+          ssh -v -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ec2-user@${{ secrets.SSH_HOST }} '
+            # Clean up previous deployment if exists
+            rm -rf /data/aixplore
+          
+            # Create directory if not exists
+            mkdir -p /data
+
+            # Clone repository with token
+            cd /data/
+            git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} aixplore
+            cd aixplore
+
+            # Check if .env exists and is valid
+            if [ ! -f /data/aixplore/env/.env ]; then
+              echo "Creating .env from secrets"
+              mkdir -p env
+              echo "${{ secrets.ENV_FILE }}" > env/.env
+            fi
+
+            # Build and restart containers
+            docker compose pull || exit 1
+            docker compose build --no-cache || exit 1
+            docker compose down || true
+            docker compose up -d || exit 1
+
+            # Check if containers are running
+            if ! docker compose ps | grep -q "Up"; then
+              echo "Error: Containers failed to start"
+              docker compose logs
+              exit 1
+            fi
+          '
+
+      - name: Cleanup
+        if: always()
+        run: rm -f ~/.ssh/deploy_key
