@@ -2,31 +2,14 @@
 
 import { type EventWithCounts } from "@/types/event"
 import EventCard from "./EventCard"
-import { useEffect, useState } from "react"
-import { useSearchParams } from "next/navigation"
 
-export default function EventsGrid() {
-  const [events, setEvents] = useState<EventWithCounts[]>([])
-  const [loading, setLoading] = useState(true)
-  const searchParams = useSearchParams()
+interface EventsGridProps {
+  events: EventWithCounts[]
+  isLoading: boolean
+}
 
-  useEffect(() => {
-    const fetchEvents = async () => {
-      setLoading(true)
-      try {
-        const response = await fetch(`/api/events?${searchParams.toString()}`)
-        const data = await response.json()
-        setEvents(data)
-      } catch (error) {
-        console.error("Failed to fetch events:", error)
-      }
-      setLoading(false)
-    }
-
-    fetchEvents()
-  }, [searchParams])
-
-  if (loading) {
+export default function EventsGrid({ events, isLoading }: EventsGridProps) {
+  if (isLoading) {
     return (
       <div className="text-center py-12">
         <p className="text-muted-foreground">Loading events...</p>

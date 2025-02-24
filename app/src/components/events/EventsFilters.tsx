@@ -9,63 +9,37 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { useSearchParams, useRouter, usePathname } from "next/navigation"
 import { EventStatus, EventType } from "@/types/event"
-import { useCallback, useEffect, useState } from "react"
-import { useDebouncedCallback } from "use-debounce"
 
-export default function EventsFilters() {
-  const router = useRouter()
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
+interface EventsFiltersProps {
+  searchInput: string
+  filters: {
+    status: EventStatus | "ALL"
+    type: EventType | "ALL"
+  }
+  onSearchChange: (value: string) => void
+  onFilterChange: (key: "status" | "type", value: EventStatus | EventType | "ALL") => void
+  onReset: () => void
+}
 
-  // Local state for immediate UI feedback
-  const [searchInput, setSearchInput] = useState(searchParams.get("search") || "")
-  const status = (searchParams.get("status") as EventStatus | "ALL") || "ALL"
-  const type = (searchParams.get("type") as EventType | "ALL") || "ALL"
-
-  const createQueryString = useCallback((params: Record<string, string>) => {
-    const newSearchParams = new URLSearchParams(searchParams.toString())
-    Object.entries(params).forEach(([key, value]) => {
-      if (value) {
-        newSearchParams.set(key, value)
-      } else {
-        newSearchParams.delete(key)
-      }
-    })
-    return newSearchParams.toString()
-  }, [searchParams])
-
-  const debouncedUpdateSearch = useDebouncedCallback((value: string) => {
-    const queryString = createQueryString({ search: value })
-    router.push(`${pathname}?${queryString}`)
-  }, 300)
-
-  const updateFilters = useCallback((params: Record<string, string>) => {
-    const queryString = createQueryString(params)
-    router.push(`${pathname}?${queryString}`)
-  }, [createQueryString, pathname, router])
-
-  // Sync URL params with local state on mount and URL changes
-  useEffect(() => {
-    setSearchInput(searchParams.get("search") || "")
-  }, [searchParams])
-
+export default function EventsFilters({
+  searchInput,
+  filters,
+  onSearchChange,
+  onFilterChange,
+  onReset,
+}: EventsFiltersProps) {
   return (
     <div className="flex flex-col md:flex-row gap-4">
       <Input
         placeholder="Search events..."
         value={searchInput}
-        onChange={(e) => {
-          const value = e.target.value
-          setSearchInput(value)
-          debouncedUpdateSearch(value)
-        }}
+        onChange={(e) => onSearchChange(e.target.value)}
         className="md:w-80"
       />
       <Select 
-        value={status} 
-        onValueChange={(value: EventStatus | "ALL") => updateFilters({ status: value })}
+        value={filters.status} 
+        onValueChange={(value: EventStatus | "ALL") => onFilterChange("status", value)}
       >
         <SelectTrigger className="w-full md:w-40">
           <SelectValue placeholder="Status" />
@@ -79,8 +53,8 @@ export default function EventsFilters() {
         </SelectContent>
       </Select>
       <Select 
-        value={type} 
-        onValueChange={(value: EventType | "ALL") => updateFilters({ type: value })}
+        value={filters.type} 
+        onValueChange={(value: EventType | "ALL") => onFilterChange("type", value)}
       >
         <SelectTrigger className="w-full md:w-40">
           <SelectValue placeholder="Type" />
@@ -95,10 +69,7 @@ export default function EventsFilters() {
       </Select>
       <Button 
         variant="outline" 
-        onClick={() => {
-          setSearchInput("")
-          router.push(pathname)
-        }}
+        onClick={onReset}
       >
         Reset Filters
       </Button>
