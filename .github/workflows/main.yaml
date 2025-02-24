@@ -18,6 +18,7 @@ jobs:
           username: "ec2-user"
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           fingerprint: "YGzIIs5UPnSTncfGxMehgz/IzoFhXq0YYDaUDkgWyhs"
+
           script: |
             # Clean up previous deployment if exists
             rm -rf /data/aixplore
