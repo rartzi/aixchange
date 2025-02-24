@@ -1,0 +1,50 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: azu-oncology-rd-self-hosted-linux
+
+    steps:
+      - name: Deploy with Appleboy SSH
+        uses: appleboy/ssh-action@v1.2.1
+        with:
+          host: portal.aixplore.odsp.astrazeneca.net
+          username: ec2-user
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            # Проверяем и создаем директорию если нужно
+            if [ ! -d "/data" ]; then
+              sudo mkdir -p /data
+              sudo chown ec2-user:ec2-user /data
+            fi
+            
+            cd /data
+            
+            # Удаляем старую версию и клонируем новую
+            sudo rm -rf aixplore
+            echo "Cloning fresh repository..."
+            sudo git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} aixplore
+            sudo chown -R ec2-user:ec2-user aixplore
+            
+            cd aixplore
+            
+            # Создаем .env если не существует
+            if [ ! -f "env/.env" ]; then
+              echo "Creating .env file..."
+              sudo mkdir -p env
+              echo "${{ secrets.ENV_FILE }}" | sudo tee env/.env > /dev/null
+              sudo chown -R ec2-user:ec2-user env
+            fi
+            
+            # Выполняем деплой через скрипт
+            cd app/deploy
+            chmod +x deploy.sh
+            
+            # Используем preserve команду для сохранения данных
+            ./deploy.sh preserve
