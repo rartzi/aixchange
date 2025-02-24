@@ -18,6 +18,7 @@ jobs:
           username: ec2-user
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            # Проверяем и создаем директорию если нужно
             if [ ! -d "/data" ]; then
               sudo mkdir -p /data
               sudo chown ec2-user:ec2-user /data
@@ -25,40 +26,48 @@ jobs:
             
             cd /data
             
+            # Проверяем существует ли директория с проектом
             if [ -d "aixplore" ]; then
               echo "Directory exists, stopping containers..."
               cd aixplore
-              docker compose down || true
+              sudo docker compose down || true
               cd ..
             fi
             
-            rm -rf aixplore
+            # Удаляем старую версию и клонируем новую
+            sudo rm -rf aixplore
             echo "Cloning fresh repository..."
-            git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} aixplore
+            sudo git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} aixplore
+            sudo chown -R ec2-user:ec2-user aixplore
             
             cd aixplore
             
             # Создаем .env если не существует
             if [ ! -f "env/.env" ]; then
               echo "Creating .env file..."
-              mkdir -p env
-              echo "${{ secrets.ENV_FILE }}" > env/.env
+              sudo mkdir -p env
+              echo "${{ secrets.ENV_FILE }}" | sudo tee env/.env > /dev/null
+              sudo chown -R ec2-user:ec2-user env
             fi
             
+            # Проверяем и создаем директорию для внешних изображений
             if [ ! -d "external-images" ]; then
-              mkdir -p external-images
+              sudo mkdir -p external-images
+              sudo chown ec2-user:ec2-user external-images
             fi
             
             echo "Building and starting containers..."
-            docker compose pull || exit 1
-            docker compose build --no-cache || exit 1
-            docker compose up -d || exit 1
+            # Запускаем контейнеры
+            sudo docker compose pull || exit 1
+            sudo docker compose build --no-cache || exit 1
+            sudo docker compose up -d || exit 1
             
+            # Проверяем что контейнеры запущены
             echo "Checking containers status..."
-            sleep 10
-            if ! docker compose ps | grep -q "Up"; then
+            sleep 10 # Даем время на запуск
+            if ! sudo docker compose ps | grep -q "Up"; then
               echo "Error: Containers failed to start"
-              docker compose logs
+              sudo docker compose logs
               exit 1
             fi
             
