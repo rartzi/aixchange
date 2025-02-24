@@ -8,14 +8,58 @@ on:
 
 jobs:
   deploy:
-    runs-on: odsp-aws-small
+    runs-on: azu-oncology-rd-self-hosted-linux
 
     steps:
-      - name: Test Appleboy SSH Action
+      - name: Deploy with Appleboy SSH
         uses: appleboy/ssh-action@v1.2.1
         with:
           host: portal.aixplore.odsp.astrazeneca.net
           username: ec2-user
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            uname -a
+            if [ ! -d "/data" ]; then
+              sudo mkdir -p /data
+              sudo chown ec2-user:ec2-user /data
+            fi
+            
+            cd /data
+            
+            if [ -d "aixplore" ]; then
+              echo "Directory exists, stopping containers..."
+              cd aixplore
+              docker compose down || true
+              cd ..
+            fi
+            
+            rm -rf aixplore
+            echo "Cloning fresh repository..."
+            git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} aixplore
+            
+            cd aixplore
+            
+            # Создаем .env если не существует
+            if [ ! -f "env/.env" ]; then
+              echo "Creating .env file..."
+              mkdir -p env
+              echo "${{ secrets.ENV_FILE }}" > env/.env
+            fi
+            
+            if [ ! -d "external-images" ]; then
+              mkdir -p external-images
+            fi
+            
+            echo "Building and starting containers..."
+            docker compose pull || exit 1
+            docker compose build --no-cache || exit 1
+            docker compose up -d || exit 1
+            
+            echo "Checking containers status..."
+            sleep 10
+            if ! docker compose ps | grep -q "Up"; then
+              echo "Error: Containers failed to start"
+              docker compose logs
+              exit 1
+            fi
+            
+            echo "Deployment successful!"
