@@ -45,9 +45,9 @@ interface Solution {
   tags: string[];
   imageUrl?: string;
   isPublished: boolean;
-  author: {
-    name: string;
-    email: string;
+  author?: {
+    name?: string;
+    email?: string;
   };
   _count: {
     reviews: number;
@@ -286,10 +286,10 @@ export default function SolutionsAdminPage() {
 
   const filteredSolutions = solutions
     .filter((solution) => {
-      const matchesSearch = 
+      const matchesSearch =
         solution.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        solution.author.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        solution.author.email.toLowerCase().includes(searchTerm.toLowerCase());
+        (solution.author?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (solution.author?.email || '').toLowerCase().includes(searchTerm.toLowerCase());
       
       const matchesStatus = statusFilter === "ALL" || solution.status === statusFilter;
       
@@ -533,9 +533,11 @@ export default function SolutionsAdminPage() {
                     </TableCell>
                     <TableCell>
                       <div>
-                        <div className="font-medium text-gray-900 dark:text-gray-100">{solution.author.name || "N/A"}</div>
+                        <div className="font-medium text-gray-900 dark:text-gray-100">
+                          {solution.author?.name || "Anonymous"}
+                        </div>
                         <div className="text-sm text-gray-600 dark:text-gray-400">
-                          {solution.author.email}
+                          {solution.author?.email || "N/A"}
                         </div>
                       </div>
                     </TableCell>

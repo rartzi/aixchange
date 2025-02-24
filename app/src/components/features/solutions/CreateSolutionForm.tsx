@@ -14,14 +14,6 @@ type ExtendedFormData = Partial<SolutionFormData> & {
 };
 
 export function CreateSolutionForm() {
-  const { data: session } = useSession();
-  const [authorName, setAuthorName] = useState(session?.user?.name || 'Anonymous');
-
-  useEffect(() => {
-    if (session?.user?.name) {
-      setAuthorName(session.user.name);
-    }
-  }, [session]);
   const [formData, setFormData] = useState<ExtendedFormData>({
     title: '',
     description: '',
@@ -39,7 +31,6 @@ export function CreateSolutionForm() {
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [currentTag, setCurrentTag] = useState('');
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [customCategory, setCustomCategory] = useState('');
   const [statusMessage, setStatusMessage] = useState<{
     type: 'info' | 'success' | 'error';
     message: string;
@@ -137,9 +128,7 @@ return data.imageUrl;
         }
       }
 
-      // Add author name to form data
       const formDataToSend = new FormData();
-      formDataToSend.append('authorName', authorName);
       // First append non-file fields
       Object.entries(formData).forEach(([key, value]) => {
         if (key === 'image' && value instanceof File) {
@@ -154,21 +143,10 @@ return data.imageUrl;
       
       // Now append imageUrl if we have one
       if (imageUrl) {
-        console.log('Setting generated imageUrl in FormData:', imageUrl);
         formDataToSend.append('imageUrl', imageUrl);
       } else if (formData.imageUrl) {
-        console.log('Setting existing imageUrl in FormData:', formData.imageUrl);
         formDataToSend.append('imageUrl', formData.imageUrl);
       }
-// Enhanced logging for form data debugging
-console.log('Form Submission Debug:', {
-  generatedImageUrl: imageUrl,
-  formDataImageUrl: formData.imageUrl,
-  formDataEntries: Array.from(formDataToSend.entries()).reduce((acc, [key, value]) => {
-    acc[key] = value;
-    return acc;
-  }, {} as Record<string, any>)
-});
 
       const response = await fetch('/api/solutions', {
         method: 'POST',
@@ -198,7 +176,6 @@ console.log('Form Submission Debug:', {
         status: 'Pending',
         tags: [],
       });
-      setCustomCategory('');
       setPreviewImage(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -283,21 +260,6 @@ console.log('Form Submission Debug:', {
           {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
         </div>
 
-        {/* Author Name */}
-        <div>
-          <label htmlFor="authorName" className="block text-sm font-medium mb-1 text-card-foreground">
-            Author Name
-          </label>
-          <input
-            id="authorName"
-            type="text"
-            value={authorName}
-            onChange={(e) => setAuthorName(e.target.value)}
-            className="w-full p-2 border rounded-md bg-background text-foreground"
-            placeholder={session?.user?.name || 'Anonymous'}
-          />
-        </div>
-
         {/* Description */}
         <div>
           <label htmlFor="description" className="block text-sm font-medium mb-1">
@@ -317,24 +279,28 @@ console.log('Form Submission Debug:', {
           <label htmlFor="category" className="block text-sm font-medium mb-1">
             Classification
           </label>
-          <div className="flex gap-2">
-            <select
-              value={formData.category}
-              onChange={(e) => {
-                const value = e.target.value;
-                if (predefinedCategories.includes(value as any)) {
-                  setFormData(prev => ({ ...prev, category: value as typeof predefinedCategories[number] }));
-                }
-              }}
-              className={`flex-1 p-2 border rounded-md bg-background text-foreground ${errors.category ? 'border-red-500' : ''}`}
-            >
-              <option value="">Select a category</option>
-              {predefinedCategories.map(category => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-            </select>
+          <div className="flex flex-col gap-2">
+            <div className="flex gap-2">
+              <select
+                value={predefinedCategories.includes(formData.category as any) ? formData.category : ''}
+                onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                className={`flex-1 p-2 border rounded-md bg-background text-foreground ${errors.category ? 'border-red-500' : ''}`}
+              >
+                <option value="">Select or type below</option>
+                {predefinedCategories.map(category => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <input
+              type="text"
+              value={!predefinedCategories.includes(formData.category as any) ? formData.category : ''}
+              onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+              className={`w-full p-2 border rounded-md bg-background text-foreground ${errors.category ? 'border-red-500' : ''}`}
+              placeholder="Or type your own category"
+            />
           </div>
           {errors.category && <p className="text-red-500 text-sm mt-1">{errors.category}</p>}
         </div>
