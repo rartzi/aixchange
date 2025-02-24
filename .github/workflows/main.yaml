@@ -17,8 +17,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: "ec2-user"
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: GITHUB_REPOSITORY
-          fingerprint: "YGzIIs5UPnSTncfGxMehgz/IzoFhXq0YYDaUDkgWyhs"  # Добавляем фингерпринт из лога
+          fingerprint: "YGzIIs5UPnSTncfGxMehgz/IzoFhXq0YYDaUDkgWyhs"
           script: |
             # Clean up previous deployment if exists
             rm -rf /data/aixplore
