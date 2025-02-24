@@ -11,19 +11,6 @@ jobs:
     runs-on: azu-oncology-rd-self-hosted-linux
 
     steps:
-name: Deploy to Production
-
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
-
-jobs:
-  deploy:
-    runs-on: azu-oncology-rd-self-hosted-linux
-
-    steps:
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.2.1
         with:
@@ -33,7 +20,7 @@ jobs:
           fingerprint: "YGzIIs5UPnSTncfGxMehgz/IzoFhXq0YYDaUDkgWyhs"
           script: |
             # Clean up previous deployment if exists
-            rm -rf /data
+            rm -rf /data/aixplore
             
             # Create directory if not exists
             mkdir -p /data
