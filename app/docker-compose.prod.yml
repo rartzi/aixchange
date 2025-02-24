@@ -19,7 +19,7 @@ services:
     volumes:
       - solution_uploads:/app/uploads
       - next_cache:/app/.next/cache
-      - ${PWD}/external-images:/app/public/external-images
+      - ./deploy/external-images:/app/public/external-images
     user: "nextjs"
     depends_on:
       db:
