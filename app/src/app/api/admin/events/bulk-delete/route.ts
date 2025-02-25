@@ -1,74 +1,53 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db/prisma";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { z } from "zod";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/db/prisma";
+import { Prisma } from "@prisma/client";
 
-const bulkDeleteSchema = z.object({
-  eventIds: z.array(z.string()),
-});
-
-export async function POST(request: Request) {
+export async function DELETE(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!session?.user || session.user.role !== 'ADMIN') {
+      return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
-    
-    if (session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+    const { eventIds } = await request.json();
+
+    if (!Array.isArray(eventIds) || eventIds.length === 0) {
+      return new NextResponse(JSON.stringify({ error: 'Invalid event IDs' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
-    const json = await request.json();
-    const { eventIds } = bulkDeleteSchema.parse(json);
-
-    // Delete event participants first
-    await prisma.eventParticipant.deleteMany({
-      where: {
-        eventId: {
-          in: eventIds,
-        },
-      },
+    // Delete all events in a transaction
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      await tx.event.deleteMany({
+        where: {
+          id: {
+            in: eventIds
+          }
+        }
+      });
     });
 
-    // Then delete the events
-    const deleteResult = await prisma.event.deleteMany({
-      where: {
-        id: {
-          in: eventIds,
-        },
-      },
+    return new NextResponse(JSON.stringify({
+      success: true,
+      message: `Successfully deleted ${eventIds.length} events`
+    }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
     });
 
-    // Log the action
-    await prisma.auditLog.create({
-      data: {
-        action: "BULK_DELETE_EVENTS",
-        entityType: "EVENT",
-        entityId: eventIds.join(","),
-        userId: session.user.id,
-        metadata: {
-          count: deleteResult.count,
-        },
-      },
-    });
-
-    return NextResponse.json({
-      message: `Successfully deleted ${deleteResult.count} events`,
-      count: deleteResult.count,
-    });
   } catch (error) {
-    console.error("Error deleting events:", error);
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: "Validation error", details: error.errors },
-        { status: 400 }
-      );
-    }
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    console.error('Error in bulk delete events:', error);
+    return new NextResponse(JSON.stringify({ error: 'Failed to delete events' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 }

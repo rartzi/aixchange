@@ -24,7 +24,7 @@ function sanitizeFilename(title: string): string {
 
 export async function POST(request: NextRequest) {
   try {
-    const { description, solutionId, title } = await request.json();
+    const { description, title, type = 'solution' } = await request.json();
 
     if (!description) {
       return NextResponse.json(
@@ -33,8 +33,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Enhance the prompt to generate more relevant images
-    const enhancedPrompt = `Create a professional, modern visualization for an AI solution that ${description}. The image should be clean, minimalist, and suitable for a technology product card.`;
+    // Enhance the prompt based on the type
+    const enhancedPrompt = type === 'event'
+      ? `Create a professional, modern banner image for a tech event about ${description}. The image should be visually appealing, engaging, and suitable for a technology event promotional material.`
+      : `Create a professional, modern visualization for an AI solution that ${description}. The image should be clean, minimalist, and suitable for a technology product card.`;
 
     try {
       // Generate image using DALL-E
@@ -60,25 +62,25 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Create solutions directory if it doesn't exist
-      const solutionsDir = path.join(EXTERNAL_IMAGES_PATH, 'solutions');
-      if (!fs.existsSync(solutionsDir)) {
-        fs.mkdirSync(solutionsDir, { recursive: true });
+      // Create appropriate directory based on type
+      const targetDir = path.join(EXTERNAL_IMAGES_PATH, type === 'event' ? 'events' : 'solutions');
+      if (!fs.existsSync(targetDir)) {
+        fs.mkdirSync(targetDir, { recursive: true });
       }
 
-      // Generate filename using solution title or fallback to timestamp
+      // Generate filename using title or fallback to timestamp
       const timestamp = Date.now();
-      const sanitizedTitle = title ? sanitizeFilename(title) : 'solution';
+      const sanitizedTitle = title ? sanitizeFilename(title) : type;
       const filename = `${sanitizedTitle}-${timestamp}.${IMAGE_FORMAT}`;
-      const filepath = path.join(solutionsDir, filename);
+      const filepath = path.join(targetDir, filename);
 
       console.log('Image generation debug:', {
         EXTERNAL_IMAGES_PATH,
-        solutionsDir,
+        targetDir,
         filename,
         filepath,
-        exists: fs.existsSync(solutionsDir),
-        dirContents: fs.existsSync(solutionsDir) ? fs.readdirSync(solutionsDir) : []
+        exists: fs.existsSync(targetDir),
+        dirContents: fs.existsSync(targetDir) ? fs.readdirSync(targetDir) : []
       });
 
       // Convert base64 to buffer
@@ -95,8 +97,8 @@ export async function POST(request: NextRequest) {
         fileSize: fs.existsSync(filepath) ? fs.statSync(filepath).size : 0
       });
 
-      // Return the relative path for the image URL with /api prefix for serving
-      const imageUrl = `/api/external-images/solutions/${filename}`;
+      // Return the relative path that will work with our external-images API
+      const imageUrl = `/api/external-images/${type === 'event' ? 'events' : 'solutions'}/${filename}`;
 
       return NextResponse.json({
         imageUrl,
