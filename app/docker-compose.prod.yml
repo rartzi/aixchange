@@ -19,7 +19,7 @@ services:
     volumes:
       - solution_uploads:/app/uploads
       - next_cache:/app/.next/cache
-      - ${PWD}/external-images:/app/public/external-images
+      - ./deploy/external-images:/app/public/external-images
     user: "nextjs"
     depends_on:
       db:
@@ -72,29 +72,29 @@ services:
       - aixchange-network
     restart: unless-stopped
 
-  backup:
-    image: postgres:14-alpine
-    volumes:
-      - ./backups:/backups
-    environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
-      - PGHOST=db
-    command: |
-      /bin/sh -c '
-        while true; do
-          DATE=$$(date +%Y%m%d_%H%M%S)
-          pg_dump -U $$POSTGRES_USER -d $$POSTGRES_DB -F c -f /backups/backup_$$DATE.dump
-          find /backups -type f -mtime +7 -delete
-          sleep 86400
-        done
-      '
-    depends_on:
-      - db
-    networks:
-      - aixchange-network
-    restart: unless-stopped
+#  backup:
+#    image: postgres:14-alpine
+#    volumes:
+#      - ./backups:/backups
+#    environment:
+#      - POSTGRES_USER=${POSTGRES_USER}
+#      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+#      - POSTGRES_DB=${POSTGRES_DB}
+#      - PGHOST=db
+#    command: |
+#      /bin/sh -c '
+#        while true; do
+#          DATE=$$(date +%Y%m%d_%H%M%S)
+#          pg_dump -U $$POSTGRES_USER -d $$POSTGRES_DB -F c -f /backups/backup_$$DATE.dump
+#          find /backups -type f -mtime +7 -delete
+#          sleep 86400
+#        done
+#      '
+#    depends_on:
+#      - db
+#    networks:
+#      - aixchange-network
+#    restart: unless-stopped
 
 networks:
   aixchange-network:

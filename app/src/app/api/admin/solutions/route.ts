@@ -14,8 +14,43 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Parse and validate request data
-    const data = await request.json();
+    // Parse FormData
+    const formData = await request.formData();
+    
+    // Convert FormData to object with proper type handling
+    const data: Record<string, any> = {};
+    for (const [key, value] of formData.entries()) {
+      if (key === 'tokenCost' || key === 'rating') {
+        // Convert numeric fields
+        data[key] = Number(value);
+      } else if (key === 'tags' || key === 'metadata' || key === 'apiEndpoints') {
+        // Parse JSON fields
+        try {
+          data[key] = JSON.parse(value.toString());
+        } catch (e) {
+          console.error(`Error parsing ${key}:`, e);
+          data[key] = key === 'tags' ? [] : undefined;
+        }
+      } else if (key === 'isPublished') {
+        // Convert boolean fields
+        data[key] = value === 'true';
+      } else if (key === 'image') {
+        // Skip image field as we'll handle it separately
+        continue;
+      } else {
+        // String fields
+        data[key] = value.toString();
+      }
+    }
+
+    // Set default values if not provided
+    if (!data.status) data.status = 'Pending';
+    if (!data.tags) data.tags = [];
+    if (!data.tokenCost) data.tokenCost = 0;
+    if (!data.rating) data.rating = 0;
+    if (typeof data.isPublished === 'undefined') data.isPublished = true;
+
+    // Validate the parsed data
     const validationResult = solutionSchema.safeParse(data);
 
     if (!validationResult.success) {
@@ -40,19 +75,43 @@ export async function POST(request: Request) {
       }
     }
 
-    // Map status to enum
-    const status = solutionData.status === 'Active' ? SolutionStatus.ACTIVE
-                : solutionData.status === 'Pending' ? SolutionStatus.PENDING
-                : SolutionStatus.INACTIVE;
+    // Map status string to enum
+    let dbStatus: SolutionStatus;
+    switch (solutionData.status) {
+      case 'Active':
+        dbStatus = SolutionStatus.ACTIVE;
+        break;
+      case 'Pending':
+        dbStatus = SolutionStatus.PENDING;
+        break;
+      case 'Inactive':
+        dbStatus = SolutionStatus.INACTIVE;
+        break;
+      default:
+        dbStatus = SolutionStatus.PENDING;
+    }
 
     // Create solution
     const solution = await prisma.solution.create({
       data: {
         ...solutionData,
-        status,
+        status: dbStatus,
         authorId: session.user.id,
         metadata: solutionData.metadata as any
-      }
+      },
+      include: {
+        author: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+        _count: {
+          select: {
+            reviews: true,
+          },
+        },
+      },
     });
 
     // Create audit log entry
@@ -64,7 +123,9 @@ export async function POST(request: Request) {
         userId: session.user.id,
         metadata: {
           title: solution.title,
-          status: solution.status
+          status: solution.status,
+          category: solution.category,
+          provider: solution.provider,
         }
       }
     });
@@ -92,7 +153,21 @@ export async function GET() {
     }
 
     const solutions = await prisma.solution.findMany({
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        },
+        _count: {
+          select: {
+            reviews: true
+          }
+        }
+      }
     });
 
     return NextResponse.json(solutions);

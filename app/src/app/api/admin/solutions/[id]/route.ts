@@ -12,55 +12,80 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Auth check
     const session = await getServerSession(authOptions);
     if (!session?.user || session.user.role !== 'ADMIN') {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { id } = params;
-    const formData = await request.formData();
-    const data: Record<string, any> = {};
-    
-    // First get the imageUrl separately
-    const imageUrl = formData.get('imageUrl')?.toString();
-    
-    // Then process other fields
-    for (const [key, value] of formData.entries()) {
-      if (key === 'imageUrl') {
-        continue; // Skip, we already got it
+    const data = await request.json();
+
+    // Log incoming data for debugging
+    console.log('Incoming update data:', data);
+
+    // Ensure required fields are present
+    const updateData = {
+      title: data.title,
+      description: data.description,
+      category: data.category,
+      provider: data.provider,
+      launchUrl: data.launchUrl,
+      sourceCodeUrl: data.sourceCodeUrl || undefined,
+      tokenCost: Number(data.tokenCost || 0),
+      rating: Number(data.rating || 0),
+      status: data.status,
+      tags: Array.isArray(data.tags) ? data.tags : [],
+      imageUrl: data.imageUrl,
+      isPublished: data.isPublished ?? true,
+    };
+
+    // Validate the data against the schema
+    try {
+      solutionSchema.parse(updateData);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        console.error('Validation errors:', error.errors);
+        return NextResponse.json(
+          { error: "Validation error", details: error.errors },
+          { status: 400 }
+        );
       }
-      try {
-        data[key] = JSON.parse(value as string);
-      } catch {
-        data[key] = value;
-      }
+      throw error;
     }
 
-    // Add imageUrl back if we have one
-    if (imageUrl) {
-      data.imageUrl = imageUrl;
+    // Map status string to enum
+    let dbStatus: SolutionStatus;
+    switch (updateData.status) {
+      case 'Active':
+        dbStatus = SolutionStatus.ACTIVE;
+        break;
+      case 'Pending':
+        dbStatus = SolutionStatus.PENDING;
+        break;
+      case 'Inactive':
+        dbStatus = SolutionStatus.INACTIVE;
+        break;
+      default:
+        dbStatus = SolutionStatus.PENDING;
     }
 
-    const validatedData = solutionSchema.parse(data);
-
+    // Update the solution
     const solution = await prisma.solution.update({
       where: { id },
       data: {
-        title: validatedData.title,
-        description: validatedData.description,
-        category: validatedData.category,
-        provider: validatedData.provider,
-        launchUrl: validatedData.launchUrl,
-        sourceCodeUrl: validatedData.sourceCodeUrl,
-        tokenCost: validatedData.tokenCost,
-        rating: validatedData.rating,
-        status: validatedData.status === 'Active' ? SolutionStatus.ACTIVE 
-               : validatedData.status === 'Pending' ? SolutionStatus.PENDING 
-               : SolutionStatus.INACTIVE,
-        tags: validatedData.tags,
-        imageUrl: validatedData.imageUrl,
-        metadata: validatedData.metadata as any,
-        isPublished: data.isPublished
+        title: updateData.title,
+        description: updateData.description,
+        category: updateData.category,
+        provider: updateData.provider,
+        launchUrl: updateData.launchUrl,
+        sourceCodeUrl: updateData.sourceCodeUrl,
+        tokenCost: updateData.tokenCost,
+        rating: updateData.rating,
+        status: dbStatus,
+        tags: updateData.tags,
+        imageUrl: updateData.imageUrl,
+        isPublished: updateData.isPublished,
       },
       include: {
         author: {
@@ -77,6 +102,7 @@ export async function PATCH(
       },
     });
 
+    // Create audit log
     await prisma.auditLog.create({
       data: {
         action: 'UPDATE',
@@ -87,21 +113,19 @@ export async function PATCH(
           title: solution.title,
           category: solution.category,
           provider: solution.provider,
+          status: solution.status,
         },
       },
     });
 
-    return NextResponse.json(solution);
+    return NextResponse.json({
+      success: true,
+      solution,
+      message: "Solution updated successfully"
+    });
   } catch (error) {
     console.error("Error updating solution:", error);
     
-    if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: "Validation error", details: error.errors },
-        { status: 400 }
-      );
-    }
-
     return NextResponse.json(
       { error: "Failed to update solution" },
       { status: 500 }

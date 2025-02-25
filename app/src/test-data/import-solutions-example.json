@@ -1,50 +1,30 @@
 {
   "solutions": [
     {
-      "title": "AI Image Generator",
+      "title": "Knext",
       "description": "A powerful AI image generation solution using stable diffusion. Create stunning images with AI using our advanced stable diffusion models.",
-      "version": "1.0.0",
-      "category": "GENERATIVE_AI",
+      "category": "Generative AI",
       "tags": ["image-generation", "stable-diffusion", "ai-art"],
       "provider": "OpenAI",
       "launchUrl": "https://example.com/ai-image-generator",
       "sourceCodeUrl": "https://github.com/example/ai-image-generator",
-      "imageUrl": "/api/external-images/solutions/biomarkerbavigator.jpg",
+      "imageUrl": "/api/external-images/solutions/knext-in.png",
       "tokenCost": 100,
-      "isPublished": true,
-      "status": "PENDING",
-      "metadata": {
-        "rating": 4.5,
-        "reviews": 0,
-        "resourceConfig": {
-          "cpu": "2 cores",
-          "memory": "4GB",
-          "storage": "10GB"
-        }
-      }
+      "status": "Pending",
+      "isPublished": true
     },
     {
-      "title": "ChatBot Builder",
+      "title": "Booklense",
       "description": "Create custom chatbots with natural language processing. Our advanced NLP system allows you to build, train, and deploy chatbots for various use cases including customer service, data analysis, and automated assistance.",
-      "version": "2.1.0",
-      "category": "NATURAL_LANGUAGE",
+      "category": "Natural Language Processing",
       "tags": ["chatbot", "nlp", "customer-service"],
       "provider": "Microsoft",
       "launchUrl": "https://example.com/chatbot-builder",
       "sourceCodeUrl": "https://github.com/example/chatbot-builder",
-      "imageUrl": "/api/external-images/solutions/chatbot-builder.jpg",
+      "imageUrl": "/api/external-images/solutions/booklens.png",
       "tokenCost": 50,
-      "isPublished": true,
-      "status": "PENDING",
-      "metadata": {
-        "rating": 4.8,
-        "reviews": 0,
-        "resourceConfig": {
-          "cpu": "4 cores",
-          "memory": "8GB",
-          "storage": "20GB"
-        }
-      }
+      "status": "Pending",
+      "isPublished": true
     }
   ]
 }

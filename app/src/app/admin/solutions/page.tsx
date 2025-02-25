@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { BulkImport } from "@/components/admin/BulkImport";
 import { AdminSolutionDialog } from "@/components/admin/AdminSolutionDialog";
+import { EditSolutionDialog } from "@/components/admin/EditSolutionDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -45,9 +46,9 @@ interface Solution {
   tags: string[];
   imageUrl?: string;
   isPublished: boolean;
-  author: {
-    name: string;
-    email: string;
+  author?: {
+    name?: string;
+    email?: string;
   };
   _count: {
     reviews: number;
@@ -67,7 +68,8 @@ export default function SolutionsAdminPage() {
   const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "PENDING" | "INACTIVE">("ALL");
   const [sortField, setSortField] = useState<SortableFields>("createdAt");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingSolution, setEditingSolution] = useState<Solution | null>(null);
   const [selectedSolutions, setSelectedSolutions] = useState<Set<string>>(new Set());
   const { toast } = useToast();
@@ -102,28 +104,24 @@ export default function SolutionsAdminPage() {
 
   const handleSaveSolution = async (formData: FormData) => {
     try {
-      const isEditing = formData.get('id');
-      const url = isEditing
-        ? `/api/admin/solutions/${formData.get('id')}`
-        : '/api/admin/solutions';
-      
-      const response = await fetch(url, {
-        method: isEditing ? 'PATCH' : 'POST',
+      const response = await fetch('/api/admin/solutions', {
+        method: 'POST',
         body: formData,
       });
 
       const result = await response.json();
       
       if (!response.ok) {
-        throw new Error(result.error || `Failed to ${isEditing ? 'update' : 'create'} solution`);
+        throw new Error(result.error || "Failed to create solution");
       }
 
       toast({
         title: "Success",
-        description: `Solution ${isEditing ? 'updated' : 'created'} successfully`,
+        description: "Solution created successfully",
       });
 
       fetchSolutions();
+      setCreateDialogOpen(false);
     } catch (error) {
       toast({
         title: "Error",
@@ -258,12 +256,11 @@ export default function SolutionsAdminPage() {
 
   const handleEdit = (solution: Solution) => {
     setEditingSolution(solution);
-    setDialogOpen(true);
+    setEditDialogOpen(true);
   };
 
   const handleAdd = () => {
-    setEditingSolution(null);
-    setDialogOpen(true);
+    setCreateDialogOpen(true);
   };
 
   const toggleSolutionSelection = (solutionId: string) => {
@@ -286,10 +283,10 @@ export default function SolutionsAdminPage() {
 
   const filteredSolutions = solutions
     .filter((solution) => {
-      const matchesSearch = 
+      const matchesSearch =
         solution.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        solution.author.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        solution.author.email.toLowerCase().includes(searchTerm.toLowerCase());
+        (solution.author?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (solution.author?.email || '').toLowerCase().includes(searchTerm.toLowerCase());
       
       const matchesStatus = statusFilter === "ALL" || solution.status === statusFilter;
       
@@ -533,9 +530,11 @@ export default function SolutionsAdminPage() {
                     </TableCell>
                     <TableCell>
                       <div>
-                        <div className="font-medium text-gray-900 dark:text-gray-100">{solution.author.name || "N/A"}</div>
+                        <div className="font-medium text-gray-900 dark:text-gray-100">
+                          {solution.author?.name || "Anonymous"}
+                        </div>
                         <div className="text-sm text-gray-600 dark:text-gray-400">
-                          {solution.author.email}
+                          {solution.author?.email || "N/A"}
                         </div>
                       </div>
                     </TableCell>
@@ -601,11 +600,18 @@ export default function SolutionsAdminPage() {
       </div>
 
       <AdminSolutionDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        solution={editingSolution}
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
         onSave={handleSaveSolution}
       />
+
+      {editingSolution && (
+        <EditSolutionDialog
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+          solution={editingSolution}
+        />
+      )}
     </div>
   );
 }
