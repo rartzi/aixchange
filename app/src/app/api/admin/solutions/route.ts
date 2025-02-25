@@ -53,8 +53,6 @@ export async function POST(request: Request) {
     // Validate the parsed data
     const validationResult = solutionSchema.safeParse(data);
 
-    console.log('Parsed data:', data);
-
     if (!validationResult.success) {
       return NextResponse.json({
         success: false,
@@ -77,19 +75,43 @@ export async function POST(request: Request) {
       }
     }
 
-    // Map status to enum
-    const status = solutionData.status === 'Active' ? SolutionStatus.ACTIVE
-                : solutionData.status === 'Pending' ? SolutionStatus.PENDING
-                : SolutionStatus.INACTIVE;
+    // Map status string to enum
+    let dbStatus: SolutionStatus;
+    switch (solutionData.status) {
+      case 'Active':
+        dbStatus = SolutionStatus.ACTIVE;
+        break;
+      case 'Pending':
+        dbStatus = SolutionStatus.PENDING;
+        break;
+      case 'Inactive':
+        dbStatus = SolutionStatus.INACTIVE;
+        break;
+      default:
+        dbStatus = SolutionStatus.PENDING;
+    }
 
     // Create solution
     const solution = await prisma.solution.create({
       data: {
         ...solutionData,
-        status,
+        status: dbStatus,
         authorId: session.user.id,
         metadata: solutionData.metadata as any
-      }
+      },
+      include: {
+        author: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+        _count: {
+          select: {
+            reviews: true,
+          },
+        },
+      },
     });
 
     // Create audit log entry
@@ -101,7 +123,9 @@ export async function POST(request: Request) {
         userId: session.user.id,
         metadata: {
           title: solution.title,
-          status: solution.status
+          status: solution.status,
+          category: solution.category,
+          provider: solution.provider,
         }
       }
     });
