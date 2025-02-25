@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { join } from "path";
 import fs from "fs/promises";
 
+// Use the exact path from environment variable
+const EXTERNAL_IMAGES_PATH = process.env.EXTERNAL_IMAGES_PATH || 'external-images';
+
 export async function GET(
   request: Request,
   { params }: { params: { path: string[] } }
@@ -10,8 +13,8 @@ export async function GET(
     // Reconstruct the path from the segments
     const imagePath = params.path.join("/");
     
-    // Construct the full path to the external images directory
-    const fullPath = join(process.cwd(), "deploy", "external-images", imagePath);
+    // Construct the full path using the environment variable
+    const fullPath = join(process.cwd(), EXTERNAL_IMAGES_PATH, imagePath);
 
     // Try to read the file
     const file = await fs.readFile(fullPath);
