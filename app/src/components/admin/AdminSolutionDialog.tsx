@@ -143,8 +143,6 @@ export function AdminSolutionDialog({ open, onOpenChange, solution, onSave }: Ad
         }
         return false;
       }
-      setErrors({});
-      return true;
     } catch (error) {
       if (error instanceof ZodError) {
         const newErrors: Record<string, string> = {};
@@ -264,41 +262,53 @@ export function AdminSolutionDialog({ open, onOpenChange, solution, onSave }: Ad
         formDataToSend.append('imageUrl', formData.imageUrl);
       }
 
-      const result = await onSave(formDataToSend);
-
-      // Only close dialog and show success message if save was successful
-      if (result) {
+      try {
+        await onSave(formDataToSend);
+        
         setStatusMessage({
           type: 'success',
           message: 'Solution saved successfully'
         });
-        onOpenChange(false);
-      }
 
-      // Reset form after successful submission if not editing
-      if (!solution) {
-        setFormData({
-          title: '',
-          description: '',
-          category: 'Other',
-          provider: '',
-          launchUrl: '',
-          tokenCost: 0,
-          rating: 0,
-          status: 'Active',
-          tags: [],
-          isPublished: true,
-        });
-        setPreviewImage(null);
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
+        // Close dialog after a short delay to show success message
+        setTimeout(() => {
+          onOpenChange(false);
+        }, 500);
+
+        // Reset form after successful submission if not editing
+        if (!solution) {
+          setFormData({
+            title: '',
+            description: '',
+            category: 'Other',
+            provider: '',
+            launchUrl: '',
+            tokenCost: 0,
+            rating: 0,
+            status: 'Active',
+            tags: [],
+            isPublished: true,
+          });
+          setPreviewImage(null);
+          if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+          }
         }
+      } catch (error) {
+        console.error('Error saving solution:', error);
+        setStatusMessage({
+          type: 'error',
+          message: 'Failed to save solution',
+          details: error instanceof Error ? error.message : 'An unexpected error occurred'
+        });
+        // Don't close dialog on error
+        return;
       }
     } catch (error) {
-      console.error('Error saving solution:', error);
+      console.error('Error in form submission:', error);
       setStatusMessage({
         type: 'error',
-        message: 'Failed to save solution',
+        message: 'Failed to process form',
         details: error instanceof Error ? error.message : 'An unexpected error occurred'
       });
     } finally {
