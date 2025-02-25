@@ -7,13 +7,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Events system implementation
+  - Full CRUD operations for events
+  - DALL-E integration for automatic event image generation
+  - Bulk import/export functionality for events
+  - Advanced filtering and sorting in admin interface
+  - Event status management system
+  - Event participation tracking
+- AdminEventDialog component with image generation capabilities
+- Event editing functionality in admin interface
+- Enhanced generate-image API to support both solutions and events
+- New external images API endpoint for serving event and solution images
+
 ### Fixed
+- Admin events page functionality restored
+  - Re-implemented selective edit, delete, and settings features
+  - Fixed event table with sorting and filtering
+  - Restored bulk actions (status updates, delete)
+  - Fixed AdminEventDialog with complete form fields
+  - Improved image handling with proper defaults
+  - Enhanced TypeScript type safety
+  - Added missing bulk-delete API endpoint
+- Image handling in event forms and bulk import
+  - Removed default image when creating new events
+  - Fixed image preview behavior
+  - Added proper image URL transformation
+  - Corrected image path handling for generated images
+  - Added external images API endpoint for serving images
+  - Fixed bulk import image resolution
+- Community stats reporting
+  - Fixed incorrect stats on /aixcelerate page
+  - Added proper counting of events, solutions, and users
 - Solution edit functionality in admin interface
   - Added dedicated EditSolutionDialog component
   - Fixed form validation and error handling
   - Improved PATCH endpoint data processing
   - Added proper loading states and user feedback
   - Fixed status conversion and required fields handling
+
+### Known Issues
+- Image display broken in multiple components [High Priority]
+  - Solution submission form not displaying images
+  - Event creation form not displaying images
+  - Note: Bulk import image display remains functional
 
 ### Added
 - New EditSolutionDialog component for better solution management
@@ -25,6 +62,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Separated solution creation and editing logic
 - Updated PATCH endpoint to handle solution updates more robustly
 - Improved error responses in API endpoints
+- Enhanced generate-image API to handle multiple content types
+- Added new image serving system through external-images API
 
 ## [1.0.0] - 2024-02-24
 
