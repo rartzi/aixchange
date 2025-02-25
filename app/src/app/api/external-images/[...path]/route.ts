@@ -1,50 +1,37 @@
-import { NextRequest, NextResponse } from 'next/server';
-import path from 'path';
-import fs from 'fs/promises';
-
-interface RouteParams {
-  path: string[];
-}
+import { NextResponse } from "next/server";
+import { join } from "path";
+import fs from "fs/promises";
 
 export async function GET(
-  request: NextRequest,
-  { params }: { params: RouteParams }
+  request: Request,
+  { params }: { params: { path: string[] } }
 ) {
   try {
-    // Get the full path from the URL parameters
-    const pathSegments = Array.isArray(params.path) ? params.path : [params.path];
-    const filePath = path.join(
-      process.env.EXTERNAL_IMAGES_PATH || 'external-images',
-      ...pathSegments
-    );
+    // Reconstruct the path from the segments
+    const imagePath = params.path.join("/");
+    
+    // Construct the full path to the external images directory
+    const fullPath = join(process.cwd(), "deploy", "external-images", imagePath);
 
-    // Check if file exists
-    try {
-      const stats = await fs.stat(filePath);
-      if (!stats.isFile()) {
-        return new NextResponse(null, { status: 404 });
-      }
-    } catch (error) {
-      console.log('File not found:', filePath);
-      return new NextResponse(null, { status: 404 });
-    }
+    // Try to read the file
+    const file = await fs.readFile(fullPath);
 
-    // Read file and return with appropriate content type
-    const fileBuffer = await fs.readFile(filePath);
-    const contentType = path.extname(filePath) === '.png'
-      ? 'image/png'
-      : path.extname(filePath) === '.jpg' || path.extname(filePath) === '.jpeg'
-      ? 'image/jpeg'
-      : 'application/octet-stream';
+    // Determine content type based on file extension
+    const ext = imagePath.split(".").pop()?.toLowerCase();
+    const contentType = ext === "png" ? "image/png" : 
+                       ext === "jpg" || ext === "jpeg" ? "image/jpeg" : 
+                       ext === "gif" ? "image/gif" : 
+                       "application/octet-stream";
 
-    return new NextResponse(fileBuffer, {
+    // Return the file with appropriate headers
+    return new NextResponse(file, {
       headers: {
-        'Content-Type': contentType,
-        'Cache-Control': 'public, max-age=31536000',
+        "Content-Type": contentType,
+        "Cache-Control": "public, max-age=31536000",
       },
     });
   } catch (error) {
-    console.error('Error serving external image:', error);
-    return new NextResponse(null, { status: 500 });
+    console.error(`Error serving external image ${params.path.join("/")}: `, error);
+    return new NextResponse("Image not found", { status: 404 });
   }
 }

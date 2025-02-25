@@ -5,6 +5,28 @@ import { authOptions } from "@/lib/auth";
 import { eventImportSchema } from "@/lib/schemas/eventImport";
 import { generateEventImage } from "@/lib/services/imageService";
 
+function transformImageUrl(imageUrl: string | undefined): string | undefined {
+  if (!imageUrl) return undefined;
+
+  // If it's already an absolute URL, return it as is
+  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+    return imageUrl;
+  }
+
+  // If it's a relative path in deploy/external-images/event/, transform it
+  if (imageUrl.includes('deploy/external-images/event/')) {
+    const filename = imageUrl.split('/').pop();
+    return `/api/external-images/event/${filename}`;
+  }
+
+  // If it's just a filename, assume it's in the event directory
+  if (!imageUrl.includes('/')) {
+    return `/api/external-images/event/${imageUrl}`;
+  }
+
+  return imageUrl;
+}
+
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -30,19 +52,20 @@ export async function POST(request: Request) {
     // Process each event
     for (const eventData of validatedData.events) {
       try {
+        // Transform or generate image URL
+        let imageUrl = transformImageUrl(eventData.imageUrl);
+        
         // Generate image if not provided
-        if (!eventData.imageUrl) {
+        if (!imageUrl) {
           const imagePrompt = `${eventData.title} - ${eventData.shortDescription}`;
-          const imageUrl = await generateEventImage(imagePrompt);
-          if (imageUrl) {
-            eventData.imageUrl = imageUrl;
-          }
+          imageUrl = await generateEventImage(imagePrompt);
         }
 
-        // Create event
+        // Create event with transformed image URL
         await prisma.event.create({
           data: {
             ...eventData,
+            imageUrl,
             createdById: validatedData.defaultAuthorId || session.user.id,
           },
         });

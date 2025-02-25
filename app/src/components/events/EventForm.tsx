@@ -10,21 +10,15 @@ export default function EventForm() {
   const router = useRouter()
   const { toast } = useToast()
 
-  const handleSave = async (eventData: any) => {
+  const handleSave = async (formData: FormData) => {
     try {
       // Set default values for user-created events
-      const data = {
-        ...eventData,
-        status: "UPCOMING", // All user-created events start as upcoming
-        isPromoted: false, // Only admins can promote events
-      }
+      formData.set('status', 'UPCOMING') // All user-created events start as upcoming
+      formData.set('isPromoted', 'false') // Only admins can promote events
 
       const response = await fetch("/api/admin/events", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
+        body: formData, // Send FormData directly
       })
 
       if (!response.ok) {
@@ -36,7 +30,7 @@ export default function EventForm() {
         title: "Success!",
         description: "Event created successfully.",
       })
-      router.push(`/events/${result.data.id}`)
+      router.push(`/events/${result.id}`)
     } catch (error) {
       console.error("Error creating event:", error)
       toast({

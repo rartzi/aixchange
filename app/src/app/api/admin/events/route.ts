@@ -28,6 +28,10 @@ const eventUpdateSchema = eventSchema.extend({
   createdById: z.string().optional(), // Allow changing createdById during updates
 });
 
+type EventFormData = {
+  [key: string]: FormDataEntryValue;
+};
+
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -40,8 +44,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const json = await request.json();
-    const validatedData = eventSchema.parse(json);
+    // Parse form data
+    const formData = await request.formData();
+    const data: EventFormData = Object.fromEntries(formData.entries());
+
+    // Convert string values to appropriate types
+    const parsedData = {
+      ...data,
+      isPublic: data.isPublic === 'true',
+      isPromoted: data.isPromoted === 'true',
+      maxParticipants: data.maxParticipants ? Number(data.maxParticipants) : undefined,
+      prizes: data.prizes ? JSON.parse(data.prizes as string) : undefined,
+    };
+
+    // Validate data
+    const validatedData = eventSchema.parse(parsedData);
 
     // Generate image if not provided
     if (!validatedData.imageUrl) {
@@ -55,9 +72,16 @@ export async function POST(request: Request) {
     const event = await prisma.event.create({
       data: {
         ...validatedData,
-        createdById: session.user.id, // Always use current user for new events
+        createdById: session.user.id,
       },
       include: {
+        createdBy: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          }
+        },
         _count: {
           select: {
             participants: true,
@@ -77,7 +101,7 @@ export async function POST(request: Request) {
         metadata: {
           eventType: event.type,
           title: event.title,
-          imageGenerated: !json.imageUrl && !!validatedData.imageUrl,
+          imageGenerated: !data.imageUrl && !!validatedData.imageUrl,
         },
       },
     });
@@ -111,20 +135,42 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const json = await request.json();
-    const { id, ...updateData } = json;
-
+    // Parse form data
+    const formData = await request.formData();
+    const id = formData.get('id') as string;
+    
     if (!id) {
       return NextResponse.json({ error: "Event ID is required" }, { status: 400 });
     }
 
-    // Validate update data with schema that allows createdById
-    const validatedData = eventUpdateSchema.parse(updateData);
+    // Convert form data to object and handle types
+    const data: EventFormData = Object.fromEntries(formData.entries());
+    const { id: eventId, ...updateData } = data;
+
+    const parsedData = {
+      ...updateData,
+      isPublic: updateData.isPublic === 'true',
+      isPromoted: updateData.isPromoted === 'true',
+      maxParticipants: updateData.maxParticipants ? Number(updateData.maxParticipants) : undefined,
+      prizes: updateData.prizes ? JSON.parse(updateData.prizes as string) : undefined,
+    };
+
+    // Validate update data
+    const validatedData = eventUpdateSchema.parse(parsedData);
 
     // Update event
     const event = await prisma.event.update({
       where: { id },
       data: validatedData,
+      include: {
+        createdBy: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          }
+        }
+      }
     });
 
     // Log the action
